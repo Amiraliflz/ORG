@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.RateLimiting;
+using System.Text.Encodings.Web;
 
 
 
@@ -30,7 +31,13 @@ builder.Services.AddTransient<MrShooferAPIClient, MrShooferAPIClient>(c => new M
 
 builder.Services.AddTransient<CustomerServiceSmsSender>();
 
-builder.Services.AddControllersWithViews();
+builder.Services
+  .AddControllersWithViews()
+  .AddJsonOptions(opts =>
+  {
+    // Ensure Persian characters are not escaped in JSON responses
+    opts.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+  });
 
 builder.Services.TryAddTransient<IOtpLogin, KavehNeagerOtp>();
 

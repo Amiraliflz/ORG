@@ -14,9 +14,8 @@ namespace Application.ViewModels.Reserve
     [Required(ErrorMessage = "جنسیت مسافر را انتخاب کنید")]
     public string Gender { get; set; }
 
-    [Required(ErrorMessage = "کد ملی مسافر نمی‌تواند خالی باشد")]
-    [MinLength(10, ErrorMessage = "کد ملی را صحیح وارد کنید")]
-    [MaxLength(10, ErrorMessage = "کد ملی را صحیح وارد کنید")]
+    [Required(ErrorMessage = "کد ملی مسافر را وارد کنید")]
+    [RegularExpression(@"^\d{10}$", ErrorMessage = "کد ملی باید دقیقا ۱۰ رقم باشد")]
     public string NaCode { get; set; }
 
     [Required(ErrorMessage = "شماره تلفن مسافر را وارد کنید")]

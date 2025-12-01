@@ -163,7 +163,10 @@ let nottripfoundHtml = `<div class="d-flex col-12 mt-3" style="flex-direction: c
 
 
 
-let trips = [];
+// Avoid redeclaration error: only create if undefined
+if (typeof window.trips === 'undefined') {
+  window.trips = [];
+}
 
 function GetCarModels(tripsarr) {
   const carModelNames = tripsarr.map(trip => trip.carModelName);
@@ -180,12 +183,12 @@ function GetCarModels(tripsarr) {
 function carFilterSelectes(carmodel) {
 
   if (carmodel == 'default') {
-    renderTrips(trips);
+    renderTrips(window.trips);
 
   }
   else {
 
-    filteredTrips = [...trips].filter(t => t.carModelName == carmodel)
+    const filteredTrips = window.trips.filter(t => t.carModelName === carmodel)
 
   renderTrips(filteredTrips);
   }
@@ -202,8 +205,8 @@ function GenerateCarModelsFilter(carmodels) {
       .append(
         `
           <div class="form-check">
-           <input class="form-check-input" id="defaultRadio2" name="default-radio-2" type="radio" value="" onclick="carFilterSelectes('${c}')">
-			   	<label class="form-check-label fw-light" for="${c}">${c}</label>
+           <input class="form-check-input" name="carmodel-radio" type="radio" value="" onclick="carFilterSelectes('${c}')">
+			   <label class="form-check-label fw-light" for="carmodel-${c}">${c}</label>
           </div>
         `
       );
@@ -214,17 +217,17 @@ $(function () {
 
   fetchTripsData()
     .then(function (result) {
-       trips = result;
+      window.trips = result;
 
       // no trips
-      if (trips.length == 0) {
+      if (window.trips.length == 0) {
         $('.trips-container').empty();
         $('.trips-container').append(nottripfoundHtml);
       }
       else {
 
-        renderTrips(trips);
-        let carModels = GetCarModels(trips);
+        renderTrips(window.trips);
+        let carModels = GetCarModels(window.trips);
         GenerateCarModelsFilter(carModels);
 
       }
@@ -243,7 +246,7 @@ function renderTrips(input_trips) {
 function orderFilterSelected(number) {
 
   if (number == 0) {
-    renderTrips(trips);
+    renderTrips(window.trips);
       
   }
 

@@ -56,7 +56,7 @@ namespace Application.Services.MrShooferORS
 
     public async Task<IList<SearchedTrip>> SearchTrips(DateTime startspan, DateTime endspan, int originCityId, int destinationCityid, int? originterminalId = null, int? destinationterminalid = null)
     {
-      string searchurl = $"https://mrbilit.mrshoofer.ir/Trips/GetPlanedTripsbyCityID/{startspan.ToString("yyyy-MM-dd")}/{endspan.ToString("yyyy-MM-dd")}/{originCityId}/{destinationCityid}";
+      string searchurl = $"https://mrbilit.mrshoofer.ir/Trips/GetPlanedTripsbyCityID/{startspan:yyyy-MM-dd}/{endspan:yyyy-MM-dd}/{originCityId}/{destinationCityid}";
 
 
       if (originterminalId != null)
@@ -148,6 +148,173 @@ namespace Application.Services.MrShooferORS
       return await result.Content.ReadAsStringAsync();
     }
 
+    //Get available OTA directions
+    public record AvaiableDirection(string Cityone, string Citytwo, int? CityoneId, int? CitytwoId);
+
+    private static string? ExtractString(JsonNode? node)
+    {
+      if (node == null) return null;
+
+      if (node is JsonValue jv && jv.TryGetValue<string>(out var s) && !string.IsNullOrWhiteSpace(s))
+      {
+        return s;
+      }
+
+      if (node is JsonObject jobj)
+      {
+        // Prioritized child property names commonly used for city labels
+        var candidateChildNames = new[]
+        {
+          "city_name","cityName","name","title","label","fa","persian","caption","display"
+        };
+        foreach (var childName in candidateChildNames)
+        {
+          if (jobj.TryGetPropertyValue(childName, out var child) && child is JsonValue cjv && cjv.TryGetValue<string>(out var cs) && !string.IsNullOrWhiteSpace(cs))
+          {
+            return cs;
+          }
+        }
+        // Fallback: scan for first string value in object
+        foreach (var kv in jobj)
+        {
+          var inner = ExtractString(kv.Value);
+          if (!string.IsNullOrWhiteSpace(inner)) return inner;
+        }
+        return null;
+      }
+
+      if (node is JsonArray arr)
+      {
+        foreach (var el in arr)
+        {
+          var inner = ExtractString(el);
+          if (!string.IsNullOrWhiteSpace(inner)) return inner;
+        }
+      }
+
+      // As a last resort
+      var asStr = node.ToString();
+      return string.IsNullOrWhiteSpace(asStr) ? null : asStr;
+    }
+
+    private static string? TryGetString(JsonObject obj, params string[] candidates)
+    {
+      foreach (var name in candidates)
+      {
+        // Find property case-insensitively
+        var prop = obj.FirstOrDefault(kvp => string.Equals(kvp.Key, name, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(prop.Key) && prop.Value is not null)
+        {
+          var extracted = ExtractString(prop.Value);
+          if (!string.IsNullOrWhiteSpace(extracted)) return extracted;
+        }
+      }
+      return null;
+    }
+
+    private static int? ExtractInt(JsonNode? node)
+    {
+      if (node == null) return null;
+      if (node is JsonValue jv)
+      {
+        if (jv.TryGetValue<int>(out var i)) return i;
+        if (jv.TryGetValue<long>(out var l)) return (int)l;
+        if (jv.TryGetValue<string>(out var s) && int.TryParse(s, out var p)) return p;
+      }
+      return null;
+    }
+
+    private static int? TryGetInt(JsonObject obj, params string[] candidates)
+    {
+      foreach (var name in candidates)
+      {
+        var prop = obj.FirstOrDefault(kvp => string.Equals(kvp.Key, name, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(prop.Key) && prop.Value is not null)
+        {
+          var extracted = ExtractInt(prop.Value);
+          if (extracted.HasValue) return extracted.Value;
+        }
+      }
+      return null;
+    }
+
+    public async Task<List<AvaiableDirection>> GetAvaiableOTADirectionsAsync()
+    {
+      string url = "https://mrbilit.mrshoofer.ir/Directions/getAvailableDirections";
+      using var response = await _client.GetAsync(url);
+      if (!response.IsSuccessStatusCode)
+      {
+        var body = await response.Content.ReadAsStringAsync();
+        throw new Exception($"Failed to fetch available directions: {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
+      }
+
+      var json = await response.Content.ReadAsStringAsync();
+      var node = JsonNode.Parse(json);
+
+      var list = new List<AvaiableDirection>();
+      if (node is JsonArray arr)
+      {
+        foreach (var item in arr)
+        {
+          if (item is not JsonObject obj) continue;
+
+          // Try common property names for origin/destination
+          var c1 = TryGetString(obj,
+            "Cityone", "cityone", "CityOne", "cityOne", "city_one",
+            "origin", "originCity", "fromCity", "from", "startCity", "originCityName", "cityOneName",
+            "city_name", "from_city", "source");
+          var c2 = TryGetString(obj,
+            "Citytwo", "citytwo", "CityTwo", "cityTwo", "city_two",
+            "destination", "destinationCity", "toCity", "to", "endCity", "destinationCityName", "cityTwoName",
+            "dest_city", "destination_city", "target");
+
+          var id1 = TryGetInt(obj, "CityoneId", "cityoneid", "cityOneId", "CityOneId", "originCityId", "fromCityId", "city_one_id");
+          var id2 = TryGetInt(obj, "CitytwoId", "citytwoid", "cityTwoId", "CityTwoId", "destinationCityId", "toCityId", "city_two_id");
+
+          if (!string.IsNullOrWhiteSpace(c1) && !string.IsNullOrWhiteSpace(c2))
+          {
+            list.Add(new AvaiableDirection(c1!, c2!, id1, id2));
+          }
+        }
+      }
+
+      return list;
+    }
+
+    private static string NormalizeCity(string? s)
+    {
+      if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+      var str = s.Trim();
+      var idx = str.IndexOf('(');
+      if (idx >= 0) str = str[..idx];
+      str = str
+        .Replace("\u200C", string.Empty)
+        .Replace("\u200F", string.Empty)
+        .Replace("\u200E", string.Empty);
+      str = str.Replace('\u064A', '\u06CC').Replace('\u0643', '\u06A9');
+      str = str.Replace('\u0629', '\u0647');
+      return str.Replace("  ", " ").ToLowerInvariant();
+    }
+
+    public async Task<Dictionary<string, int>> GetCityNameIdMapAsync()
+    {
+      var dirs = await GetAvaiableOTADirectionsAsync();
+      var map = new Dictionary<string, int>();
+      foreach (var d in dirs)
+      {
+        if (!string.IsNullOrWhiteSpace(d.Cityone) && d.CityoneId.HasValue)
+        {
+          var key = NormalizeCity(d.Cityone);
+          if (!map.ContainsKey(key)) map[key] = d.CityoneId.Value;
+        }
+        if (!string.IsNullOrWhiteSpace(d.Citytwo) && d.CitytwoId.HasValue)
+        {
+          var key = NormalizeCity(d.Citytwo);
+          if (!map.ContainsKey(key)) map[key] = d.CitytwoId.Value;
+        }
+      }
+      return map;
+    }
 
     public async Task ChargeOTABalanceAsync(int amount)
     {
