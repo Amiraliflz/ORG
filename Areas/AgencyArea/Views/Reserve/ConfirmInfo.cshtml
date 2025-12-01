@@ -436,9 +436,11 @@
                         <span class="text-blck fs-5">
                             <div class="d-flex mt-1" style="justify-content: space-between; font-size: 1rem;">
                                 <span>
-                                    <span class="text-blck badge bg-label-primary rounded-pill carmodel">
-                                        @trip.carModelName
-                                    </span>
+                                    @{ var models = (trip.carModelName ?? string.Empty).Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries); }
+                                    @foreach (var m in models)
+                                    {
+                                        <span class="text-blck badge bg-label-primary rounded-pill carmodel me-1">@m</span>
+                                    }
                                 </span>
                             </div>
                         </span>
