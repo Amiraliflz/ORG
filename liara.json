@@ -1,6 +1,6 @@
 {
   "app": "mrshoofer-orgselling",
-  "port": 3000,
+  "port": 5000,
   "team-id": "67d91aeb2c70acbe880d3592",
   "build": {
     "location": "germany"
