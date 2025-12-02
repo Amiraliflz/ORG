@@ -22,6 +22,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup Node.js (for Liara CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Liara CLI
+        run: npm install -g @liara/cli
+
       - name: Build & Publish
         run: |
           dotnet restore Application.csproj
@@ -29,11 +37,6 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t liara-deploy:latest .
-
-      - name: Install Liara CLI
-        run: |
-          curl -fsSL https://liara.ir/cli.sh | bash
-          echo "Liara CLI installed"
 
       - name: Authenticate Liara
         env:
@@ -45,4 +48,3 @@ jobs:
           LIARA_TOKEN: ${{ secrets.LIARA_TOKEN }}
         run: |
           liara deploy --app mrshoofer-orgselling --port 5000 --path . --detached
-
