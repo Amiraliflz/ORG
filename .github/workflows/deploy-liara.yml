@@ -45,3 +45,4 @@ jobs:
           LIARA_TOKEN: ${{ secrets.LIARA_TOKEN }}
         run: |
           liara deploy --app mrshoofer-orgselling --port 5000 --path . --detached
+
