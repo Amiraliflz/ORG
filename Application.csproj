@@ -10,6 +10,8 @@
     <Content Remove="wwwroot\js\app-academy-course-details - Copy.js" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".github\workflows\ci.yml" />
+    <None Include=".github\workflows\deploy-liara.yml" />
     <None Include="Areas\AgencyArea\Views\Shared\Sections\Footer\_Footer.cshtml" />
     <None Include="Areas\AgencyArea\Views\Shared\Sections\Footer\_FooterFront.cshtml" />
     <None Include="Areas\AgencyArea\Views\Shared\Sections\Menu\_HorizontalMenu.cshtml" />
