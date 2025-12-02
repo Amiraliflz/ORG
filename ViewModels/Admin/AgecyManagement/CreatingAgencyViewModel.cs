@@ -28,7 +28,7 @@ namespace Application.ViewModels.Admin.AgecyManagement
     public string Username { get; set; }
 
     [Required(ErrorMessage = "وارد کردن این مورد الزامی است")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "رمز عبور باید حداقل 8 رقم باشد")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "رمز عبور باید حداقل 8 کارکتر باشد")]
     public string Password { get; set; }
 
     [Required(ErrorMessage = "وارد کردن این مورد الزامی است")]

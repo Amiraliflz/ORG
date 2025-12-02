@@ -14,20 +14,14 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.RateLimiting;
 using System.Text.Encodings.Web;
 
-
-
-//await smssender.SendCustomerTicket_issued("محمد صدرا".Replace(' ', '\u200C'), "درستکار".Replace(' ', '\u200C'), "Z4EIU", "https://9qbnlgl9-5055.euw.devtunnels.ms/ReserveInfo?reference=Z4EIU", "09902063015");
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
-builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();  
+builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();
 
 builder.Services.AddTransient<MrShooferAPIClient, MrShooferAPIClient>(c => new MrShooferAPIClient(new HttpClient(), "https://mrbilit.mrshoofer.ir"));
-
 
 builder.Services.AddTransient<CustomerServiceSmsSender>();
 
@@ -41,17 +35,14 @@ builder.Services
 
 builder.Services.TryAddTransient<IOtpLogin, KavehNeagerOtp>();
 
-
-var sqlite_connstring = "Data Source=/home/ubuntu/mrshoofer_org/Mrshoofer_org.db";
-if (builder.Environment.IsDevelopment())
-{
-  sqlite_connstring = builder.Configuration.GetConnectionString("development");
-}
-
+// Configure EF Core to use PostgreSQL via Npgsql and read the proper connection string per environment
+var connStringName = builder.Environment.IsDevelopment() ? "development" : "production";
+var pgsqlConnString = builder.Configuration.GetConnectionString(connStringName);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(sqlite_connstring));
-
+{
+    options.UseNpgsql(pgsqlConnString);
+});
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -65,7 +56,6 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-
 builder.Services.AddAuthorization(options =>
 {
   options.AddPolicy("Agency", policy =>
@@ -74,8 +64,6 @@ builder.Services.AddAuthorization(options =>
   options.AddPolicy("Admin", policy =>
       policy.RequireClaim("Role", "Admin"));
 });
-
-
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -88,8 +76,6 @@ builder.Services.ConfigureApplicationCookie(options =>
   options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
   options.SlidingExpiration = true;
 });
-
-
 
 // Configure rate limiting
 builder.Services.AddRateLimiter(options =>
@@ -106,20 +92,15 @@ builder.Services.AddRateLimiter(options =>
           }));
 });
 
-
 var app = builder.Build();
 
 app.UseRateLimiter();
 
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
   app.UseExceptionHandler("/Home/Error");
-  // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
   app.UseHsts();
 }
-
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
@@ -129,26 +110,20 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
-
-
 
 app.MapControllerRoute(
     name: "agency",
     pattern: "{controller=Home}/{action=Index}/{id?}",
     defaults: new { area = "AgencyArea" });
 
-// Configure routing for Admin and Agency areas
 app.MapControllerRoute(
     name: "admin",
     pattern: "Admin/{controller=Home}/{action=Index}/{id?}",
     defaults: new { area = "Admin" });
 
-// Configure default routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 
 app.Run();
