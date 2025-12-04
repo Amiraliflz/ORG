@@ -61,16 +61,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Liara CLI
-        run: |
-          npm install -g @liara/cli
-          echo "Adding npm global bin to PATH"
-          echo "NODE_BIN=$(npm bin -g)" && npm bin -g >> $GITHUB_PATH
+      - name: Install Liara CLI (global)
+        run: npm install -g @liara/cli
 
-      - name: Verify Liara CLI
-        run: |
-          which liara || true
-          liara --version
+      - name: Verify Liara CLI via npx
+        run: npx -y @liara/cli@latest --version
 
       - name: Build Docker image
         run: docker build -t liara-deploy:latest .
@@ -78,7 +73,7 @@ jobs:
       - name: Authenticate Liara
         env:
           LIARA_TOKEN: ${{ secrets.LIARA_TOKEN }}
-        run: liara login --api-token "$LIARA_TOKEN"
+        run: npx -y @liara/cli@latest login --api-token "$LIARA_TOKEN"
 
       - name: Deploy to Liara
-        run: liara deploy --app mrshoofer-orgselling --port 5000 --path . --detached
+        run: npx -y @liara/cli@latest deploy --app mrshoofer-orgselling --port 5000 --path . --detached
