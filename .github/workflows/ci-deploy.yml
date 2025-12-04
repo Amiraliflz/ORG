@@ -47,6 +47,8 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    env:
+      LIARA_REGION: germany
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,18 +58,30 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Deploy to Liara
+      - name: Install Liara CLI
+        run: npm i -g @liara/cli@7
+
+      - name: Pre-check secrets
+        run: |
+          if [ -z "${{ secrets.LIARA_API_TOKEN }}" ]; then echo "Missing LIARA_API_TOKEN" && exit 1; fi
+
+      - name: Login to Liara (non-interactive)
         env:
           LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: |
-          npm i -g @liara/cli@7
-          echo "Deploying to Liara..."
-          echo "Liara will build the Docker image from source code"
+          # The Liara CLI v7 does not support a --region flag on login.
+          liara login --api-token "$LIARA_TOKEN" --team-id 67d91aeb2c70acbe880d3592 || {
+            echo "Login failed. Ensure token belongs to team 67d91aeb2c70acbe880d3592.";
+            exit 1;
+          }
+
+      - name: Deploy to Liara
+        run: |
           liara deploy \
             --app=mrshoofer-orgselling \
-            --api-token=$LIARA_TOKEN \
             --team-id=67d91aeb2c70acbe880d3592 \
             --platform=docker \
+            --region=$LIARA_REGION \
             --debug \
             --no-app-logs
 
