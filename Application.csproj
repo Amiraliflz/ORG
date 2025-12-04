@@ -10,7 +10,6 @@
     <Content Remove="wwwroot\js\app-academy-course-details - Copy.js" />
   </ItemGroup>
   <ItemGroup>
-    <None Include=".github\workflows\ci-deploy.yml" />
     <None Include="Areas\AgencyArea\Views\Shared\Sections\Footer\_Footer.cshtml" />
     <None Include="Areas\AgencyArea\Views\Shared\Sections\Footer\_FooterFront.cshtml" />
     <None Include="Areas\AgencyArea\Views\Shared\Sections\Menu\_HorizontalMenu.cshtml" />
@@ -181,6 +180,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include=".github\workflows\" />
     <Folder Include="Migrations\" />
     <Folder Include="Validation\" />
     <Folder Include="wwwroot\libs\NewFolder\" />
