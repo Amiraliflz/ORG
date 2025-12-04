@@ -62,7 +62,15 @@ jobs:
           node-version: '20'
 
       - name: Install Liara CLI
-        run: npm install -g @liara/cli
+        run: |
+          npm install -g @liara/cli
+          echo "Adding npm global bin to PATH"
+          echo "NODE_BIN=$(npm bin -g)" && npm bin -g >> $GITHUB_PATH
+
+      - name: Verify Liara CLI
+        run: |
+          which liara || true
+          liara --version
 
       - name: Build Docker image
         run: docker build -t liara-deploy:latest .
