@@ -3,6 +3,7 @@ namespace Application.Models
 {
   public class Ticket
   {
+
     public int Id { get; set; }
     public string Tripcode { get; set; }
     public string TicketCode { get; set; }
