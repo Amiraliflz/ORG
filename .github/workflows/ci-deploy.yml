@@ -47,6 +47,8 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    env:
+      LIARA_TEAM_ID: 67d91aeb2c70acbe880d3592
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,8 +74,8 @@ jobs:
 
       - name: Authenticate Liara
         env:
-          LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
-        run: npx -y @liara/cli@latest login --api-token "$LIARA_TOKEN"
+          LIARA_TOKEN: ${{ secrets.LIARA_TOKEN }}
+        run: npx -y @liara/cli@latest login --api-token "$LIARA_TOKEN" --team-id "$LIARA_TEAM_ID"
 
       - name: Deploy to Liara
-        run: npx -y @liara/cli@latest deploy --app mrshoofer-orgselling --port 5000 --path . --detached
+        run: npx -y @liara/cli@latest deploy --app mrshoofer-orgselling --team-id "$LIARA_TEAM_ID" --port 5000 --path . --detached
