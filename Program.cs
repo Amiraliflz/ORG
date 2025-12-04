@@ -33,6 +33,7 @@ builder.Services
     opts.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
   });
 
+
 builder.Services.TryAddTransient<IOtpLogin, KavehNeagerOtp>();
 
 // Configure EF Core to use PostgreSQL via Npgsql and read the proper connection string per environment
