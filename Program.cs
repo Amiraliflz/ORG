@@ -106,6 +106,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
