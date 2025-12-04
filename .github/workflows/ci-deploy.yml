@@ -47,6 +47,8 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    env:
+      LIARA_REGION: germany
     steps:
       - name: Checkout
         uses: actions/checkout@v4
