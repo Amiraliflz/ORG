@@ -72,7 +72,7 @@ jobs:
 
       - name: Authenticate Liara
         env:
-          LIARA_TOKEN: ${{ secrets.LIARA_TOKEN }}
+          LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: npx -y @liara/cli@latest login --api-token "$LIARA_TOKEN"
 
       - name: Deploy to Liara
