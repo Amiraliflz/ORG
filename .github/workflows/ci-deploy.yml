@@ -58,17 +58,28 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Deploy to Liara
+      - name: Install Liara CLI
+        run: npm i -g @liara/cli@7
+
+      - name: Pre-check secrets
+        run: |
+          if [ -z "${{ secrets.LIARA_API_TOKEN }}" ]; then echo "Missing LIARA_API_TOKEN" && exit 1; fi
+
+      - name: Login to Liara (non-interactive)
         env:
           LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: |
-          npm i -g @liara/cli@7
-          echo "Deploying to Liara..."
-          echo "Liara will build the Docker image from source code"
+          liara login --api-token "$LIARA_TOKEN" --team-id 67d91aeb2c70acbe880d3592 --region "$LIARA_REGION" || {
+            echo "Login failed. Ensure token belongs to team 67d91aeb2c70acbe880d3592 in region $LIARA_REGION.";
+            exit 1;
+          }
+
+      - name: Deploy to Liara
+        run: |
           liara deploy \
             --app=mrshoofer-orgselling \
-            --api-token=$LIARA_TOKEN \
             --team-id=67d91aeb2c70acbe880d3592 \
             --platform=docker \
+            --region=$LIARA_REGION \
             --debug \
             --no-app-logs
