@@ -1,24 +1,60 @@
-name: Deploy to Liara
+name: CI and Deploy to Liara
 
 on:
   push:
-    branches:
-      - master
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  ci:
+    name: Build and Test
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore Application.csproj
+
+      - name: Build
+        run: dotnet build Application.csproj --configuration Release --no-restore
+
+      - name: Test
+        run: |
+          if ls -1 *.Tests.csproj 2>/dev/null; then
+            for proj in *.Tests.csproj; do dotnet test "$proj" --configuration Release --no-build; done
+          else
+            echo "No test projects found"; fi
+
+      - name: Publish
+        run: dotnet publish Application.csproj --configuration Release --no-restore --output dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: app-dist
+            path: dist
+
+  deploy:
+    name: Deploy to Liara
+    needs: ci
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (for Liara CLI)
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '20'
 
       - name: Deploy to Liara
         env:
@@ -27,10 +63,8 @@ jobs:
           npm i -g @liara/cli@7
           echo "Deploying to Liara..."
           echo "Liara will build the Docker image from source code"
-          
-          # Deploy directly to Liara (Liara will build the Docker image from source)
           liara deploy \
-            --app=mrshoofer-orgselling\
+            --app=mrshoofer-orgselling \
             --api-token=$LIARA_TOKEN \
             --team-id=67d91aeb2c70acbe880d3592 \
             --platform=docker \
