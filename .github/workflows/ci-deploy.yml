@@ -69,8 +69,9 @@ jobs:
         env:
           LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: |
-          liara login --api-token "$LIARA_TOKEN" --team-id 67d91aeb2c70acbe880d3592 --region "$LIARA_REGION" || {
-            echo "Login failed. Ensure token belongs to team 67d91aeb2c70acbe880d3592 in region $LIARA_REGION.";
+          # The Liara CLI v7 does not support a --region flag on login.
+          liara login --api-token "$LIARA_TOKEN" --team-id 67d91aeb2c70acbe880d3592 || {
+            echo "Login failed. Ensure token belongs to team 67d91aeb2c70acbe880d3592.";
             exit 1;
           }
 
