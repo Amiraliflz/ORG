@@ -5,30 +5,30 @@ namespace Application.Areas.AgencyArea
   {
 
     [Area("AgencyArea")]
-    [Route("Error/{statusCode}")]
+    [Route("Error/{statusCode:int}")]
     public async Task<IActionResult> HandleError(int statusCode)
     {
-
-
+      // Ensure the response reflects the requested status code
       if (Response.StatusCode == StatusCodes.Status200OK)
       {
         Response.StatusCode = statusCode;
       }
 
-      if (statusCode == 403)
+      if (statusCode == StatusCodes.Status403Forbidden)
       {
-        Response.StatusCode = 403;
-        return View("AccessDenied"); // Assuming the view name is "AccessDenied"
+        Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View("AccessDenied");
       }
-      else if (statusCode == 404)
+      else if (statusCode == StatusCodes.Status404NotFound)
       {
-        Response.StatusCode = 404;
-        return View("NotFound"); // Assuming the view name is "NotFound"
+        Response.StatusCode = StatusCodes.Status404NotFound;
+        return View("NotFound");
       }
       else
       {
-        // Handle other error scenarios or return a generic error view
-        return View("GenericError"); // Assuming the view name is "GenericError"
+        // Default to 500 for unhandled errors
+        Response.StatusCode = StatusCodes.Status500InternalServerError;
+        return View("GenericError");
       }
     }
   }

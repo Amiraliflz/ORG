@@ -1,0 +1,27 @@
+@{
+  Layout = "_BlankLayout";
+  ViewData["Title"] = "خطای داخلی سرور";
+}
+
+@section PageStyles {
+<link rel="stylesheet" href="~/vendor/css/pages/page-misc.css">
+}
+
+<style>
+  .misc-wrapper { min-height: 80vh !important; }
+</style>
+
+<div class="container-xxl container-p-y">
+  <div class="misc-wrapper">
+    <img width="220px" class="my-3" src="~/logo_full_b.png" />
+    <h2 class="mb-3 mx-2">مشکلی پیش آمد</h2>
+    <p class="mb-4 mx-2">
+      در پردازش درخواست شما خطایی رخ داد. لطفاً بعداً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.
+    </p>
+    <a href="/" class="btn btn-primary mb-4">بازگشت به خانه</a>
+    <div class="mt-4">
+      <img src="~/500.png" alt="internal-server-error" width="260" class="img-fluid" />
+    </div>
+  </div>
+</div>
+<div class="container-fluid misc-bg-wrapper"></div>
