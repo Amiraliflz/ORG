@@ -1,5 +1,17 @@
 function generateTripCard(Model) {
 
+  // Check if this is a VIP car (taxiSupervisorID === 7 OR carModelName contains VIP/تشریفات OR specific VIP car models)
+  const isVipCar = Model.taxiSupervisorID === 7 || 
+                   (Model.carModelName && (Model.carModelName.includes('VIP') || 
+                    Model.carModelName.includes('vip') || 
+                    Model.carModelName.includes('تشریفات') ||
+                    Model.carModelName.includes('آریو') ||
+                    Model.carModelName.includes('اکسنت') ||
+                    Model.carModelName.includes('جیلی') ||
+                    Model.carModelName.includes('کمری') ||
+                    Model.carModelName.includes('سفران') ||
+                    Model.carModelName.includes('سوناتا')));
+
   var html = `
         <div class="card px-2 px-md-4 py-3 mt-3" style="width: 100%;">
 
@@ -8,8 +20,7 @@ function generateTripCard(Model) {
 
                 <div>
                     <span class="badge bg-label-secondary rounded-pill carmodel"> ${Model.carModelName} </span>
-                    ${Model.taxiSupervisorID === 7 ? '<img src="/vip_badge.png" style="height:29px;" class="ms-1" />' : ''}
-                    
+                    ${isVipCar ? '<img src="/vip_badge.png" style="height:29px;" class="ms-1" />' : ''}
                 </div>
 
                 <div>
@@ -216,8 +227,13 @@ function GenerateCarModelsFilter(carmodels) {
   // Add a chip per unique car model
   carmodels.forEach(c => {
     const safeText = String(c).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // Check if this car model is VIP (includes VIP/تشریفات or specific VIP car models)
+    const isVipCar = c && (c.includes('VIP') || c.includes('vip') || c.includes('تشریفات') ||
+                          c.includes('آریو') || c.includes('اکسنت') || c.includes('جیلی') ||
+                          c.includes('کمری') || c.includes('سفران') || c.includes('سوناتا'));
+    const vipBadge = isVipCar ? '<img src="/vip_badge.png" style="height:16px;" class="ms-1" />' : '';
     $container.append(
-      `<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill car-chip" data-carmodel="${safeText}">${safeText}</button>`
+      `<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill car-chip" data-carmodel="${safeText}">${safeText}${vipBadge}</button>`
     );
   });
 }

@@ -15,6 +15,44 @@
   transition: ease-out 300ms all;
 }
 
+/* Scrollable origin and destination dropdowns - limit to ~10 items */
+.dropdown-menu.origin_location,
+.dropdown-menu.destination_location {
+  max-height: 380px !important; /* Approximately 10 items at ~38px each */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Custom scrollbar styling for better UX */
+.dropdown-menu.origin_location::-webkit-scrollbar,
+.dropdown-menu.destination_location::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-menu.origin_location::-webkit-scrollbar-track,
+.dropdown-menu.destination_location::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.dropdown-menu.origin_location::-webkit-scrollbar-thumb,
+.dropdown-menu.destination_location::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dropdown-menu.origin_location::-webkit-scrollbar-thumb:hover,
+.dropdown-menu.destination_location::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Firefox scrollbar styling */
+.dropdown-menu.origin_location,
+.dropdown-menu.destination_location {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
 .locationicon {
   position: unset !important;
   display: unset !important;

@@ -262,14 +262,41 @@ namespace Application.Services.MrShooferORS
           var c1 = TryGetString(obj,
             "Cityone", "cityone", "CityOne", "cityOne", "city_one",
             "origin", "originCity", "fromCity", "from", "startCity", "originCityName", "cityOneName",
-            "city_name", "from_city", "source");
+            "city_name", "from_city", "source", "origin_city_name", "originName");
           var c2 = TryGetString(obj,
             "Citytwo", "citytwo", "CityTwo", "cityTwo", "city_two",
             "destination", "destinationCity", "toCity", "to", "endCity", "destinationCityName", "cityTwoName",
-            "dest_city", "destination_city", "target");
+            "dest_city", "destination_city", "target", "destination_city_name", "destinationName");
 
-          var id1 = TryGetInt(obj, "CityoneId", "cityoneid", "cityOneId", "CityOneId", "originCityId", "fromCityId", "city_one_id");
-          var id2 = TryGetInt(obj, "CitytwoId", "citytwoid", "cityTwoId", "CityTwoId", "destinationCityId", "toCityId", "city_two_id");
+          // Enhanced ID extraction with more property name candidates
+          var id1 = TryGetInt(obj, 
+            "CityoneId", "cityoneid", "cityOneId", "CityOneId", 
+            "originCityId", "fromCityId", "city_one_id", "origin_city_id",
+            "originId", "origin_id", "fromId", "from_id", "startCityId", "start_city_id",
+            "id1", "cityId1", "city_id_1");
+          var id2 = TryGetInt(obj, 
+            "CitytwoId", "citytwoid", "cityTwoId", "CityTwoId", 
+            "destinationCityId", "toCityId", "city_two_id", "destination_city_id",
+            "destinationId", "destination_id", "toId", "to_id", "endCityId", "end_city_id",
+            "id2", "cityId2", "city_id_2");
+
+          // If IDs are in nested objects, try to extract them
+          if (!id1.HasValue)
+          {
+            var originObj = TryGetObject(obj, "origin", "originCity", "from", "cityOne", "Cityone");
+            if (originObj != null)
+            {
+              id1 = TryGetInt(originObj, "id", "cityId", "city_id", "Id", "ID");
+            }
+          }
+          if (!id2.HasValue)
+          {
+            var destObj = TryGetObject(obj, "destination", "destinationCity", "to", "cityTwo", "Citytwo");
+            if (destObj != null)
+            {
+              id2 = TryGetInt(destObj, "id", "cityId", "city_id", "Id", "ID");
+            }
+          }
 
           if (!string.IsNullOrWhiteSpace(c1) && !string.IsNullOrWhiteSpace(c2))
           {
@@ -279,6 +306,19 @@ namespace Application.Services.MrShooferORS
       }
 
       return list;
+    }
+
+    private static JsonObject? TryGetObject(JsonObject obj, params string[] candidates)
+    {
+      foreach (var name in candidates)
+      {
+        var prop = obj.FirstOrDefault(kvp => string.Equals(kvp.Key, name, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(prop.Key) && prop.Value is JsonObject childObj)
+        {
+          return childObj;
+        }
+      }
+      return null;
     }
 
     private static string NormalizeCity(string? s)

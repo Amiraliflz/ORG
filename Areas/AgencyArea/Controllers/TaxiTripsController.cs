@@ -78,23 +78,58 @@ namespace Application.Areas.AgencyArea
       var originKey = NormalizeCity(originstring);
       var destKey = NormalizeCity(destinationstring);
 
-      if (!normMap.TryGetValue(originKey, out var origin_id) || !normMap.TryGetValue(destKey, out var destination_id))
+      int origin_id = 0, destination_id = 0;
+      
+      // First try static map
+      normMap.TryGetValue(originKey, out origin_id);
+      normMap.TryGetValue(destKey, out destination_id);
+      
+      // If either ID is missing, try the dynamic API map
+      if (origin_id == 0 || destination_id == 0)
       {
-        var dynamicMap = await _mrShooferAPIClient.GetCityNameIdMapAsync();
-        if (!normMap.TryGetValue(originKey, out origin_id)) dynamicMap.TryGetValue(originKey, out origin_id);
-        if (!normMap.TryGetValue(destKey, out destination_id)) dynamicMap.TryGetValue(destKey, out destination_id);
-
-        if (origin_id == 0 || destination_id == 0)
+        try
         {
-          if (origin_id == 0) ModelState.AddModelError(nameof(originstring), $"شهر مبدا نامعتبر است: {originstring}");
-          if (destination_id == 0) ModelState.AddModelError(nameof(destinationstring), $"شهر مقصد نامعتبر است: {destinationstring}");
-          ViewBag.origin_city_text = originstring;
-          ViewBag.dest_city_text = destinationstring;
-          ViewBag.searchdate = searchdate;
-          return View();
+          var dynamicMap = await _mrShooferAPIClient.GetCityNameIdMapAsync();
+          if (origin_id == 0) dynamicMap.TryGetValue(originKey, out origin_id);
+          if (destination_id == 0) dynamicMap.TryGetValue(destKey, out destination_id);
         }
-        normMap[originKey] = origin_id;
-        normMap[destKey] = destination_id;
+        catch { /* ignore SSL/map issues */ }
+      }
+
+      // If still missing, try to get direction info directly from the available directions
+      if (origin_id == 0 || destination_id == 0)
+      {
+        try
+        {
+          var availableDirections = await _mrShooferAPIClient.GetAvaiableOTADirectionsAsync();
+          foreach (var dir in availableDirections)
+          {
+            var dirOriginKey = NormalizeCity(dir.Cityone);
+            var dirDestKey = NormalizeCity(dir.Citytwo);
+            
+            if (origin_id == 0 && dirOriginKey == originKey && dir.CityoneId.HasValue)
+              origin_id = dir.CityoneId.Value;
+            if (origin_id == 0 && dirDestKey == originKey && dir.CitytwoId.HasValue)
+              origin_id = dir.CitytwoId.Value;
+            if (destination_id == 0 && dirOriginKey == destKey && dir.CityoneId.HasValue)
+              destination_id = dir.CityoneId.Value;
+            if (destination_id == 0 && dirDestKey == destKey && dir.CitytwoId.HasValue)
+              destination_id = dir.CitytwoId.Value;
+              
+            if (origin_id != 0 && destination_id != 0) break;
+          }
+        }
+        catch { /* ignore */ }
+      }
+
+      if (origin_id == 0 || destination_id == 0)
+      {
+        if (origin_id == 0) ModelState.AddModelError(nameof(originstring), $"شهر مبدا نامعتبر است: {originstring}");
+        if (destination_id == 0) ModelState.AddModelError(nameof(destinationstring), $"شهر مقصد نامعتبر است: {destinationstring}");
+        ViewBag.origin_city_text = originstring;
+        ViewBag.dest_city_text = destinationstring;
+        ViewBag.searchdate = searchdate;
+        return View();
       }
 
       PersianDate pd = new PersianDate(searchdate?.Replace('-', '/') ?? string.Empty);
@@ -177,15 +212,54 @@ namespace Application.Areas.AgencyArea
       var destKey = NormalizeCity(destinationstring);
 
       int origin_id = 0, destination_id = 0;
-      if (!normMap.TryGetValue(originKey, out origin_id) || !normMap.TryGetValue(destKey, out destination_id))
+      
+      // First try static map
+      normMap.TryGetValue(originKey, out origin_id);
+      normMap.TryGetValue(destKey, out destination_id);
+      
+      // If either ID is missing, try the dynamic API map
+      if (origin_id == 0 || destination_id == 0)
       {
         try
         {
           var dynamicMap = await _mrShooferAPIClient.GetCityNameIdMapAsync();
-          if (!normMap.TryGetValue(originKey, out origin_id)) dynamicMap.TryGetValue(originKey, out origin_id);
-          if (!normMap.TryGetValue(destKey, out destination_id)) dynamicMap.TryGetValue(destKey, out destination_id);
+          if (origin_id == 0) dynamicMap.TryGetValue(originKey, out origin_id);
+          if (destination_id == 0) dynamicMap.TryGetValue(destKey, out destination_id);
         }
-        catch { /* ignore SSL/map issues */ }
+        catch (Exception ex)
+        {
+          // Log but continue - we might still have one ID from static map
+          System.Diagnostics.Debug.WriteLine($"Failed to get dynamic city map: {ex.Message}");
+        }
+      }
+
+      // If still missing, try to get direction info directly from the available directions
+      if (origin_id == 0 || destination_id == 0)
+      {
+        try
+        {
+          var availableDirections = await _mrShooferAPIClient.GetAvaiableOTADirectionsAsync();
+          foreach (var dir in availableDirections)
+          {
+            var dirOriginKey = NormalizeCity(dir.Cityone);
+            var dirDestKey = NormalizeCity(dir.Citytwo);
+            
+            if (origin_id == 0 && dirOriginKey == originKey && dir.CityoneId.HasValue)
+              origin_id = dir.CityoneId.Value;
+            if (origin_id == 0 && dirDestKey == originKey && dir.CitytwoId.HasValue)
+              origin_id = dir.CitytwoId.Value;
+            if (destination_id == 0 && dirOriginKey == destKey && dir.CityoneId.HasValue)
+              destination_id = dir.CityoneId.Value;
+            if (destination_id == 0 && dirDestKey == destKey && dir.CitytwoId.HasValue)
+              destination_id = dir.CitytwoId.Value;
+              
+            if (origin_id != 0 && destination_id != 0) break;
+          }
+        }
+        catch (Exception ex)
+        {
+          System.Diagnostics.Debug.WriteLine($"Failed to get available directions for ID lookup: {ex.Message}");
+        }
       }
 
       if (origin_id == 0)

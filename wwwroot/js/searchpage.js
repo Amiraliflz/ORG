@@ -178,11 +178,14 @@ function FetchSupportedCities() {
 }
 
 function intersectDirectionsWithSupported() {
+  // Skip filtering if supportedKeys is empty or smaller than API directions
+  // The API (AvailableDirections) is the source of truth for available cities
+  // We only use supportedKeys for validation fallback, not to restrict the city list
   if (!supportedKeys || supportedKeys.size === 0) return;
-  directions = directions.filter(d => supportedKeys.has(d.Cityone) && supportedKeys.has(d.Citytwo));
-  const cities = new Set();
-  directions.forEach(d => { cities.add(d.Cityone); cities.add(d.Citytwo); });
-  originKeys = Array.from(cities);
+  
+  // Don't filter - API directions should be the primary source
+  // The supportedKeys from DirectionsRepository is just a static fallback list
+  // Filtering would remove valid cities that the API supports but aren't in the hardcoded list
 }
 
 async function FetchTrips() {
@@ -199,8 +202,9 @@ async function FetchTrips() {
 
   const oKey = normalize(toPersianGuess(origin));
   const dKey = normalize(toPersianGuess(destination));
-  const isOriginValid = originKeys.includes(oKey) && (!supportedKeys.size || supportedKeys.has(oKey));
-  const isDestValid = originKeys.includes(dKey) && (!supportedKeys.size || supportedKeys.has(dKey));
+  // Validate only against originKeys (from API), not the restrictive supportedKeys
+  const isOriginValid = originKeys.includes(oKey);
+  const isDestValid = originKeys.includes(dKey);
   if (!isOriginValid || !isDestValid) {
     const msg = !isOriginValid ? `شهر مبدا نامعتبر است: ${origin}` : `شهر مقصد نامعتبر است: ${destination}`;
     // Show error in trips-container instead of dropdown list

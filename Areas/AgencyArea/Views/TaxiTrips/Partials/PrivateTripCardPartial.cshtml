@@ -1,5 +1,12 @@
 @model Application.Services.MrShooferORS.SearchedTrip
 
+@{
+    // Check if this is a VIP car (taxiSupervisorID == 7 OR carModelName contains VIP/تشریفات)
+    bool isVipCar = Model.taxiSupervisorID == 7 || 
+                    (!string.IsNullOrEmpty(Model.carModelName) && 
+                     (Model.carModelName.Contains("VIP", StringComparison.OrdinalIgnoreCase) || 
+                      Model.carModelName.Contains("تشریفات")));
+}
 
 @if (Model.tripTypeID == Application.Services.MrShooferORS.TripType.OnlyPrivate)
 {
@@ -10,7 +17,7 @@
 
                 <div>
                     <span class="badge bg-label-secondary rounded-pill carmodel"> @Model.carModelName </span>
-                    @if (Model.taxiSupervisorID == 7)
+                    @if (isVipCar)
                     {
                         <img src="/vip_badge.png" style="height:22px;" class="ms-1" />
                     }
