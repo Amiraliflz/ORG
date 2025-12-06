@@ -1,0 +1,20 @@
+[Unit]
+Description=ASP.NET Core Razor Pages App
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/application
+ExecStart=/usr/bin/dotnet /var/www/application/Application.dll
+Restart=always
+# Environment
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://0.0.0.0:5000
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=application
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
