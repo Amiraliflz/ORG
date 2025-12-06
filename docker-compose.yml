@@ -9,4 +9,4 @@ services:
       - '5050:80' # Map container port 80 to host port 5050
     environment:
       - ASPNETCORE_URLS=http://+:80
-      - ASPNETCORE_ENVIRONMENT=Development  # Temporarily enable to see detailed errors
+      - ASPNETCORE_ENVIRONMENT=Production
