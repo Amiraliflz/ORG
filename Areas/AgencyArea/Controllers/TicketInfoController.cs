@@ -3,7 +3,7 @@ using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using Application.Models;
 
 namespace Application.Areas.AgencyArea
@@ -22,22 +22,20 @@ namespace Application.Areas.AgencyArea
 
     public async Task<IActionResult> Index()
     {
-
-      var agency = context.Agencies
-        .Where(a => a.IdentityUser.UserName == User.Identity.Name)
+      var agency = await context.Agencies
+        .Include(a => a.IdentityUser)
         .Include(a => a.SoldTickets)
-        .First();
+        .FirstOrDefaultAsync(a => a.IdentityUser.UserName == User.Identity?.Name);
 
-      await context.Entry(agency)
-        .Collection(a => a.SoldTickets)
-        .LoadAsync();
+      if (agency == null)
+      {
+        // No agency found for the current user; show empty list gracefully
+        ViewBag.tickets = new List<Ticket>();
+        return View();
+      }
 
-      var tickets = agency.SoldTickets;
-
-
-
+      var tickets = agency.SoldTickets ?? new List<Ticket>();
       ViewBag.tickets = tickets.OrderByDescending(t => t.RegisteredAt).ToList();
-
 
       return View();
     }
@@ -47,7 +45,11 @@ namespace Application.Areas.AgencyArea
     public async Task<IActionResult> Filter(string datesFilter)
     {
       // Date filters
-      string[] date_strings = datesFilter.Replace(" ", "").Split('-');
+      string[] date_strings = (datesFilter ?? string.Empty).Replace(" ", "").Split('-');
+      if (date_strings.Length < 2)
+      {
+        return RedirectToAction(nameof(Index));
+      }
 
       DateTime startDate = new PersianDate(date_strings[0]).ToDateTime();
       startDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, 0, 0, 0);
@@ -55,29 +57,22 @@ namespace Application.Areas.AgencyArea
       DateTime endDate = new PersianDate(date_strings[1]).ToDateTime();
       endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 23, 59, 59);
 
-
-
-      var agency = context.Agencies
-        .Where(a => a.IdentityUser.UserName == User.Identity.Name)
+      var agency = await context.Agencies
+        .Include(a => a.IdentityUser)
         .Include(a => a.SoldTickets)
-        .First();
+        .FirstOrDefaultAsync(a => a.IdentityUser.UserName == User.Identity?.Name);
 
-      await context.Entry(agency)
-        .Collection(a => a.SoldTickets)
-        .LoadAsync();
+      if (agency == null)
+      {
+        ViewBag.tickets = new List<Ticket>();
+        return View("Index");
+      }
 
-      var tickets = agency.SoldTickets.AsQueryable();
-
-
-      tickets = FilterTickets_by_date(tickets, startDate, endDate);
-
+      var ticketsQuery = agency.SoldTickets.AsQueryable();
+      ticketsQuery = FilterTickets_by_date(ticketsQuery, startDate, endDate);
 
       ViewBag.dateFilter = datesFilter;
-
-
-      ViewBag.tickets = tickets.ToList();
-      ViewBag.tickets = tickets.OrderByDescending(t => t.RegisteredAt).ToList();
-
+      ViewBag.tickets = ticketsQuery.OrderByDescending(t => t.RegisteredAt).ToList();
 
       return View("Index");
     }
