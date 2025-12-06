@@ -98,7 +98,11 @@ var app = builder.Build();
 
 app.UseRateLimiter();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+  app.UseDeveloperExceptionPage();
+}
+else
 {
   app.UseExceptionHandler("/Home/Error");
   app.UseHsts();

@@ -24,5 +24,16 @@ namespace Application.Data
     {
       base.OnModelCreating(modelBuilder);
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+      base.OnConfiguring(optionsBuilder);
+    }
+
+    static AppDbContext()
+    {
+      // Configure Npgsql to use timestamp without time zone for DateTime
+      AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+    }
   }
 }
