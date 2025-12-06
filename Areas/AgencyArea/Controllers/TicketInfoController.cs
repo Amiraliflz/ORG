@@ -22,10 +22,12 @@ namespace Application.Areas.AgencyArea
 
     public async Task<IActionResult> Index()
     {
+      var username = User?.Identity != null ? User.Identity.Name : null;
+
       var agency = await context.Agencies
         .Include(a => a.IdentityUser)
         .Include(a => a.SoldTickets)
-        .FirstOrDefaultAsync(a => a.IdentityUser.UserName == User.Identity?.Name);
+        .FirstOrDefaultAsync(a => a.IdentityUser.UserName == username);
 
       if (agency == null)
       {
@@ -57,10 +59,12 @@ namespace Application.Areas.AgencyArea
       DateTime endDate = new PersianDate(date_strings[1]).ToDateTime();
       endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 23, 59, 59);
 
+      var username = User?.Identity != null ? User.Identity.Name : null;
+
       var agency = await context.Agencies
         .Include(a => a.IdentityUser)
         .Include(a => a.SoldTickets)
-        .FirstOrDefaultAsync(a => a.IdentityUser.UserName == User.Identity?.Name);
+        .FirstOrDefaultAsync(a => a.IdentityUser.UserName == username);
 
       if (agency == null)
       {
