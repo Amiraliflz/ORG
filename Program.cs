@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.RateLimiting;
 using System.Text.Encodings.Web;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -100,7 +102,8 @@ app.UseRateLimiter();
 
 if (!app.Environment.IsDevelopment())
 {
-  app.UseExceptionHandler("/Home/Error");
+  // Route unhandled exceptions to our error endpoint that maps to existing views
+  app.UseExceptionHandler("/Error/500");
   app.UseHsts();
 }
 
