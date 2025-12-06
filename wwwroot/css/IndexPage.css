@@ -299,6 +299,7 @@
   initial-value: 16%
 }
 
+
 @property --s-end-4 {
   syntax: '<percentage>';
   inherits: false;
