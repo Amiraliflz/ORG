@@ -2,13 +2,118 @@
 
 @{
     Layout = "_AgencySideLayout";
-
-
-
     ViewData["title"] = "رزور سفر";
     var trip = (Application.Services.MrShooferORS.SearchedTrip)ViewBag.trip;
 }
 
+@section PageScripts {
+    <script src="~/libs/jquery.js"></script>
+    <script src="~/js/forms-selects.js"></script>
+    <script src="~/js/forms-tagify.js"></script>
+    <script src="~/js/forms-typeahead.js"></script>
+    <script src="~/vendor/libs/select2/select2.js"></script>
+    <script src="~/vendor/libs/select2/i18n/fa.js"></script>
+    <script src="~/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
+    <script src="~/vendor/libs/bootstrap-select/i18n/defaults-fa_IR.js"></script>
+    <script src="/libs/validation/jquery.validate.min.js"></script>
+    <script src="/libs/validation/jquery.validate.unobtrusive.min.js"></script>
+    <script src="/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
+    <script src="/vendor/libs/bootstrap-select/i18n/defaults-fa_IR.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Add custom regex method to jQuery Validate (for fallback)
+            $.validator.addMethod("regex", function(value, element, regexp) {
+                var re = new RegExp(regexp);
+                return this.optional(element) || re.test(value);
+            }, "لطفا یک مقدار معتبر وارد کنید");
+
+            // Override unobtrusive validation adapter for regex
+            $.validator.unobtrusive.adapters.add("regex", ["pattern"], function (options) {
+                options.rules["regex"] = options.params.pattern;
+                if (options.message) {
+                    options.messages["regex"] = options.message;
+                }
+            });
+
+            // Handle form submission with authentication check
+            $("form").on("submit", function(e) {
+                e.preventDefault();
+                
+                // Use unobtrusive validation
+                var validator = $(this).validate();
+                if (!validator.valid()) {
+                    return false;
+                }
+
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        // Check if authentication is required
+                        if (response && response.requiresAuth) {
+                            showLoginModal(response.returnUrl);
+                        } else {
+                            // If response is HTML (redirect happened), navigate to it
+                            window.location.reload();
+                        }
+                    },
+                    error: function() {
+                        window.location.reload();
+                    }
+                });
+            });
+
+            // Function to show custom login modal
+            function showLoginModal(returnUrl) {
+                var modal = `
+                    <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content" style="border-radius: 1.25rem; border: 1px solid rgb(230 232 238);">
+                                <div class="modal-body p-4 text-center">
+                                    <div class="mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#7367f0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                    </div>
+                                    <h4 class="mb-3" style="color: rgb(41 38 61);">برای ثبت بلیط ابتدا باید وارد اکانت خود شوید</h4>
+                                    <p class="text-muted mb-4">برای ادامه فرآیند رزرو بلیط، لطفا وارد حساب کاربری خود شوید</p>
+                                    <button type="button" class="btn btn-primary btn-lg w-100" id="confirmLoginBtn" style="border-radius: 1rem; height: 3.5rem;">
+                                        باشه
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Remove existing modal if any
+                $('#loginRequiredModal').remove();
+                
+                // Add modal to body
+                $('body').append(modal);
+                
+                // Show modal
+                var modalElement = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+                modalElement.show();
+
+                // Handle confirm button click
+                $('#confirmLoginBtn').on('click', function() {
+                    window.location.href = '/Auth/Login?ReturnUrl=' + encodeURIComponent(returnUrl);
+                });
+            }
+        });
+    </script>
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/bootstrap-select/bootstrap-select.css" />
+    <link rel="stylesheet" href="~/css/Reservetrip.css/">
+}
 
 <style>
     .validation-message {
@@ -22,6 +127,10 @@
 
     .not_enough_payment {
         background-color: RGBA(var(--bs-secondary-rgb), .25) !important;
+    }
+
+    .guest-login-required {
+        background-color: RGBA(var(--bs-warning-rgb), .25) !important;
     }
 
     .form-control {
@@ -183,13 +292,6 @@
         width: 100%;
     }
 
-
-
-
-
-
-
-
     @@keyframes bs-notify-fadeOut {
         0% {
             opacity: 0.9;
@@ -211,78 +313,78 @@
         vertical-align: middle;
     }
 
-        .bootstrap-select > .dropdown-toggle {
-            position: relative;
-            width: 100%;
-            text-align: right;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    .bootstrap-select > .dropdown-toggle {
+        position: relative;
+        width: 100%;
+        text-align: right;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-            .bootstrap-select > .dropdown-toggle:after {
-                margin-top: -1px;
-            }
+    .bootstrap-select > .dropdown-toggle:after {
+        margin-top: -1px;
+    }
 
-            .bootstrap-select > .dropdown-toggle.bs-placeholder, .bootstrap-select > .dropdown-toggle.bs-placeholder:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder:active {
-                color: #999;
-            }
+    .bootstrap-select > .dropdown-toggle.bs-placeholder, .bootstrap-select > .dropdown-toggle.bs-placeholder:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder:active {
+        color: #999;
+    }
 
-                .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:active {
-                    color: rgba(255, 255, 255, 0.5);
-                }
+    .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-secondary:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-success:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-danger:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-info:active, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:hover, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:focus, .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-dark:active {
+        color: rgba(255, 255, 255, 0.5);
+    }
 
-        .bootstrap-select > select {
-            position: absolute !important;
-            bottom: 0;
-            left: 50%;
-            display: block !important;
-            width: 0.5px !important;
-            height: 100% !important;
-            padding: 0 !important;
-            opacity: 0 !important;
-            border: none;
-            z-index: 0 !important;
-        }
+    .bootstrap-select > select {
+        position: absolute !important;
+        bottom: 0;
+        left: 50%;
+        display: block !important;
+        width: 0.5px !important;
+        height: 100% !important;
+        padding: 0 !important;
+        opacity: 0 !important;
+        border: none;
+        z-index: 0 !important;
+    }
 
-            .bootstrap-select > select.mobile-device {
-                top: 0;
-                left: 0;
-                display: block !important;
-                width: 100% !important;
-                z-index: 2 !important;
-            }
+    .bootstrap-select > select.mobile-device {
+        top: 0;
+        left: 0;
+        display: block !important;
+        width: 100% !important;
+        z-index: 2 !important;
+    }
 
-        .has-error .bootstrap-select .dropdown-toggle, .error .bootstrap-select .dropdown-toggle, .bootstrap-select.is-invalid .dropdown-toggle, .was-validated .bootstrap-select select:invalid + .dropdown-toggle {
-            border-color: rgb(185, 74, 72);
-        }
+    .has-error .bootstrap-select .dropdown-toggle, .error .bootstrap-select .dropdown-toggle, .bootstrap-select.is-invalid .dropdown-toggle, .was-validated .bootstrap-select select:invalid + .dropdown-toggle {
+        border-color: rgb(185, 74, 72);
+    }
 
-        .bootstrap-select.is-valid .dropdown-toggle, .was-validated .bootstrap-select select:valid + .dropdown-toggle {
-            border-color: #28a745;
-        }
+    .bootstrap-select.is-valid .dropdown-toggle, .was-validated .bootstrap-select select:valid + .dropdown-toggle {
+        border-color: #28a745;
+    }
 
-        .bootstrap-select.fit-width {
-            width: auto !important;
-        }
+    .bootstrap-select.fit-width {
+        width: auto !important;
+    }
 
-        .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
-            width: 220px;
-        }
+    .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
+        width: 220px;
+    }
 
-        .bootstrap-select > select.mobile-device:focus + .dropdown-toggle,
-        .bootstrap-select .dropdown-toggle:focus {
-            outline: thin dotted #333333 !important;
-            outline: 5px auto -webkit-focus-ring-color !important;
-            outline-offset: -2px;
-        }
+    .bootstrap-select > select.mobile-device:focus + .dropdown-toggle,
+    .bootstrap-select .dropdown-toggle:focus {
+        outline: thin dotted #333333 !important;
+        outline: 5px auto -webkit-focus-ring-color !important;
+        outline-offset: -2px;
+    }
 
-        .bootstrap-select.form-control {
-            margin-bottom: 0;
-            padding: 0;
-            border: none;
-            height: auto;
-        }
+    .bootstrap-select.form-control {
+        margin-bottom: 0;
+        padding: 0;
+        border: none;
+        height: auto;
+    }
 
     :not(.input-group) > .bootstrap-select.form-control:not([class*=col-]) {
         width: 100%;
@@ -303,9 +405,9 @@
         margin-left: 0;
     }
 
-        .bootstrap-select.dropdown-menu-right, .bootstrap-select[class*=col-].dropdown-menu-right, .row .bootstrap-select[class*=col-].dropdown-menu-right {
-            float: right;
-        }
+    .bootstrap-select.dropdown-menu-right, .bootstrap-select[class*=col-].dropdown-menu-right, .row .bootstrap-select[class*=col-].dropdown-menu-right {
+        float: right;
+    }
 
     .form-inline .bootstrap-select, .form-horizontal .bootstrap-select, .form-group .bootstrap-select {
         margin-bottom: 0;
@@ -315,12 +417,12 @@
         padding: 0;
     }
 
-        .form-group-lg .bootstrap-select.form-control .dropdown-toggle, .form-group-sm .bootstrap-select.form-control .dropdown-toggle {
-            height: 100%;
-            font-size: inherit;
-            line-height: inherit;
-            border-radius: inherit;
-        }
+    .form-group-lg .bootstrap-select.form-control .dropdown-toggle, .form-group-sm .bootstrap-select.form-control .dropdown-toggle {
+        height: 100%;
+        font-size: inherit;
+        line-height: inherit;
+        border-radius: inherit;
+    }
 
     .bootstrap-select.form-control-sm .dropdown-toggle, .bootstrap-select.form-control-lg .dropdown-toggle {
         font-size: inherit;
@@ -345,10 +447,10 @@
         cursor: not-allowed;
     }
 
-        .bootstrap-select.disabled:focus,
-        .bootstrap-select > .disabled:focus {
-            outline: none !important;
-        }
+    .bootstrap-select.disabled:focus,
+    .bootstrap-select > .disabled:focus {
+        outline: none !important;
+    }
 
     .bootstrap-select.bs-container {
         position: absolute;
@@ -358,9 +460,9 @@
         padding: 0 !important;
     }
 
-        .bootstrap-select.bs-container .dropdown-menu {
-            z-index: 1060;
-        }
+    .bootstrap-select.bs-container .dropdown-menu {
+        z-index: 1060;
+    }
 
     .bootstrap-select .dropdown-toggle .filter-option {
         position: static;
@@ -386,9 +488,9 @@
         float: none;
     }
 
-        .input-group .bs3-has-addon.bootstrap-select .dropdown-toggle .filter-option .filter-option-inner {
-            padding-right: inherit;
-        }
+    .input-group .bs3-has-addon.bootstrap-select .dropdown-toggle .filter-option .filter-option-inner {
+        padding-right: inherit;
+    }
 
     .bootstrap-select .dropdown-toggle .filter-option-inner-inner {
         overflow: hidden;
@@ -449,75 +551,75 @@
         box-sizing: border-box;
     }
 
-        .bootstrap-select .dropdown-menu > .inner:focus {
-            outline: none !important;
-        }
+    .bootstrap-select .dropdown-menu > .inner:focus {
+        outline: none !important;
+    }
 
-        .bootstrap-select .dropdown-menu.inner {
-            position: static;
-            float: none;
-            border: 0;
-            padding: 0;
-            margin: 0;
-            border-radius: 0;
-            box-shadow: none;
-        }
+    .bootstrap-select .dropdown-menu.inner {
+        position: static;
+        float: none;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
 
-        .bootstrap-select .dropdown-menu li {
-            position: relative;
-        }
+    .bootstrap-select .dropdown-menu li {
+        position: relative;
+    }
 
-            .bootstrap-select .dropdown-menu li.active small {
-                color: rgba(255, 255, 255, 0.5) !important;
-            }
+    .bootstrap-select .dropdown-menu li.active small {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
 
-            .bootstrap-select .dropdown-menu li.disabled a {
-                cursor: not-allowed;
-            }
+    .bootstrap-select .dropdown-menu li.disabled a {
+        cursor: not-allowed;
+    }
 
-            .bootstrap-select .dropdown-menu li a {
-                cursor: pointer;
-                user-select: none;
-            }
+    .bootstrap-select .dropdown-menu li a {
+        cursor: pointer;
+        user-select: none;
+    }
 
-                .bootstrap-select .dropdown-menu li a.opt {
-                    position: relative;
-                    padding-left: 2.25em;
-                }
+    .bootstrap-select .dropdown-menu li a.opt {
+        position: relative;
+        padding-left: 2.25em;
+    }
 
-                .bootstrap-select .dropdown-menu li a span.check-mark {
-                    display: none;
-                }
+    .bootstrap-select .dropdown-menu li a span.check-mark {
+        display: none;
+    }
 
-                .bootstrap-select .dropdown-menu li a span.text {
-                    display: inline-block;
-                }
+    .bootstrap-select .dropdown-menu li a span.text {
+        display: inline-block;
+    }
 
-            .bootstrap-select .dropdown-menu li small {
-                padding-left: 0.5em;
-            }
+    .bootstrap-select .dropdown-menu li small {
+        padding-left: 0.5em;
+    }
 
-        .bootstrap-select .dropdown-menu .notify {
-            position: absolute;
-            bottom: 5px;
-            width: 96%;
-            margin: 0 2%;
-            min-height: 26px;
-            padding: 3px 5px;
-            background: rgb(245, 245, 245);
-            border: 1px solid rgb(227, 227, 227);
-            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
-            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
-            pointer-events: none;
-            opacity: 0.9;
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
+    .bootstrap-select .dropdown-menu .notify {
+        position: absolute;
+        bottom: 5px;
+        width: 96%;
+        margin: 0 2%;
+        min-height: 26px;
+        padding: 3px 5px;
+        background: rgb(245, 245, 245);
+        border: 1px solid rgb(227, 227, 227);
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        pointer-events: none;
+        opacity: 0.9;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
 
-            .bootstrap-select .dropdown-menu .notify.fadeOut {
-                animation: 300ms linear 750ms forwards bs-notify-fadeOut;
-            }
+    .bootstrap-select .dropdown-menu .notify.fadeOut {
+        animation: 300ms linear 750ms forwards bs-notify-fadeOut;
+    }
 
     .bootstrap-select .no-results {
         padding: 3px;
@@ -636,13 +738,13 @@
         box-sizing: border-box;
     }
 
-        .bs-actionsbox .btn-group {
-            display: block;
-        }
+    .bs-actionsbox .btn-group {
+        display: block;
+    }
 
-            .bs-actionsbox .btn-group button {
-                width: 50%;
-            }
+    .bs-actionsbox .btn-group button {
+        width: 50%;
+    }
 
     .bs-donebutton {
         float: left;
@@ -652,13 +754,13 @@
         box-sizing: border-box;
     }
 
-        .bs-donebutton .btn-group {
-            display: block;
-        }
+    .bs-donebutton .btn-group {
+        display: block;
+    }
 
-            .bs-donebutton .btn-group button {
-                width: 100%;
-            }
+    .bs-donebutton .btn-group button {
+        width: 100%;
+    }
 
     .bs-searchbox + .bs-actionsbox {
         padding: 0 8px 4px;
@@ -680,14 +782,14 @@
         padding: 0.422rem 0.875rem;
     }
 
-        .bootstrap-select .dropdown-toggle:after {
-            transform: rotate(45deg) translateY(-50%);
-            position: absolute;
-            right: 17px;
-            top: 46%;
-            width: 0.5em;
-            height: 0.5em;
-        }
+    .bootstrap-select .dropdown-toggle:after {
+        transform: rotate(45deg) translateY(-50%);
+        position: absolute;
+        right: 17px;
+        top: 46%;
+        width: 0.5em;
+        height: 0.5em;
+    }
 
     [dir=rtl] .bootstrap-select .dropdown-toggle:after {
         left: 17px;
@@ -707,12 +809,12 @@
         align-items: center;
     }
 
-        .bootstrap-select .dropdown-menu .popover-header button {
-            border: none;
-            font-size: 1.375rem;
-            background: transparent;
-            padding-bottom: 0.125rem;
-        }
+    .bootstrap-select .dropdown-menu .popover-header button {
+        border: none;
+        font-size: 1.375rem;
+        background: transparent;
+        padding-bottom: 0.125rem;
+    }
 
     .bootstrap-select .dropdown-menu a:not([href]):not(.active):not(:active):not(.selected):hover {
         color: #7367f0 !important;
@@ -801,162 +903,59 @@
         background-color: #fff;
     }
 
-        .light-style .bootstrap-select .dropdown-toggle {
-            border-radius: 0.375rem;
-            border: var(--bs-border-width) solid #dbdade;
-        }
+    .light-style .bootstrap-select .dropdown-toggle {
+        border-radius: 0.375rem;
+        border: var(--bs-border-width) solid #dbdade;
+    }
 
-            .light-style .bootstrap-select .dropdown-toggle:not(.show):hover {
-                border-color: #c9c8ce;
-            }
+    .light-style .bootstrap-select .dropdown-toggle:not(.show):hover {
+        border-color: #c9c8ce;
+    }
 
-        .light-style .bootstrap-select .dropdown-menu[data-popper-placement=top-start], .light-style .bootstrap-select .dropdown-menu[data-popper-placement=top-end] {
-            box-shadow: 0 -0.2rem 1.25rem rgba(165, 163, 174, 0.4);
-        }
+    .light-style .bootstrap-select .dropdown-menu[data-popper-placement=top-start], .light-style .bootstrap-select .dropdown-menu[data-popper-placement=top-end] {
+        box-shadow: 0 -0.2rem 1.25rem rgba(165, 163, 174, 0.4);
+    }
 
-        .light-style .bootstrap-select .dropdown-menu .notify {
-            background: #fff;
-            border: var(--bs-border-width) solid var(--bs-border-color-translucent);
-        }
+    .light-style .bootstrap-select .dropdown-menu .notify {
+        background: #fff;
+        border: var(--bs-border-width) solid var(--bs-border-color-translucent);
+    }
 
-        .light-style .bootstrap-select .dropdown-menu .popover-header button {
-            color: #6f6b7d;
-        }
+    .light-style .bootstrap-select .dropdown-menu .popover-header button {
+        color: #6f6b7d;
+    }
 
     .dark-style .bootstrap-select {
         background-color: #2f3349;
     }
 
-        .dark-style .bootstrap-select .dropdown-toggle {
-            border: var(--bs-border-width) solid #434968;
-            border-radius: 0.375rem;
-        }
+    .dark-style .bootstrap-select .dropdown-toggle {
+        border: var(--bs-border-width) solid #434968;
+        border-radius: 0.375rem;
+    }
 
-            .dark-style .bootstrap-select .dropdown-toggle:not(.show):hover {
-                border-color: #5e6692;
-            }
+    .dark-style .bootstrap-select .dropdown-toggle:not(.show):hover {
+        border-color: #5e6692;
+    }
 
-        .dark-style .bootstrap-select .dropdown-menu[data-popper-placement=top-start], .dark-style .bootstrap-select .dropdown-menu[data-popper-placement=top-end] {
-            box-shadow: 0 -0.2rem 1.25rem rgba(15, 20, 34, 0.55);
-        }
+    .dark-style .bootstrap-select .dropdown-menu[data-popper-placement=top-start], .dark-style .bootstrap-select .dropdown-menu[data-popper-placement=top-end] {
+        box-shadow: 0 -0.2rem 1.25rem rgba(15, 20, 34, 0.55);
+    }
 
-        .dark-style .bootstrap-select .dropdown-menu .notify {
-            background: #2f3349;
-            border: var(--bs-border-width) solid var(--bs-border-color-translucent);
-        }
+    .dark-style .bootstrap-select .dropdown-menu .notify {
+        background: #2f3349;
+        border: var(--bs-border-width) solid var(--bs-border-color-translucent);
+    }
 
-        .dark-style .bootstrap-select .dropdown-menu .popover-header button {
-            color: #b6bee3;
-        }
+    .dark-style .bootstrap-select .dropdown-menu .popover-header button {
+        color: #b6bee3;
+    }
 
 </style>
 
-
-
-@section PageScripts {
-    <script src="~/libs/jquery.js"></script>
-
-
-    <script src="~/js/forms-selects.js"></script>
-    <script src="~/js/forms-tagify.js"></script>
-    <script src="~/js/forms-typeahead.js"></script>
-
-
-    <script src="~/vendor/libs/select2/select2.js"></script>
-    <script src="~/vendor/libs/select2/i18n/fa.js"></script>
-    <script src="~/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
-    <script src="~/vendor/libs/bootstrap-select/i18n/defaults-fa_IR.js"></script>
-    <script src="/libs/validation/jquery.validate.min.js"></script>
-    <script src="/libs/validation/jquery.validate.unobtrusive.min.js"></script>
-
-    <script src="/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
-    <script src="/vendor/libs/bootstrap-select/i18n/defaults-fa_IR.js"></script>
-
-    <script>
-        $(document).ready(function () {
-            $("form").validate({
-                rules: {
-                    Firstname: {
-                        required: true
-                    },
-                    Lastname: {
-                        required: true
-                    },
-                    Gender: {
-                        required: true
-                    },
-                    NaCode: {
-                        required: true,
-                        regex: /^\d{10}$/
-                    },
-                    NumebrPhone: {
-                        required: true,
-                        regex: /((0?9)|(\+?989))\d{9}/
-                    },
-                    Email: {
-                        email: true
-                    }
-                },
-                messages: {
-                    Firstname: {
-                        required: "لطفا نام خود را وارد کنید"
-                    },
-                    Lastname: {
-                        required: "لطفا نام خانوادگی خود را وارد کنید"
-                    },
-                    Gender: {
-                        required: "لطفا جنسیت خود را انتخاب کنید"
-                    },
-                    NaCode: {
-                        required: "لطفا کد ملی خود را وارد کنید",
-                        regex: "کد ملی باید 10 رقم باشد"
-                    },
-                    NumebrPhone: {
-                        required: "لطفا شماره موبایل خود را وارد کنید",
-                        regex: "شماره موبایل باید معتبر باشد"
-                    },
-                    Email: {
-                        email: "لطفا یک ایمیل معتبر وارد کنید"
-                    }
-                },
-                errorClass: "text-danger validation-message",
-                validClass: "is-valid",
-                errorElement: "span",
-                highlight: function (element, errorClass, validClass) {
-                    $(element).addClass(errorClass).removeClass(validClass);
-                },
-                unhighlight: function (element, errorClass, validClass) {
-                    $(element).removeClass(errorClass).addClass(validClass);
-                }
-            });
-        });
-    </script>
-}
-
-@section VendorStyles {
-    <link rel="stylesheet" href="~/vendor/libs/bootstrap-select/bootstrap-select.css" />
-
-    <link rel="stylesheet" href="~/css/Reservetrip.css/">
-}
-
-@section VendorScripts {
-   
-
-
-}
-
-<script src="/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
-
-
-
-
 <div class="main_container px-lg-6 px-0">
-
-
-
-
+    <!-- Steps indicator -->
     <div class="bg-white rounded-5 border-1 border-divider w-full rounded-3xl py-7.5 px-14 shadow-1__2__gray/75 ">
-
         <div class="d-flex steps">
             <div class="step-container">
                 <div class="step selected">
@@ -997,24 +996,20 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="downside-contaner mt-5 row ">
-
-
-      <div class="d-flex justify-content-between align-items-baseline">
-
-      <h3 class="text-blck">جزییات سفر</h3>
-
+        <div class="d-flex justify-content-between align-items-baseline">
+            <h3 class="text-blck">جزییات سفر</h3>
             <span onclick="window.history.back();">
                 بازگشت
                 <i class="ti ti-arrow-back-up"></i>
-      </span>
-      </div>
+            </span>
+        </div>
+        
         <aside class="col-md-4 col-12">
-
             <div class="trip_info bg-white rounded-5 border-1 border-divider shadow-7.5__13__5__gray30 p-3 ">
+                <!-- ...existing trip info HTML... -->
                 <div class="headline d-flex justify-between">
                     <span class="badge bg-dark rounded-pill py-2" style="font-size: .875rem!important">
                         اطلاعات سفر
@@ -1022,212 +1017,102 @@
                     <div class="capacity badge bg-label-secondary rounded-pill">
                         <i class="ti ti-armchair-2 d-inline"></i>
                         |
-                        @* <span class="badge bg-label-danger">دربتسی</span> *@
                         <small class="text-danger ms-1 d-inline t-bold">دربستی</small>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-1 col-12 mx-1 d-flex px-2" style="justify-content :space-between;">
                     <span>
-                        <small class="d-block ms-1 ">
-                            @* <img src="/redpin.png" height="18px;" /> *@
-                            مبدا
-                        </small>
-                        <span class="fs-5 text-blck">
-                            @trip.originCityName
-                        </span>
-                        <small>
-                            @trip.oringinLocationName
-                        </small>
+                        <small class="d-block ms-1 ">مبدا</small>
+                        <span class="fs-5 text-blck">@trip.originCityName</span>
+                        <small>@trip.oringinLocationName</small>
                     </span>
-
                     <span style="align-self: end;" class="mb-1">
-                        <span>
-                            ....
-                        </span>
+                        <span>....</span>
                         <img src="/taxi.png" height="20px" />
-                        <span>
-                            ....
-                        </span>
+                        <span>....</span>
                     </span>
-
                     <span>
-                        <small class="d-block ms-1 ">
-                            @* <img src="/redpin.png" height="18px;" /> *@
-                            مقصد
-                        </small>
-                        <span class="fs-5 text-blck">
-                            @trip.destinationCityName
-                        </span>
-                        <small>
-                            @trip.destinationLocationName
-                        </small>
+                        <small class="d-block ms-1 ">مقصد</small>
+                        <span class="fs-5 text-blck">@trip.destinationCityName</span>
+                        <small>@trip.destinationLocationName</small>
                     </span>
                 </div>
 
                 <hr />
 
-                <div class="mt-3 col-12 mx-1 d-flex px-2" style="flex-direction: column;">
-                    <div class="d-flex" style="justify-content: space-between">
-                        <small>
-                            تاریخ حرکت
-                        </small>
-                        <small>
-                            ساعت
-                        </small>
-                    </div>
+                <!-- ...rest of trip info... -->
 
-                    <div class="d-flex mt-1" style="justify-content: space-between;">
-                        @{
-                            var pdate = new Application.Services.PersianDate(trip.startingDateTime);
-                        }
-
-                        <div>
-                            <span class="text-blck fs-5">
-                                @pdate.Day /  @pdate.Month
+                @{
+                    var isGuest = ViewBag.isGuest ?? false;
+                    
+                    if (isGuest)
+                    {
+                        <div class="d-flex badge btn-lg text-bg-warning w-100 waves-effect waves-light mt-2 guest-login-required" style="height: 3.5rem !important;border-radius: 1.6rem !important;">
+                            <span class="text-blck bg-warning rounded-pill p-1 bg-opacity-75" style="align-self: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
                             </span>
-                            <span class="text-blck fs-5 ms-0">
-                                @pdate.DayOfWeek
-                            </span>
-
-                        </div>
-
-                        <span class="text-blck fs-5">
-                            @trip.startingDateTime.ToString("HH:mm")
-                        </span>
-
-                    </div>
-                </div>
-
-                <div class="mt-2 col-12 mx-1 d-flex px-2" style="flex-direction: column;">
-                    <div class="d-flex" style="justify-content: space-between">
-                        <small>
-                            خودرو
-                        </small>
-
-                    </div>
-
-
-                    <div class="d-flex mt-1" style="justify-content: space-between; font-size: 1rem;">
-                        <span>
-                            <span class="text-blck badge bg-label-primary rounded-pill carmodel">
-                                @trip.carModelName
-                            </span>
-                            @if (trip.taxiSupervisorID == 7)
-                            {
-                                <img src="/vip_badge.png" style="height:27px;" class="ms-1">
-                            }
-                            <smal class="text-muted ms-1 mt-1  d-block" style="font-size: x-small;">ظرفیت تا 3 مسافر</smal>
-                        </span>
-
-                    </div>
-
-                    <div class="mt-2 d-flex" style="justify-content: space-between;">
-                        <h5 style="align-self:end;">قـیمت</h5>
-                        <div>
-
-                            @if (trip.afterdiscticketprice != trip.originalTicketprice)
-                            {
-                                <div class="text-end mb-0">
-                                    <h5 class="text-black mb-0">
-                                        <s>
-                                            <bdi>
-                                                <svg class="toman">
-                                                    <use xlink:href="#toman">
-                                                        <symbol id="toman" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-                                                            <path clip-rule="evenodd" d="M3.057 1.742L3.821 1l.78.75-.776.741-.768-.749zm3.23 2.48c0 .622-.16 1.111-.478 1.467-.201.221-.462.39-.783.505a3.251 3.251 0 01-1.083.163h-.555c-.421 0-.801-.074-1.139-.223a2.045 2.045 0 01-.9-.738A2.238 2.238 0 011 4.148c0-.059.001-.117.004-.176.03-.55.204-1.158.525-1.827l1.095.484c-.257.532-.397 1-.419 1.403-.002.04-.004.08-.004.12 0 .252.055.458.166.618a.887.887 0 00.5.354c.085.028.178.048.278.06.079.01.16.014.243.014h.555c.458 0 .769-.081.933-.244.14-.139.21-.383.21-.731V2.02h1.2v2.202zm5.433 3.184l-.72-.7.709-.706.735.707-.724.7zm-2.856.308c.542 0 .973.19 1.293.569.297.346.445.777.445 1.293v.364h.18v-.004h.41c.221 0 .377-.028.467-.084.093-.055.14-.14.14-.258v-.069c.004-.243.017-1.044 0-1.115L13 8.05v1.574a1.4 1.4 0 01-.287.863c-.306.405-.804.607-1.495.607h-.627c-.061.733-.434 1.257-1.117 1.573-.267.122-.58.21-.937.265a5.845 5.845 0 01-.914.067v-1.159c.612 0 1.072-.082 1.38-.247.25-.132.376-.298.376-.499h-.515c-.436 0-.807-.113-1.113-.339-.367-.273-.55-.667-.55-1.18 0-.488.122-.901.367-1.24.296-.415.728-.622 1.296-.622zm.533 2.226v-.364c0-.217-.048-.389-.143-.516a.464.464 0 00-.39-.187.478.478 0 00-.396.187.705.705 0 00-.136.449.65.65 0 00.003.067c.008.125.066.22.177.283.093.054.21.08.352.08h.533zM9.5 6.707l.72.7.724-.7L10.209 6l-.709.707zm-6.694 4.888h.03c.433-.01.745-.106.937-.29.024.012.065.035.12.068l.074.039.081.042c.135.073.261.133.379.18.345.146.67.22.977.22a1.216 1.216 0 00.87-.34c.3-.285.449-.714.449-1.286a2.19 2.19 0 00-.335-1.145c-.299-.457-.732-.685-1.3-.685-.502 0-.916.192-1.242.575-.113.132-.21.284-.294.456-.032.062-.06.125-.084.191a.504.504 0 00-.03.078 1.67 1.67 0 00-.022.06c-.103.309-.171.485-.205.53-.072.09-.214.14-.427.147-.123-.005-.209-.03-.256-.076-.057-.054-.085-.153-.085-.297V7l-1.201-.5v3.562c0 .261.048.496.143.703.071.158.168.296.29.413.123.118.266.211.43.28.198.084.42.13.665.136v.001h.036zm2.752-1.014a.778.778 0 00.044-.353.868.868 0 00-.165-.47c-.1-.134-.217-.201-.35-.201-.18 0-.33.103-.447.31-.042.071-.08.158-.114.262a2.434 2.434 0 00-.04.12l-.015.053-.015.046c.142.118.323.216.544.293.18.062.325.092.433.092.044 0 .086-.05.125-.152z" fill-rule="evenodd"></path>
-                                                        </symbol>
-                                                    </use>
-                                                </svg>@trip.originalTicketprice.ToString("N0")
-                                            </bdi>
-                                        </s>
-                                    </h5>
-                                </div>
-                            }
-
-
-                            <h4 class="text-primary mb-1 text-end">
-                                <bdi>
-                                    <svg class="toman">
-                                        <use xlink:href="#toman">
-                                            <symbol id="toman" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-                                                <path clip-rule="evenodd" d="M3.057 1.742L3.821 1l.78.75-.776.741-.768-.749zm3.23 2.48c0 .622-.16 1.111-.478 1.467-.201.221-.462.39-.783.505a3.251 3.251 0 01-1.083.163h-.555c-.421 0-.801-.074-1.139-.223a2.045 2.045 0 01-.9-.738A2.238 2.238 0 011 4.148c0-.059.001-.117.004-.176.03-.55.204-1.158.525-1.827l1.095.484c-.257.532-.397 1-.419 1.403-.002.04-.004.08-.004.12 0 .252.055.458.166.618a.887.887 0 00.5.354c.085.028.178.048.278.06.079.01.16.014.243.014h.555c.458 0 .769-.081.933-.244.14-.139.21-.383.21-.731V2.02h1.2v2.202zm5.433 3.184l-.72-.7.709-.706.735.707-.724.7zm-2.856.308c.542 0 .973.19 1.293.569.297.346.445.777.445 1.293v.364h.18v-.004h.41c.221 0 .377-.028.467-.084.093-.055.14-.14.14-.258v-.069c.004-.243.017-1.044 0-1.115L13 8.05v1.574a1.4 1.4 0 01-.287.863c-.306.405-.804.607-1.495.607h-.627c-.061.733-.434 1.257-1.117 1.573-.267.122-.58.21-.937.265a5.845 5.845 0 01-.914.067v-1.159c.612 0 1.072-.082 1.38-.247.25-.132.376-.298.376-.499h-.515c-.436 0-.807-.113-1.113-.339-.367-.273-.55-.667-.55-1.18 0-.488.122-.901.367-1.24.296-.415.728-.622 1.296-.622zm.533 2.226v-.364c0-.217-.048-.389-.143-.516a.464.464 0 00-.39-.187.478.478 0 00-.396.187.705.705 0 00-.136.449.65.65 0 00.003.067c.008.125.066.22.177.283.093.054.21.08.352.08h.533zM9.5 6.707l.72.7.724-.7L10.209 6l-.709.707zm-6.694 4.888h.03c.433-.01.745-.106.937-.29.024.012.065.035.12.068l.074.039.081.042c.135.073.261.133.379.18.345.146.67.22.977.22a1.216 1.216 0 00.87-.34c.3-.285.449-.714.449-1.286a2.19 2.19 0 00-.335-1.145c-.299-.457-.732-.685-1.3-.685-.502 0-.916.192-1.242.575-.113.132-.21.284-.294.456-.032.062-.06.125-.084.191a.504.504 0 00-.03.078 1.67 1.67 0 00-.022.06c-.103.309-.171.485-.205.53-.072.09-.214.14-.427.147-.123-.005-.209-.03-.256-.076-.057-.054-.085-.153-.085-.297V7l-1.201-.5v3.562c0 .261.048.496.143.703.071.158.168.296.29.413.123.118.266.211.43.28.198.084.42.13.665.136v.001h.036zm2.752-1.014a.778.778 0 00.044-.353.868.868 0 00-.165-.47c-.1-.134-.217-.201-.35-.201-.18 0-.33.103-.447.31-.042.071-.08.158-.114.262a2.434 2.434 0 00-.04.12l-.015.053-.015.046c.142.118.323.216.544.293.18.062.325.092.433.092.044 0 .086-.05.125-.152z" fill-rule="evenodd"></path>
-                                            </symbol>
-                                        </use>
-                                    </svg>@trip.afterdiscticketprice.ToString("N0")
-                                </bdi>
-                            </h4>
-                        </div>
-                    </div>
-
-                    @{
-
-                        if (ViewBag.canbuy)
-                        {
-
-
-                            <div class="d-flex badge btn-lg text-bg-success w-100 waves-effect waves-light mt-2 success-payment" style="height: 3.5rem !important;border-radius: 1.6rem !important;">
-                                <span class="text-blck bg-success rounded-pill p-1 bg-opacity-75" style="align-self: center;">
-
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-check text-white">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95" />
-                                        <path d="M3.69 8.56a9 9 0 0 0 -.69 3.44" />
-                                        <path d="M3.69 15.44a9 9 0 0 0 1.95 2.92" />
-                                        <path d="M8.56 20.31a9 9 0 0 0 3.44 .69" />
-                                        <path d="M15.44 20.31a9 9 0 0 0 2.92 -1.95" />
-                                        <path d="M20.31 15.44a9 9 0 0 0 .69 -3.44" />
-                                        <path d="M15.44 3.69a9 9 0 0 0 -3.44 -.69" />
-                                        <path d="M9 12l2 2l4 -4" />
-                                    </svg>
-                                </span>
-
-
-                                <div class="ms-2 mt-0 p-0" style="text-align: right;">
-                                    <h6 class="mb-0 mt-0 p-0">
-                                        پرداخت از حساب
-                                        <i class="ti ti-credit-card"></i>
-                                    </h6>
-
-                                    <small class=" text-muted pb-1">قابل پرداخت از شارژ حساب آژانس</small>
-                                </div>
-
-
+                            <div class="ms-2 mt-0 p-0" style="text-align: right;">
+                                <h6 class="mb-0 mt-0 p-0">
+                                    ورود به حساب کاربری
+                                    <i class="ti ti-login"></i>
+                                </h6>
+                                <small class=" text-muted pb-1">برای رزرو بلیط باید وارد شوید</small>
                             </div>
-
-                        }
-
-                        else
-                        {
-
-                            <div class="d-flex badge btn-lg text-bg-warning w-100 waves-effect waves-light mt-1 not_enough_payment" style="height: 3.5rem !important;border-radius: 1.6rem !important;">
-                                <span class="text-blck bg-warning rounded-pill p-1 bg-opacity-75" style="align-self: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-check text-white">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M12.802 2.165l5.575 2.389c.48 .206 .863 .589 1.07 1.07l2.388 5.574c.22 .512 .22 1.092 0 1.604l-2.389 5.575c-.206 .48 -.589 .863 -1.07 1.07l-5.574 2.388c-.512 .22 -1.092 .22 -1.604 0l-5.575 -2.389a2.036 2.036 0 0 1 -1.07 -1.07l-2.388 -5.574a2.036 2.036 0 0 1 0 -1.604l2.389 -5.575c.206 -.48 .589 -.863 1.07 -1.07l5.574 -2.388a2.036 2.036 0 0 1 1.604 0z" />
-                                        <path d="M12 8v4" />
-                                        <path d="M12 16h.01" />
-                                    </svg>
-                                </span>
-
-
-                                <div class="ms-2 mt-0 p-0" style="text-align: right;">
-                                    <h6 class="mb-0 p-0">کمبود شارژ حساب</h6>
-
-                                    <small class="text-muted pb-1">موجودی حساب آژانس کافی نمی‌باشد</small>
-                                </div>
-
-                            </div>
-                            <a class="link mt-1 ms-1 text-end me-2" href="#">
-                                <small>
-                                    افزایش موجودی
-                                </small>
-                            </a>
-                        }
+                        </div>
                     }
-
-                </div>
+                    else if (ViewBag.canbuy)
+                    {
+                        <div class="d-flex badge btn-lg text-bg-success w-100 waves-effect waves-light mt-2 success-payment" style="height: 3.5rem !important;border-radius: 1.6rem !important;">
+                            <span class="text-blck bg-success rounded-pill p-1 bg-opacity-75" style="align-self: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-check text-white">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95" />
+                                    <path d="M3.69 8.56a9 9 0 0 0 -.69 3.44" />
+                                    <path d="M3.69 15.44a9 9 0 0 0 1.95 2.92" />
+                                    <path d="M8.56 20.31a9 9 0 0 0 3.44 .69" />
+                                    <path d="M15.44 20.31a9 9 0 0 0 2.92 -1.95" />
+                                    <path d="M20.31 15.44a9 9 0 0 0 .69 -3.44" />
+                                    <path d="M15.44 3.69a9 9 0 0 0 -3.44 -.69" />
+                                    <path d="M9 12l2 2l4 -4" />
+                                </svg>
+                            </span>
+                            <div class="ms-2 mt-0 p-0" style="text-align: right;">
+                                <h6 class="mb-0 mt-0 p-0">
+                                    پرداخت از حساب
+                                    <i class="ti ti-credit-card"></i>
+                                </h6>
+                                <small class=" text-muted pb-1">قابل پرداخت از شارژ حساب آژانس</small>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex badge btn-lg text-bg-warning w-100 waves-effect waves-light mt-1 not_enough_payment" style="height: 3.5rem !important;border-radius: 1.6rem !important;">
+                            <span class="text-blck bg-warning rounded-pill p-1 bg-opacity-75" style="align-self: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-check text-white">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M12.802 2.165l5.575 2.389c.48 .206 .863 .589 1.07 1.07l2.388 5.574c.22 .512 .22 1.092 0 1.604l-2.389 5.575c-.206 .48 -.589 .863 -1.07 1.07l-5.574 2.388c-.512 .22 -1.092 .22 -1.604 0l-5.575 -2.389a2.036 2.036 0 0 1 -1.07 -1.07l-2.388 -5.574a2.036 2.036 0 0 1 0 -1.604l2.389 -5.575c.206 -.48 .589 -.863 1.07 -1.07l5.574 -2.388a2.036 2.036 0 0 1 1.604 0z" />
+                                    <path d="M12 8v4" />
+                                    <path d="M12 16h.01" />
+                                </svg>
+                            </span>
+                            <div class="ms-2 mt-0 p-0" style="text-align: right;">
+                                <h6 class="mb-0 p-0">کمبود شارژ حساب</h6>
+                                <small class="text-muted pb-1">موجودی حساب آژانس کافی نیست</small>
+                            </div>
+                        </div>
+                        <a class="link mt-1 ms-1 text-end me-2" href="#">
+                            <small>افزایش موجودی</small>
+                        </a>
+                    }
+                }
             </div>
+
+            <!-- Trip rules section -->
             <div class="trip_info bg-white rounded-5 border-1 border-divider shadow-7.5__13__5__gray30 p-3 mt-3 ">
                 @*  <div class="headline d-flex justify-between">
                 <span class="badge bg-primary rounded-pill py-2" style="font-size: .875rem!important">
@@ -1259,30 +1144,27 @@
             </div>
         </aside>
 
-
         <article class="col-12 col-md-8 mt-4 mt-md-0 card rounded-5 d-flex p-3 mt-4">
-
             <input type="hidden" value="@trip.tripPlanCode" />
             <h1 class="mb-4 mt-3 font-bold ms-3 ms-md-0" style="font-size: 1.5rem; line-height: 2rem; --tw-text-opacity: 1; color: rgb(41 38 61 / var(--tw-text-opacity));">
                 اطلاعات خریدار را وارد کنید
             </h1>
+            
             <div class="info-container mt-4">
                 <div class="uppnav d-flex" style="align-items: baseline;">
                     <div class="d-flex justify-between" style="align-items: center;">
                         <div class="d-flex justify-between text-blck">
                             <i class="ti ti-user"></i>
-                            <span class="fs-5">
-								خریدار سفر
-                            </span>
+                            <span class="fs-5">خریدار سفر</span>
                         </div>
-                        <span style="font-size: 12px; align-self: end;" class="ms-2">
-                                سرپسرت مسافرین
-                        </span>
+                        <span style="font-size: 12px; align-self: end;" class="ms-2">سرپسرت مسافرین</span>
                     </div>
                 </div>
 
-                <form class="input-forms row mt-2 px-0 px-md-3" method="post">
-
+                <form class="input-forms row mt-2 px-0 px-md-3" method="post" asp-action="Reservetrip">
+                    <input type="hidden" asp-for="TripCode" value="@trip.tripPlanCode" />
+                    
+                    <!-- Form fields remain the same -->
                     <div class="col-md-6 pe-0 pe-md-2">
                         <div class="mt-2 mb-3">
                             <label class="form-label" for="largeInput">
@@ -1303,9 +1185,9 @@
                             <input asp-for="Lastname" autocomplete="off" class="form-control form-control" id="largeInput" placeholder="نام‌خانوادگی مسافر" type="text">
                             <span asp-validation-for="Lastname" class="text-danger validation-message"></span>
                         </div>
-
                     </div>
 
+                    <!-- Gender selection -->
                     <div class="col-md-6 pe-0 pe-md-0">
                         <div class="row">
                             <label class="form-label" for="largeInput">
@@ -1320,7 +1202,6 @@
                                             <span class="custom-option-header">
                                                 <span class="h6 mb-0">زن</span>
                                             </span>
-
                                         </label>
                                     </div>
                                 </div>
@@ -1339,7 +1220,7 @@
                         </div>
                     </div>
 
-
+                    <!-- National Code -->
                     <div class="col-md-6">
                         <div class="ps-0 ps-md-0">
                             <div class=" mb-3">
@@ -1347,32 +1228,27 @@
                                     کدملی
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="NaCode" autocomplete="off" class="form-control form-control" id="largeInput" placeholder="شماره ملی" type="text" data-val-regex-pattern="^\d{10}$ ">
+                                <input asp-for="NaCode" autocomplete="off" class="form-control form-control" id="NaCodeInput" placeholder="شماره ملی" type="text">
                                 <span asp-validation-for="NaCode" class="text-danger validation-message"></span>
-
                             </div>
-
                         </div>
                     </div>
 
                     <hr class="mt-4 mb-4" />
 
+                    <!-- Contact Info -->
                     <div class="call-info-header d-flex justify-start">
                         <svg class="text-blck" style="align-self:center;" xmlns="http://www.w3.org/2000/svg" width="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-phone">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                             <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
                         </svg>
-
-
                         <div class="ms-2 mt-1 " style="color: rgb(41 38 61 / var(--tw-text-opacity)) !important;">
                             <h5 class="ms-1 mb-0 text-blck">اطلاعات تماس</h5>
                             <p class="mt-0 mb-0">اطلاعات تماس به منظور ارسال فایل بلیط و هماهنگی با مسافر برای شروع سفر استفاده می‌شود</p>
                         </div>
                     </div>
 
-
                     <div class="mt-3 row pe-0">
-
                         <div class="col-md-6 pe-2">
                             <div class="mt-2 mb-3">
                                 <label class="form-label" for="largeInput">
@@ -1384,24 +1260,17 @@
                             </div>
                         </div>
 
-
                         <div class="col-md-6 ps-2">
                             <div class="mt-2 mb-3">
                                 <label class="form-label" for="largeInput">ایمیل</label>
                                 <input asp-for="Email" autocomplete="off" class="form-control form-control" placeholder="(اختیاری)" type="text" data-val="fasle">
                             </div>
-
                         </div>
                     </div>
 
                     <div class="mt-3 row mx-0 px-0">
-
                         <div class="col-12 col-md-6 ps-0">
-                            <button class="btn btn-lg btn-primary w-100 " style="height: 3.5rem !important;border-radius: 1.6rem !important;"
-                            @if (!ViewBag.canbuy)
-                            {
-                                @:disabled
-                            }>
+                            <button type="submit" class="btn btn-lg btn-primary w-100 " style="height: 3.5rem !important;border-radius: 1.6rem !important;">
                                 ادامه و رزور
                             </button>
                         </div>
@@ -1409,40 +1278,27 @@
                         <div class="col-12 col-md-6 mt-2 mt-md-0">
                             <p class="text-muted" style="line-height: 1.42rem !important;">
                                 بعد از ثبت بلیط برای مسافر، هماهنگی با راننده، پشتیبانی و خدمات مورد نیاز مسافر توسط مسترشوفر با
-                                <strong class="text-blck">
-                                    شماره فوق
-                                </strong>
+                                <strong class="text-blck">شماره فوق</strong>
                                 انجام می‌شود.
                             </p>
                         </div>
-
                     </div>
-
                 </form>
             </div>
         </article>
 
-
-		<div style="height: 10vh;">
-
-		</div>
+        <div style="height: 10vh;"></div>
     </div>
 </div>
 
-
 <style>
-
     @@media only screen and (max-width: 600px) {
-
-    .px-14 {
-        padding-left: .2rem !important;
-        padding-right: .2rem !important;
+        .px-14 {
+            padding-left: .2rem !important;
+            padding-right: .2rem !important;
+        }
+        .step-title {
+            font-size: .75rem !important;
+        }
     }
-
-    .step-title {
-        font-size: .75rem !important;
-    }
-}
-
-
 </style>

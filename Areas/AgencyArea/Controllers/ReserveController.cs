@@ -15,7 +15,7 @@ using Application.Models;
 namespace Application.Areas.AgencyArea
 {
   [Area("AgencyArea")]
-  [Authorize]
+  // Guests can access most actions - authorization checked per-action
   public class ReserveController : Controller
   {
 
@@ -54,20 +54,30 @@ namespace Application.Areas.AgencyArea
 
       var trip = await apiclient.GetTripInfo(tripcode);
 
-      // Getting agancy account balance from ORS
-      var agancy_balance = (int)Convert.ToDouble(await apiclient.GetAccountBalance());
-
-      ViewBag.agancy_balance = agancy_balance;
-
-
-      if (agancy_balance >= trip.afterdiscticketprice)
+      // Getting agancy account balance from ORS - only if authenticated
+      if (User.Identity.IsAuthenticated)
       {
-        ViewBag.canbuy = true;
+        var agancy_balance = (int)Convert.ToDouble(await apiclient.GetAccountBalance());
+
+        ViewBag.agancy_balance = agancy_balance;
+
+
+        if (agancy_balance >= trip.afterdiscticketprice)
+        {
+          ViewBag.canbuy = true;
+        }
+        // Cannot submit the ticket
+        else
+        {
+          ViewBag.canbuy = false;
+        }
       }
-      // Cannot submit the ticket
       else
       {
+        // Guest user - show they need to login
+        ViewBag.agancy_balance = 0;
         ViewBag.canbuy = false;
+        ViewBag.isGuest = true;
       }
 
       ViewBag.trip = trip;
@@ -80,6 +90,13 @@ namespace Application.Areas.AgencyArea
     [HttpPost]
     public async Task<IActionResult> Reservetrip(ReserveInfoViewModel viewmodel)
     {
+      // Check if user is authenticated before allowing reservation
+      if (!User.Identity.IsAuthenticated)
+      {
+        // Return JSON to trigger modal on client side
+        return Json(new { requiresAuth = true, returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewmodel.TripCode }) });
+      }
+
       if (!ModelState.IsValid)
       {
         return RedirectToAction("Reservetrip");
@@ -102,6 +119,12 @@ namespace Application.Areas.AgencyArea
     [HttpPost]
     public async Task<IActionResult> ConfirmInfo(ConfirmInfoViewModel viewModel)
     {
+      // Check if user is authenticated before confirming reservation
+      if (!User.Identity.IsAuthenticated)
+      {
+        return Json(new { requiresAuth = true, returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewModel.TripCode }) });
+      }
+
       // Registering the ticket
 
 
@@ -214,6 +237,7 @@ namespace Application.Areas.AgencyArea
 
 
 
+    [Authorize] // This one requires authentication to view confirmation
     public async Task<IActionResult> ReserveConfirmed(string ticketcode)
     {
       var ticket = context.Tickets.Where(t => t.TicketCode == ticketcode).FirstOrDefault();
@@ -228,11 +252,30 @@ namespace Application.Areas.AgencyArea
     {
       base.OnActionExecuting(context);
 
-      var identityUser = _userManager.GetUserAsync(User).Result;
-      agency = this.context.Agencies.FirstOrDefault(a => a.IdentityUser == identityUser);
+      string tokenToUse = null;
 
+      // Use agency token if authenticated, otherwise use guest/default token
+      if (User.Identity.IsAuthenticated)
+      {
+        var identityUser = _userManager.GetUserAsync(User).Result;
+        agency = this.context.Agencies.FirstOrDefault(a => a.IdentityUser == identityUser);
 
-      apiclient.SetSellerApiKey(agency.ORSAPI_token);
+        if (agency != null && !string.IsNullOrWhiteSpace(agency.ORSAPI_token))
+        {
+          tokenToUse = agency.ORSAPI_token;
+        }
+      }
+
+      // Fallback to guest token from configuration
+      if (string.IsNullOrWhiteSpace(tokenToUse))
+      {
+        tokenToUse = configuration["MrShoofer:SellerToken"];
+      }
+
+      if (!string.IsNullOrWhiteSpace(tokenToUse))
+      {
+        apiclient.SetSellerApiKey(tokenToUse);
+      }
     }
   }
 }

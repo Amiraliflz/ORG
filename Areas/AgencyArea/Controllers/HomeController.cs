@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Application.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Humanizer;
 using Application.Data;
@@ -10,7 +9,7 @@ using System.Security.Claims;
 namespace Application.Areas.AgencyArea
 {
   [Area("AgencyArea")]
-  [Authorize]
+  // Removed [Authorize] - Allow guest access to home page
   public class HomeController : Controller
   {
     private readonly ILogger<HomeController> _logger;
@@ -35,6 +34,7 @@ namespace Application.Areas.AgencyArea
     {
       return View();
     }
+    
     public IActionResult Privacy()
     {
       return View();

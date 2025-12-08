@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 namespace Application.Areas.AgencyArea
 {
   [Area("AgencyArea")]
-  [Authorize]
+  // Removed [Authorize] - Allow guest access to search trips
   public class TaxiTripsController : Controller
   {
     private readonly DirectionsRepository directionsRepository;
@@ -61,6 +61,7 @@ namespace Application.Areas.AgencyArea
       return str;
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Index(string originstring, string destinationstring, string searchdate)
     {
       if (string.IsNullOrWhiteSpace(originstring) || string.IsNullOrWhiteSpace(destinationstring))
@@ -188,14 +189,22 @@ namespace Application.Areas.AgencyArea
     {
       base.OnActionExecuting(context);
       string tokenToUse = null;
+      
+      // Use agency token if authenticated, otherwise use guest/default token
       if (User?.Identity?.IsAuthenticated == true)
       {
         var identityUser = _userManager.GetUserAsync(User).Result;
         agency = this.context.Agencies.FirstOrDefault(a => a.IdentityUser == identityUser);
-        if (agency != null && !string.IsNullOrWhiteSpace(agency.ORSAPI_token)) tokenToUse = agency.ORSAPI_token;
+        if (agency != null && !string.IsNullOrWhiteSpace(agency.ORSAPI_token)) 
+          tokenToUse = agency.ORSAPI_token;
       }
-      if (string.IsNullOrWhiteSpace(tokenToUse)) tokenToUse = _configuration["MrShoofer:SellerToken"];
-      if (!string.IsNullOrWhiteSpace(tokenToUse)) _mrShooferAPIClient.SetSellerApiKey(tokenToUse);
+      
+      // Fallback to guest token from configuration
+      if (string.IsNullOrWhiteSpace(tokenToUse)) 
+        tokenToUse = _configuration["MrShoofer:SellerToken"];
+        
+      if (!string.IsNullOrWhiteSpace(tokenToUse)) 
+        _mrShooferAPIClient.SetSellerApiKey(tokenToUse);
     }
 
     [Route("/TaxiTrips/SearchJson")]
