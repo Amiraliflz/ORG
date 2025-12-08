@@ -92,12 +92,18 @@ namespace Application.Areas.AgencyArea
           try
           {
             var savedData = JsonConvert.DeserializeObject<ReserveInfoViewModel>(savedDataJson);
+            
+            // IMPORTANT: Remove the data from TempData after reading it
+            // This ensures it's only used once and won't persist on page refresh
+            TempData.Remove("SavedReserveData");
+            
             // Pass the saved data to the view
             return View(savedData);
           }
           catch
           {
-            // If deserialization fails, just show empty form
+            // If deserialization fails, remove the corrupted data
+            TempData.Remove("SavedReserveData");
           }
         }
       }
@@ -113,8 +119,9 @@ namespace Application.Areas.AgencyArea
       if (!User.Identity.IsAuthenticated)
       {
         // Save the form data in TempData before redirecting to login
+        // TempData will survive ONE redirect - perfect for our use case
         TempData["SavedReserveData"] = JsonConvert.SerializeObject(viewmodel);
-        TempData.Keep("SavedReserveData"); // Ensure it persists across redirects
+        // NOTE: We don't use TempData.Keep() because we want it to be used only once
         
         // Return JSON to trigger modal on client side
         var returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewmodel.TripCode, area = "AgencyArea" });
