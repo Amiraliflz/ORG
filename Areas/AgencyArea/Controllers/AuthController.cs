@@ -23,14 +23,21 @@ namespace Application.Areas.AgencyArea
     }
 
     [HttpGet]
-    public IActionResult Login()
+    public IActionResult Login(string? ReturnUrl)
     {
       if (_signInManager.IsSignedIn(User))
       {
-        // Redirect to the main page or any desired page
+        // If already signed in and there's a return URL, redirect there
+        if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+        {
+          return LocalRedirect(ReturnUrl);
+        }
+        // Otherwise redirect to home
         return RedirectToAction("Index", "Home");
       }
 
+      // Pass ReturnUrl to the view via ViewBag
+      ViewBag.ReturnUrl = ReturnUrl;
       return View();
     }
 
@@ -48,6 +55,7 @@ namespace Application.Areas.AgencyArea
         if(user == null)
         {
           ViewBag.errormessage = "نام کاربری یا رمز عبور اشتباه است";
+          ViewBag.ReturnUrl = ReturnUrl;
           return View(viewmodel);
         }
        
@@ -55,7 +63,7 @@ namespace Application.Areas.AgencyArea
         if (user != null && result.Succeeded)
         {
           // Redirect or take further action
-          if (!string.IsNullOrEmpty(ReturnUrl))
+          if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
             return LocalRedirect(ReturnUrl);
 
           // Else : redirect to IndexPage
@@ -65,6 +73,7 @@ namespace Application.Areas.AgencyArea
         else
         {
           ViewBag.errormessage = "نام کاربری یا رمز عبور اشتباه است";
+          ViewBag.ReturnUrl = ReturnUrl;
           return View(viewmodel);
         }
 
@@ -99,31 +108,39 @@ namespace Application.Areas.AgencyArea
         //}
 
       }
+      ViewBag.ReturnUrl = ReturnUrl;
       return View(viewmodel);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Loginotp()
+    public async Task<IActionResult> Loginotp(string? ReturnUrl)
     {
+      // Pass ReturnUrl to the view
+      ViewBag.ReturnUrl = ReturnUrl;
       return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Loginotp(string numberphone)
+    public async Task<IActionResult> Loginotp(string numberphone, string? ReturnUrl)
     {
 
       // Check if the user is already authenticated
       if (_signInManager.IsSignedIn(User))
       {
-        // Redirect to the main page or any desired page
+        // If already signed in and there's a return URL, redirect there
+        if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+        {
+          return LocalRedirect(ReturnUrl);
+        }
         return RedirectToAction("Index", "Home");
       }
 
 
       if (string.IsNullOrEmpty(numberphone))
       {
-        return RedirectToAction("Loginotp");
+        ViewBag.ReturnUrl = ReturnUrl;
+        return RedirectToAction("Loginotp", new { ReturnUrl });
       }
 
       var user = await _usermanager.FindByNameAsync(numberphone);
@@ -132,6 +149,7 @@ namespace Application.Areas.AgencyArea
       if (user == null)
       {
         ViewBag.errormessage = "شماره وارد شده در سیستم ثبت نشده است";
+        ViewBag.ReturnUrl = ReturnUrl;
         return View();
       }
 
@@ -139,6 +157,7 @@ namespace Application.Areas.AgencyArea
       if (!await _signInManager.CanSignInAsync(user))
       {
         ViewBag.errormessage = "اجازه ورود به این حساب را ندارید";
+        ViewBag.ReturnUrl = ReturnUrl;
         return View();
       }
 
@@ -148,34 +167,37 @@ namespace Application.Areas.AgencyArea
       // Storing the code and exp_time in session values
       TempData["otp_code"] = otpcode;
       TempData["otp_exptime"] = DateTime.Now.AddSeconds(90).ToString();
+      TempData["otp_returnurl"] = ReturnUrl; // Store ReturnUrl in TempData
 
 
-
-
-
-      return RedirectToAction("LoginotpSubmit", new { numberphone });
+      return RedirectToAction("LoginotpSubmit", new { numberphone, ReturnUrl });
     }
 
     [HttpGet]
-    public IActionResult LoginotpSubmit(string numberphone)
+    public IActionResult LoginotpSubmit(string numberphone, string? ReturnUrl)
     {
       if (string.IsNullOrEmpty(numberphone))
       {
-        return RedirectToAction("Loginotp");
+        return RedirectToAction("Loginotp", new { ReturnUrl });
       }
 
 
       ViewBag.numberphone = numberphone;
+      ViewBag.ReturnUrl = ReturnUrl;
       return View();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> LoginotpSubmit(string code1, string code2, string code3, string code4, string code5, string numberphone)
+    public async Task<IActionResult> LoginotpSubmit(string code1, string code2, string code3, string code4, string code5, string numberphone, string? ReturnUrl)
     {
       if (_signInManager.IsSignedIn(User))
       {
-        // Redirect to the main page or any desired page
+        // If already signed in and there's a return URL, redirect there
+        if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+        {
+          return LocalRedirect(ReturnUrl);
+        }
         return RedirectToAction("Index", "Home");
       }
 
@@ -184,11 +206,17 @@ namespace Application.Areas.AgencyArea
       // Checking for the data existance
       if (TempData["otp_code"] == null || TempData["otp_exptime"] == null || numberphone is null)
       {
-        return RedirectToAction("Loginotp");
+        return RedirectToAction("Loginotp", new { ReturnUrl });
       }
 
       string storedcode = TempData["otp_code"].ToString();
       DateTime exptime = Convert.ToDateTime(TempData["otp_exptime"].ToString());
+      
+      // Get ReturnUrl from TempData if not in parameter
+      if (string.IsNullOrEmpty(ReturnUrl) && TempData["otp_returnurl"] != null)
+      {
+        ReturnUrl = TempData["otp_returnurl"].ToString();
+      }
 
 
       var user = await _usermanager.FindByNameAsync(numberphone);
@@ -198,6 +226,7 @@ namespace Application.Areas.AgencyArea
         ViewBag.errormessage = "حساب کاربر وجود ندارد";
 
         ViewBag.numberphone = numberphone;
+        ViewBag.ReturnUrl = ReturnUrl;
 
         return View("LoginotpSubmit");
 
@@ -212,7 +241,7 @@ namespace Application.Areas.AgencyArea
       {
         TempData.Remove("otp-code");
         TempData.Remove("otp-exptime");
-        return RedirectToAction("Loginotp");
+        return RedirectToAction("Loginotp", new { ReturnUrl });
       }
 
 
@@ -221,6 +250,7 @@ namespace Application.Areas.AgencyArea
         ViewBag.errormessage = "کد وارد شده نادرست است";
 
         ViewBag.numberphone = numberphone;
+        ViewBag.ReturnUrl = ReturnUrl;
         TempData.Keep();
 
         return View("LoginotpSubmit");
@@ -228,6 +258,13 @@ namespace Application.Areas.AgencyArea
 
       // Logging in the user
       await _signInManager.SignInAsync(user, true, "OTP");
+      
+      // Redirect to ReturnUrl if provided and is local
+      if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+      {
+        return LocalRedirect(ReturnUrl);
+      }
+      
       return RedirectToAction("Index", "Home");
 
     }

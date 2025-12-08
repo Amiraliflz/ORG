@@ -11,6 +11,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using Application.Models;
+using Newtonsoft.Json;
 
 namespace Application.Areas.AgencyArea
 {
@@ -82,6 +83,24 @@ namespace Application.Areas.AgencyArea
 
       ViewBag.trip = trip;
 
+      // Check if there's saved form data from TempData (after login redirect)
+      if (TempData.ContainsKey("SavedReserveData"))
+      {
+        var savedDataJson = TempData["SavedReserveData"]?.ToString();
+        if (!string.IsNullOrEmpty(savedDataJson))
+        {
+          try
+          {
+            var savedData = JsonConvert.DeserializeObject<ReserveInfoViewModel>(savedDataJson);
+            // Pass the saved data to the view
+            return View(savedData);
+          }
+          catch
+          {
+            // If deserialization fails, just show empty form
+          }
+        }
+      }
 
       return View();
     }
@@ -93,13 +112,18 @@ namespace Application.Areas.AgencyArea
       // Check if user is authenticated before allowing reservation
       if (!User.Identity.IsAuthenticated)
       {
+        // Save the form data in TempData before redirecting to login
+        TempData["SavedReserveData"] = JsonConvert.SerializeObject(viewmodel);
+        TempData.Keep("SavedReserveData"); // Ensure it persists across redirects
+        
         // Return JSON to trigger modal on client side
-        return Json(new { requiresAuth = true, returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewmodel.TripCode }) });
+        var returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewmodel.TripCode, area = "AgencyArea" });
+        return Json(new { requiresAuth = true, returnUrl = returnUrl });
       }
 
       if (!ModelState.IsValid)
       {
-        return RedirectToAction("Reservetrip");
+        return RedirectToAction("Reservetrip", new { tripcode = viewmodel.TripCode });
       }
 
 

@@ -39,6 +39,10 @@
                     <p class="mb-2">ورود با رمز یک‌بار مصرف</p>
 
                     <form id="formAuthentication" class="mb-3" method="POST" asp-action="Loginotp">
+                        @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
+                        {
+                            <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+                        }
                         <div class="mb-3">
                             <label class="form-label" for="NumberPhone">شماره تلفن</label>
                             <input autofocus value="" class="form-control" id="NumberPhone" name="NumberPhone" placeholder="شماره تلفن خود را وارد کنید" type="text" />

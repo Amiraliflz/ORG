@@ -103,7 +103,9 @@
 
                 // Handle confirm button click
                 $('#confirmLoginBtn').on('click', function() {
-                    window.location.href = '/Auth/Login?ReturnUrl=' + encodeURIComponent(returnUrl);
+                    // Encode the return URL properly
+                    var loginUrl = '/Auth/Login?ReturnUrl=' + encodeURIComponent(returnUrl);
+                    window.location.href = loginUrl;
                 });
             }
         });
@@ -1157,7 +1159,7 @@
                             <i class="ti ti-user"></i>
                             <span class="fs-5">خریدار سفر</span>
                         </div>
-                        <span style="font-size: 12px; align-self: end;" class="ms-2">سرپسرت مسافرین</span>
+                        <span style="font-size: 12px; align-self: end;" class="ms-2">سرپرست مسافرین</span>
                     </div>
                 </div>
 

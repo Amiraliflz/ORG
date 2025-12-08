@@ -51,6 +51,10 @@
 
                 <p class="mb-0 fw-medium">کد امنیتی 5 رقمی</p>
                 <form id="twoStepsForm" asp-action="LoginotpSubmit" method="post">
+                    @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
+                    {
+                        <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+                    }
                     <div class="mb-3">
                         <div class="auth-input-wrapper d-flex align-items-center justify-content-sm-between numeral-mask-wrapper ltr">
                             <input autocomplete="off" name="numberphone" type="hidden" value="@ViewBag.numberphone" />
