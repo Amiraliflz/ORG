@@ -133,10 +133,16 @@ namespace Application.Areas.AgencyArea
         return RedirectToAction("Reservetrip", new { tripcode = viewmodel.TripCode });
       }
 
-
+      // Get trip info and check balance
       var trip = await apiclient.GetTripInfo(viewmodel.TripCode);
-
       var agancy_balance = (int)Convert.ToDouble(await apiclient.GetAccountBalance());
+
+      // Check if agency has sufficient funds
+      if (agancy_balance < trip.afterdiscticketprice)
+      {
+        // Return JSON to trigger insufficient funds modal
+        return Json(new { insufficientFunds = true, requiredAmount = trip.afterdiscticketprice, currentBalance = agancy_balance });
+      }
 
       ViewBag.agancy_balance = agancy_balance;
 
