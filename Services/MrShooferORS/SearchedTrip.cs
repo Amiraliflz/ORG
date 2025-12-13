@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Application.Services.MrShooferORS
 {
   public enum TripType { OnlyPrivate, OnlyMultiPassenger, PrivateAndMultiPassenger }
@@ -25,5 +27,8 @@ namespace Application.Services.MrShooferORS
     public int destinationLocationID { get; set; }
     public string destinationLocationName { get; set; }
     public int? availableTicketsCount { get; set; }
+    
+    [JsonPropertyName("image")]
+    public string Image { get; set; }
   }
 }

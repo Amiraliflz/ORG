@@ -11,6 +11,12 @@ namespace Application.Services.MrShooferORS
     string _apikey;
     readonly HttpClient _client;
     readonly string _sellerapikey;
+    
+    // JSON serializer options with case-insensitive property matching
+    private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+    {
+      PropertyNameCaseInsensitive = true
+    };
 
     public MrShooferAPIClient(HttpClient client, string baseurl)
     {
@@ -69,8 +75,11 @@ namespace Application.Services.MrShooferORS
       }
 
 
-      var searchedtrips = await _client.GetFromJsonAsync<List<SearchedTrip>>(searchurl);
-
+      var response = await _client.GetAsync(searchurl);
+      response.EnsureSuccessStatusCode();
+      
+      var json = await response.Content.ReadAsStringAsync();
+      var searchedtrips = JsonSerializer.Deserialize<List<SearchedTrip>>(json, _jsonOptions);
 
       return searchedtrips;
     }
@@ -79,7 +88,12 @@ namespace Application.Services.MrShooferORS
     {
 
       string searchurl = $"https://mrbilit.mrshoofer.ir/Trips/getTripinfo?tripcode={tripcode}";
-      var result = await _client.GetFromJsonAsync<SearchedTrip>(searchurl);
+      
+      var response = await _client.GetAsync(searchurl);
+      response.EnsureSuccessStatusCode();
+      
+      var json = await response.Content.ReadAsStringAsync();
+      var result = JsonSerializer.Deserialize<SearchedTrip>(json, _jsonOptions);
 
       if (result == null)
       {

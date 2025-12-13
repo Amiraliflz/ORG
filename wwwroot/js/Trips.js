@@ -12,6 +12,23 @@ function generateTripCard(Model) {
                     Model.carModelName.includes('سفران') ||
                     Model.carModelName.includes('سوناتا')));
 
+  // Use API image if available, otherwise fallback to default taxi.png
+  // Check both Image and image (case-insensitive)
+  let imageUrl = '/taxi.png'; // default fallback
+  const imageValue = Model.Image || Model.image;
+  if (imageValue && typeof imageValue === 'string' && imageValue.trim() !== '') {
+    // Prepend API base URL if the image path is relative
+    const imagePath = imageValue.trim();
+    if (imagePath.startsWith('/')) {
+      imageUrl = 'https://mrbilit.mrshoofer.ir' + imagePath;
+    } else {
+      imageUrl = imagePath;
+    }
+  }
+  
+  // Debug log to see what image is being used
+  console.log('Trip image URL:', imageUrl, 'for service:', Model.taxiSupervisorName);
+
   var html = `
         <div class="card px-2 px-md-4 py-3 mt-3" style="width: 100%;">
 
@@ -38,7 +55,7 @@ function generateTripCard(Model) {
               <div class="d-flex justify-content-between">
 
                 <div class="provider">
-                    <img class="logo-image" src="/taxi.png" height="40px" alt="Logo">
+                    <img class="logo-image" src="${imageUrl}" height="55px" alt="${Model.taxiSupervisorName}" onerror="this.src='/taxi.png'">
                     <h5 class="mt-1">
                         ${Model.taxiSupervisorName}
                     </h5>
@@ -141,7 +158,11 @@ function fetchTripsData() {
       method: 'GET',
       dataType: 'json',
       success: function (response) {
+        // Debug: Log the first trip to see if Image property exists
         if (Array.isArray(response) && response.length > 0) {
+          console.log('First trip from API:', response[0]);
+          console.log('Image property:', response[0].Image);
+          console.log('image property (lowercase):', response[0].image);
           resolve(response); // Resolve with the result
         } else {
           resolve([]); // Resolve with an empty array if no data

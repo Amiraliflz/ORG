@@ -317,7 +317,8 @@ namespace Application.Areas.AgencyArea
         taxiSupervisorName = t.taxiSupervisorName,
         taxiSupervisorID = t.taxiSupervisorID,
         tripcode = t.tripPlanCode,
-        carModelName = t.carModelName
+        carModelName = t.carModelName,
+        Image = t.Image
       }).ToList();
 
       return Json(searchedTripViewModels);

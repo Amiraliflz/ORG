@@ -14,5 +14,6 @@ namespace Application.ViewModels.TaxiTrips
     public string originalPrice { get; set; }
     public string afterdiscount { get; set; }
     public string carModelName { get; set; }
+    public string Image { get; set; }
   }
 }

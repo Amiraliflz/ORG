@@ -6,6 +6,22 @@
                     (!string.IsNullOrEmpty(Model.carModelName) && 
                      (Model.carModelName.Contains("VIP", StringComparison.OrdinalIgnoreCase) || 
                       Model.carModelName.Contains("تشریفات")));
+    
+    // Use API image if available, otherwise fallback to default taxi.png
+    string imageUrl = "/taxi.png"; // default fallback
+    if (!string.IsNullOrWhiteSpace(Model.Image))
+    {
+        var imagePath = Model.Image.Trim();
+        // Prepend API base URL if the image path is relative
+        if (imagePath.StartsWith("/"))
+        {
+            imageUrl = "https://mrbilit.mrshoofer.ir" + imagePath;
+        }
+        else
+        {
+            imageUrl = imagePath;
+        }
+    }
 }
 
 @if (Model.tripTypeID == Application.Services.MrShooferORS.TripType.OnlyPrivate)
@@ -28,7 +44,6 @@
                     <div class="capacity badge bg-label-secondary rounded-pill">
                         <i class="ti ti-armchair-2 d-inline"></i>
                         |
-                        @* <span class="badge bg-label-danger">دربتسی</span> *@
                         <small class="text-danger ms-0 ms-md-1 d-inline">دربستی</small>
                     </div>
                 </div>
@@ -39,7 +54,7 @@
               <div class="d-flex justify-content-between">
 
                 <div class="provider">
-                    <img class="logo-image" src="/taxi.png" height="40px" alt="Logo">
+                    <img class="logo-image" src="@imageUrl" height="40px" alt="@Model.taxiSupervisorName" onerror="this.src='/taxi.png'">
                     <h5 class="mt-1">
                         @Model.taxiSupervisorName
                     </h5>
