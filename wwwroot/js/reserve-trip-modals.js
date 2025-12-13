@@ -9,6 +9,7 @@ $(document).ready(function () {
         return this.optional(element) || re.test(value);
     }, "لطفا یک مقدار معتبر وارد کنید");
 
+
     // Override unobtrusive validation adapter for regex
     $.validator.unobtrusive.adapters.add("regex", ["pattern"], function (options) {
         options.rules["regex"] = options.params.pattern;
