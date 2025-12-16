@@ -1,17 +1,19 @@
 using Application.Data;
 using Application.Services;
 using Application.Services.MrShooferORS;
+using Application.Services.Payment;
 using Application.ViewModels.Reserve;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using Application.Models;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Areas.AgencyArea
 {
@@ -25,17 +27,30 @@ namespace Application.Areas.AgencyArea
     private readonly AppDbContext context;
     private readonly CustomerServiceSmsSender customerSmsSender;
     private readonly IConfiguration configuration;
+    private readonly ZarinpalService _zarinpalService;
+    private readonly ILogger<ReserveController> _logger;
     private Agency agency;
 
 
-    public ReserveController(MrShooferAPIClient apiclient, UserManager<IdentityUser> usermanager, AppDbContext context, CustomerServiceSmsSender smssender, IConfiguration configuration)
+    public ReserveController(
+      MrShooferAPIClient apiclient, 
+      UserManager<IdentityUser> usermanager, 
+      AppDbContext context, 
+      CustomerServiceSmsSender smssender, 
+      IConfiguration configuration,
+      ZarinpalService zarinpalService,
+      ILogger<ReserveController> logger)
     {
       this.configuration = configuration;
       customerSmsSender = smssender;
       this.context = context;
       _userManager = usermanager;
       this.apiclient = apiclient;
-
+      _zarinpalService = zarinpalService;
+      _logger = logger;
+      
+      // Ensure guest agency exists when controller is initialized
+      EnsureGuestAgencyExistsAsync().Wait();
     }
 
     public IActionResult Index()
@@ -46,42 +61,58 @@ namespace Application.Areas.AgencyArea
 
     public async Task<IActionResult> Reservetrip(string tripcode)
     {
-
       if (string.IsNullOrEmpty(tripcode))
         return BadRequest();
 
-
       ViewData["ReservationId"] = tripcode;
 
-      var trip = await apiclient.GetTripInfo(tripcode);
+      // Retry logic for MrShoofer API
+      int retryCount = 0;
+      int maxRetries = 3;
+      SearchedTrip trip = null;
 
-      // Getting agancy account balance from ORS - only if authenticated
-      if (User.Identity.IsAuthenticated)
+      while (retryCount < maxRetries)
       {
-        var agancy_balance = (int)Convert.ToDouble(await apiclient.GetAccountBalance());
-
-        ViewBag.agancy_balance = agancy_balance;
-
-
-        if (agancy_balance >= trip.afterdiscticketprice)
+        try
         {
-          ViewBag.canbuy = true;
+          trip = await apiclient.GetTripInfo(tripcode);
+          ViewBag.trip = trip;
+          break; // Success - exit loop
         }
-        // Cannot submit the ticket
-        else
+        catch (HttpRequestException ex) when (retryCount < maxRetries - 1)
         {
-          ViewBag.canbuy = false;
+          retryCount++;
+          _logger.LogWarning(ex, "MrShoofer API connection error (attempt {Attempt}/{MaxRetries}) for trip: {TripCode}. Retrying...", 
+            retryCount, maxRetries, tripcode);
+          await Task.Delay(1000 * retryCount); // Exponential backoff: 1s, 2s, 3s
+        }
+        catch (HttpRequestException ex)
+        {
+          _logger.LogError(ex, "Failed to connect to MrShoofer API after {Attempts} attempts for trip: {TripCode}", 
+            retryCount + 1, tripcode);
+          TempData["ErrorMessage"] = "در حال حاضر امکان اتصال به سرویس رزرو وجود ندارد. لطفا بعدا تلاش کنید";
+          return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
+        }
+        catch (TaskCanceledException ex)
+        {
+          _logger.LogError(ex, "Request timeout while fetching trip: {TripCode}", tripcode);
+          TempData["ErrorMessage"] = "زمان اتصال به سرویس به پایان رسید. لطفا دوباره تلاش کنید";
+          return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Unexpected error while fetching trip: {TripCode}", tripcode);
+          TempData["ErrorMessage"] = "خطایی رخ داده است. لطفا بعدا تلاش کنید";
+          return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
         }
       }
-      else
-      {
-        // Guest user - show they need to login
-        ViewBag.agancy_balance = 0;
-        ViewBag.canbuy = false;
-        ViewBag.isGuest = true;
-      }
 
-      ViewBag.trip = trip;
+      if (trip == null)
+      {
+        _logger.LogError("Trip info is null after all retry attempts for TripCode: {TripCode}", tripcode);
+        TempData["ErrorMessage"] = "اطلاعات سفر یافت نشد. لطفاً بعداً مجدداً تلاش کنید.";
+        return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
+      }
 
       // Check if there's saved form data from TempData (after login redirect)
       if (TempData.ContainsKey("SavedReserveData"))
@@ -115,38 +146,67 @@ namespace Application.Areas.AgencyArea
     [HttpPost]
     public async Task<IActionResult> Reservetrip(ReserveInfoViewModel viewmodel)
     {
-      // Check if user is authenticated before allowing reservation
-      if (!User.Identity.IsAuthenticated)
-      {
-        // Save the form data in TempData before redirecting to login
-        // TempData will survive ONE redirect - perfect for our use case
-        TempData["SavedReserveData"] = JsonConvert.SerializeObject(viewmodel);
-        // NOTE: We don't use TempData.Keep() because we want it to be used only once
-        
-        // Return JSON to trigger modal on client side
-        var returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewmodel.TripCode, area = "AgencyArea" });
-        return Json(new { requiresAuth = true, returnUrl = returnUrl });
-      }
-
+      // NO AUTHENTICATION CHECK - Allow all users (guests and authenticated)
+      
       if (!ModelState.IsValid)
       {
         return RedirectToAction("Reservetrip", new { tripcode = viewmodel.TripCode });
       }
 
-      // Get trip info and check balance
-      var trip = await apiclient.GetTripInfo(viewmodel.TripCode);
-      var agancy_balance = (int)Convert.ToDouble(await apiclient.GetAccountBalance());
+      // Get trip info with retry logic
+      SearchedTrip trip = null;
+      int retryCount = 0;
+      int maxRetries = 3;
 
-      // Check if agency has sufficient funds
-      if (agancy_balance < trip.afterdiscticketprice)
+      while (retryCount < maxRetries)
       {
-        // Return JSON to trigger insufficient funds modal
-        return Json(new { insufficientFunds = true, requiredAmount = trip.afterdiscticketprice, currentBalance = agancy_balance });
+        try
+        {
+          trip = await apiclient.GetTripInfo(viewmodel.TripCode);
+          break; // Success - exit loop
+        }
+        catch (HttpRequestException ex) when (retryCount < maxRetries - 1)
+        {
+          retryCount++;
+          _logger.LogWarning(ex, "MrShoofer API error (attempt {Attempt}/{MaxRetries}). Retrying...", 
+            retryCount, maxRetries);
+          await Task.Delay(1000 * retryCount); // Exponential backoff
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Failed to get trip info after {Attempts} attempts for TripCode: {TripCode}", 
+            retryCount + 1, viewmodel.TripCode);
+          
+          TempData["ErrorMessage"] = "خطا در دریافت اطلاعات سفر. لطفاً دوباره تلاش کنید.";
+          return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
+        }
       }
 
-      ViewBag.agancy_balance = agancy_balance;
+      if (trip == null)
+      {
+        TempData["ErrorMessage"] = "اطلاعات سفر یافت نشد.";
+        return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
+      }
 
+      // For Zarinpal payment, we don't need agency balance, but we'll still fetch it for display
+      long agencyBalance = 0;
+      if (agency != null)
+      {
+        try
+        {
+          apiclient.SetSellerApiKey(agency.ORSAPI_token);
+          agencyBalance = (long)Convert.ToDecimal(await apiclient.GetAccountBalance());
+        }
+        catch (Exception ex)
+        {
+          _logger.LogWarning(ex, "Failed to get agency balance. Continuing with 0 balance.");
+          agencyBalance = 0;
+        }
+      }
+
+      // Set ViewBag data once
       ViewBag.agancy = agency;
+      ViewBag.agancy_balance = agencyBalance;
       ViewBag.trip = trip;
       ViewBag.reserveviewmodel = viewmodel;
 
@@ -156,131 +216,193 @@ namespace Application.Areas.AgencyArea
     [HttpPost]
     public async Task<IActionResult> ConfirmInfo(ConfirmInfoViewModel viewModel)
     {
-      // Check if user is authenticated before confirming reservation
-      if (!User.Identity.IsAuthenticated)
+      // NO AUTHENTICATION CHECK - Allow all users to confirm reservation
+      
+      _logger.LogInformation("ConfirmInfo POST started. TripCode: {TripCode}, Firstname: {Firstname}, Lastname: {Lastname}, Numberphone: {Numberphone}, Nacode: {Nacode}, Gender: {Gender}", 
+        viewModel?.TripCode ?? "NULL", 
+        viewModel?.Firstname ?? "NULL", 
+        viewModel?.Lastname ?? "NULL",
+        viewModel?.Numberphone ?? "NULL",
+        viewModel?.Nacode ?? "NULL",
+        viewModel?.Gender ?? "NULL");
+      
+      // Validate model
+      if (!ModelState.IsValid)
       {
-        return Json(new { requiresAuth = true, returnUrl = Url.Action("Reservetrip", "Reserve", new { tripcode = viewModel.TripCode }) });
+        var errors = ModelState
+          .Where(x => x.Value.Errors.Count > 0)
+          .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() })
+          .ToList();
+        
+        _logger.LogWarning("ModelState invalid. Errors: {Errors}", 
+          JsonConvert.SerializeObject(errors));
+        
+        // Return user back to reservation page with errors
+        TempData["ErrorMessage"] = "اطلاعات فرم ناقص است: " + string.Join(", ", errors.SelectMany(e => e.Errors));
+        return RedirectToAction("Reservetrip", new { tripcode = viewModel?.TripCode });
       }
-
-      // Registering the ticket
-
-
-      // Issuing ticket in ORS
-      // TempReserve
-
-
-
-        TicketTempReserveRequestModel tempreserve_viewodel = new TicketTempReserveRequestModel()
-        {
-          isPrivate = true,
-          tripCode = viewModel.TripCode
-        };
-
-        var reservecode = await apiclient.ReserveTicketTemporarirly(tempreserve_viewodel);
-
-
-        // final reserve
-
-        ConfirmReserveRequestModel confirmreserve_viewmodel = new ConfirmReserveRequestModel()
-        {
-          passengerFirstName = viewModel.Firstname,
-          passengerLastName = viewModel.Lastname,
-          reservationCode = reservecode,
-          passengerNationalCode = viewModel.Nacode,
-          passengerNumberPhone = viewModel.Numberphone
-        };
-
-
-      TicketConfirmationResponse reserve_response = null;
-
+      
+      _logger.LogInformation("ModelState is valid. Proceeding with payment request...");
+      
+      // Get trip info for pricing with retry logic
+      SearchedTrip trip = null;
+      int retryCount = 0;
+      int maxRetries = 3;
+      
+      while (retryCount < maxRetries)
+      {
         try
         {
-           reserve_response = await apiclient.ConfirmReserve(confirmreserve_viewmodel);
+          trip = await apiclient.GetTripInfo(viewModel.TripCode);
+          break; // Success - exit loop
         }
-        catch (Exception e)
+        catch (HttpRequestException ex) when (retryCount < maxRetries - 1)
         {
-          return RedirectToAction("Index", "Home");
+          retryCount++;
+          _logger.LogWarning(ex, "MrShoofer API error (attempt {Attempt}/{MaxRetries}). Retrying...", 
+            retryCount, maxRetries);
+          await Task.Delay(1000 * retryCount); // Exponential backoff: 1s, 2s, 3s
         }
-
-
-        // Getting trip_info
-
-        var trip = await apiclient.GetTripInfo(viewModel.TripCode);
-
-        //Creating ticket object
-        Ticket newticket = new Ticket()
+        catch (Exception ex)
         {
-          Firstname = viewModel.Firstname,
-          Lastname = viewModel.Lastname,
-          PhoneNumber = viewModel.Numberphone,
-          NaCode = viewModel.Nacode,
-          TicketFinalPrice = reserve_response.paid_total_fee_tomans,
-          Gender = viewModel.Gender,
-          TicketOriginalPrice = trip.originalTicketprice,
-          TripOrigin = trip.originCityName,
-          TripDestination = trip.destinationCityName,
-          RegisteredAt = DateTime.Now,
-          TicketCode = reserve_response.ticketCode,
-          Tripcode = trip.tripPlanCode,
-          ServiceName = trip.taxiSupervisorName,
-          CarName = trip.carModelName
-        };
+          _logger.LogError(ex, "Failed to get trip info after {Attempts} attempts for TripCode: {TripCode}", 
+            retryCount + 1, viewModel.TripCode);
+          
+          TempData["ErrorMessage"] = "در حال حاضر امکان اتصال به سرویس رزرو وجود ندارد. لطفاً چند دقیقه دیگر مجدداً تلاش کنید.";
+          return RedirectToAction("Reservetrip", new { tripcode = viewModel.TripCode });
+        }
+      }
+      
+      if (trip == null)
+      {
+        _logger.LogError("Trip info is null after all retry attempts for TripCode: {TripCode}", viewModel.TripCode);
+        TempData["ErrorMessage"] = "اطلاعات سفر یافت نشد. لطفاً دوباره تلاش کنید.";
+        return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
+      }
 
-        // Registering to database
+      // ✅ STEP 1: CREATE PRELIMINARY TICKET (BEFORE PAYMENT, WITHOUT MRSHOOFER TICKETCODE)
+      // Store trip code temporarily - we'll create MrShoofer reservation after payment
+      Ticket newticket = new Ticket()
+      {
+        Firstname = viewModel.Firstname,
+        Lastname = viewModel.Lastname,
+        PhoneNumber = viewModel.Numberphone,
+        NaCode = viewModel.Nacode,
+        TicketFinalPrice = trip.afterdiscticketprice,
+        Gender = viewModel.Gender,
+        TicketOriginalPrice = trip.originalTicketprice,
+        TripOrigin = trip.originCityName,
+        TripDestination = trip.destinationCityName,
+        RegisteredAt = DateTime.Now,
+        Tripcode = trip.tripPlanCode,
+        ServiceName = trip.taxiSupervisorName,
+        CarName = trip.carModelName,
+        // ⚠️ Temporary ticket code - will be replaced with MrShoofer ticket code after payment
+        TicketCode = $"PENDING-{DateTime.Now:yyyyMMddHHmmss}",
+        IsPaid = false
+      };
 
+      // Associate with agency
+      if (agency != null)
+      {
+        newticket.Agency = agency;
+      }
+      else
+      {
+        var guestAgency = context.Agencies
+          .FirstOrDefault(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+        if (guestAgency != null)
+        {
+          newticket.Agency = guestAgency;
+        }
+      }
 
-        var identity_user = await _userManager.GetUserAsync(User);
+      context.Tickets.Add(newticket);
+      await context.SaveChangesAsync();
 
-        var agancy = context.Agencies.Where(a => a.IdentityUser == identity_user).FirstOrDefault();
-        newticket.Agency = agancy;
+      _logger.LogInformation("Preliminary ticket saved to database. TripCode: {TripCode}, TicketId: {TicketId}, Price: {Price}", 
+        viewModel.TripCode, newticket.Id, newticket.TicketFinalPrice);
 
+      // ✅ STEP 2: REQUEST PAYMENT FROM ZARINPAL (BEFORE MRSHOOFER RESERVATION)
+      int amountInRials = newticket.TicketFinalPrice * 10; // Convert Toman to Rial
+      string description = $"خرید بلیط {newticket.TripOrigin} به {newticket.TripDestination}";
+      
+      _logger.LogInformation("Requesting Zarinpal payment. Amount in Rials: {Amount}, TripCode: {TripCode}", 
+        amountInRials, viewModel.TripCode);
+      
+      var (success, authority, message) = await _zarinpalService.RequestPaymentAsync(
+        amountInRials,
+        description,
+        newticket.PhoneNumber,
+        null // Email is optional
+      );
 
-        context.Tickets.Add(newticket);
-
+      if (success)
+      {
+        // Save payment authority and ticket ID for callback
+        newticket.PaymentAuthority = authority;
         await context.SaveChangesAsync();
 
+        _logger.LogInformation("Zarinpal payment request successful. Authority: {Authority}, TicketId: {TicketId}", 
+          authority, newticket.Id);
 
-
-        //Sending SMS for customer
-
-
-        var service_url = configuration["serivce_url"];
-        var trip_link = newticket.TicketCode;
-
-
-      try
+        // ✅ STEP 3: REDIRECT TO ZARINPAL PAYMENT GATEWAY
+        var paymentUrl = _zarinpalService.GetPaymentGatewayUrl(authority);
+        
+        _logger.LogInformation("Redirecting to Zarinpal. URL: {PaymentUrl}", paymentUrl);
+        
+        return Redirect(paymentUrl);
+      }
+      else
       {
-
-        await customerSmsSender.SendCustomerTicket_issued(newticket.Firstname, newticket.Lastname, newticket.TicketCode, trip_link, newticket.PhoneNumber);
+        // Payment request failed
+        _logger.LogError("Zarinpal payment request failed. Message: {Message}, TripCode: {TripCode}", 
+          message, viewModel.TripCode);
+        
+        // Delete the preliminary ticket since payment failed
+        context.Tickets.Remove(newticket);
+        await context.SaveChangesAsync();
+        
+        TempData["ErrorMessage"] = message;
+        return RedirectToAction("PaymentFailed", "Payment");
       }
-      catch
-      {
-
-      }
-
-
-
-        return RedirectToAction("ReserveConfirmed", new { ticketcode = newticket.TicketCode });
-      }
-
-
-
-
-
-    private async Task DoConfirmResreve()
-    {
-
     }
 
-
-
-    [Authorize] // This one requires authentication to view confirmation
     public async Task<IActionResult> ReserveConfirmed(string ticketcode)
     {
       var ticket = context.Tickets.Where(t => t.TicketCode == ticketcode).FirstOrDefault();
+      
+      if (ticket == null)
+      {
+        return NotFound();
+      }
+
+      // Check if ticket is paid
+      if (!ticket.IsPaid)
+      {
+        return RedirectToAction("PaymentFailed", "Payment", new { message = "پرداخت هنوز تایید نشده است" });
+      }
+      
       ViewBag.trip = await apiclient.GetTripInfo(ticket.Tripcode);
       ViewBag.ticket = ticket;
 
+      // Send SMS to customer after successful payment
+      try
+      {
+        var service_url = configuration["serivce_url"];
+        var trip_link = ticket.TicketCode;
+        await customerSmsSender.SendCustomerTicket_issued(
+          ticket.Firstname, 
+          ticket.Lastname, 
+          ticket.TicketCode, 
+          trip_link, 
+          ticket.PhoneNumber
+        );
+      }
+      catch
+      {
+        // Log error but don't fail the request
+      }
 
       return View();
     }
@@ -290,20 +412,35 @@ namespace Application.Areas.AgencyArea
       base.OnActionExecuting(context);
 
       string tokenToUse = null;
+      Agency agencyToUse = null;
 
-      // Use agency token if authenticated, otherwise use guest/default token
+      // Use agency token if authenticated, otherwise use guest agency
       if (User.Identity.IsAuthenticated)
       {
         var identityUser = _userManager.GetUserAsync(User).Result;
-        agency = this.context.Agencies.FirstOrDefault(a => a.IdentityUser == identityUser);
+        agencyToUse = this.context.Agencies
+          .FirstOrDefault(a => a.IdentityUser == identityUser);
 
-        if (agency != null && !string.IsNullOrWhiteSpace(agency.ORSAPI_token))
+        if (agencyToUse != null && !string.IsNullOrWhiteSpace(agencyToUse.ORSAPI_token))
         {
-          tokenToUse = agency.ORSAPI_token;
+          tokenToUse = agencyToUse.ORSAPI_token;
         }
       }
 
-      // Fallback to guest token from configuration
+      // If no agency found (guest user or authenticated user without agency)
+      if (agencyToUse == null)
+      {
+        // Get the guest agency (agency with no IdentityUser)
+        agencyToUse = this.context.Agencies
+          .FirstOrDefault(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+        
+        if (agencyToUse != null && !string.IsNullOrWhiteSpace(agencyToUse.ORSAPI_token))
+        {
+          tokenToUse = agencyToUse.ORSAPI_token;
+        }
+      }
+
+      // Fallback to configuration token if no agency token found
       if (string.IsNullOrWhiteSpace(tokenToUse))
       {
         tokenToUse = configuration["MrShoofer:SellerToken"];
@@ -312,6 +449,35 @@ namespace Application.Areas.AgencyArea
       if (!string.IsNullOrWhiteSpace(tokenToUse))
       {
         apiclient.SetSellerApiKey(tokenToUse);
+      }
+
+      // Store the agency for use in actions
+      agency = agencyToUse;
+    }
+
+    private async Task EnsureGuestAgencyExistsAsync()
+    {
+      // Check if guest agency already exists
+      var guestAgency = await context.Agencies
+        .FirstOrDefaultAsync(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+
+      if (guestAgency == null)
+      {
+        // Create guest agency
+        var newGuestAgency = new Agency
+        {
+          Name = "مستر شوفر - مهمان",
+          PhoneNumber = "02100000000",
+          Address = "تهران",
+          AdminMobile = "09900000000",
+          DateJoined = DateTime.Now,
+          ORSAPI_token = configuration["MrShoofer:SellerToken"] ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjU1NCIsImp0aSI6Ijk1ZTI1NjYzLTkzM2EtNGY1ZS04ZTdiLTMwNGQ0Yjg3M2Q3NiIsImV4cCI6MTkyMjc3ODkwOCwiaXNzIjoibXJzaG9vZmVyLmlyIiwiYXVkIjoibiJzaG9vZmVyLmlyIn0.2r5WoGmqb5Ra_6epV5jR3Y0RlHs5bcwE0li0wo1ricE",
+          Commission = 0,
+          IdentityUser = null
+        };
+
+        context.Agencies.Add(newGuestAgency);
+        await context.SaveChangesAsync();
       }
     }
   }

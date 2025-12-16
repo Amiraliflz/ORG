@@ -181,7 +181,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\workflows\" />
-    <Folder Include="Migrations\" />
     <Folder Include="Validation\" />
     <Folder Include="wwwroot\libs\NewFolder\" />
   </ItemGroup>

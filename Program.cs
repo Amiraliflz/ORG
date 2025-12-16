@@ -2,6 +2,7 @@ using Application.Data;
 using Application.Services;
 using Application.Services.Auth;
 using Application.Services.MrShooferORS;
+using Application.Services.Payment;
 using Kavenegar;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -21,9 +22,23 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
 builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();
 
-builder.Services.AddTransient<MrShooferAPIClient, MrShooferAPIClient>(c => new MrShooferAPIClient(new HttpClient(), "https://mrbilit.mrshoofer.ir"));
+// Configure MrShooferAPIClient with timeout and retry logic
+builder.Services.AddTransient<MrShooferAPIClient>(serviceProvider =>
+{
+    var httpClient = new HttpClient
+    {
+        Timeout = TimeSpan.FromSeconds(30) // 30 second timeout
+    };
+    return new MrShooferAPIClient(httpClient, "https://mrbilit.mrshoofer.ir");
+});
 
 builder.Services.AddTransient<CustomerServiceSmsSender>();
+
+// Register HttpClient for ZarinpalService with timeout configuration
+builder.Services.AddHttpClient<ZarinpalService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 builder.Services
   .AddControllersWithViews()

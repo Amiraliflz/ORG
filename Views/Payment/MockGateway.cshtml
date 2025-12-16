@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "درگاه پرداخت تستی";
+    Layout = "~/Views/Shared/_PaymentLayout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h4 class="mb-0">
+                        <i class="ti ti-test-pipe me-2"></i>
+                        🧪 درگاه پرداخت تستی (Mock)
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ توجه:</strong> این یک درگاه پرداخت تستی است و پول واقعی جابجا نمی‌شود.
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h5>مبلغ قابل پرداخت:</h5>
+                        <h2 class="text-primary">
+                            @string.Format("{0:N0}", ViewBag.Amount) تومان
+                        </h2>
+                        <small class="text-muted">(@string.Format("{0:N0}", ViewBag.AmountInRials) ریال)</small>
+                    </div>
+
+                    <hr />
+
+                    <div class="mb-3">
+                        <h6>اطلاعات تراکنش:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>کد تراکنش:</strong> @ViewBag.Authority</li>
+                            <li><strong>مسافر:</strong> @ViewBag.Ticket.Firstname @ViewBag.Ticket.Lastname</li>
+                            <li><strong>مسیر:</strong> @ViewBag.Ticket.TripOrigin → @ViewBag.Ticket.TripDestination</li>
+                        </ul>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-grid gap-2">
+                        <form method="post" asp-action="ProcessMockPayment" asp-controller="Payment">
+                            <input type="hidden" name="authority" value="@ViewBag.Authority" />
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="success" value="true" class="btn btn-success btn-lg">
+                                    <i class="ti ti-check me-2"></i>
+                                    ✅ پرداخت موفق (شبیه‌سازی)
+                                </button>
+                                
+                                <button type="submit" name="success" value="false" class="btn btn-danger btn-lg">
+                                    <i class="ti ti-x me-2"></i>
+                                    ❌ انصراف از پرداخت
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <hr />
+
+                    <div class="text-center text-muted small">
+                        <p class="mb-0">
+                            این صفحه فقط برای تست در محیط توسعه است.
+                            <br/>
+                            در محیط production، کاربر به درگاه واقعی زرین‌پال هدایت می‌شود.
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <small class="text-muted">
+                        <i class="ti ti-shield-check me-1"></i>
+                        محیط تست - بدون جابجایی پول واقعی
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .btn-success {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        border: none;
+    }
+    .btn-danger {
+        background: linear-gradient(45deg, #dc3545, #fd7e14);
+        border: none;
+    }
+</style>

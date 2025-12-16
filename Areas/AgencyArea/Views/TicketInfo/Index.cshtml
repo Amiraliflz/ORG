@@ -58,13 +58,11 @@
 		-webkit-user-select: none;
 		-moz-user-select: none;
 		user-select: none;
-		/* width: 88px; */
 	}
 
 	.switchbar-container {
 		display: flex;
 		align-items: center;
-		display: flex;
 		max-width: 100%;
 		flex-direction: row !important;
 	}
@@ -72,6 +70,12 @@
 	.scroll_button {
 		padding: 8px;
 		width: 48px;
+		background: none;
+		border: none;
+		color: inherit;
+		cursor: pointer;
+		outline: none;
+		align-self: stretch;
 	}
 
 	.timelline-container {
@@ -81,16 +85,42 @@
 		overflow-y: hidden;
 		padding-bottom: 8px;
 		scrollbar-width: none;
-		display: flex;
 	}
 
-	.scroll_button {
-		background: none;
-		border: none;
-		color: inherit;
-		cursor: pointer;
-		outline: none;
-		align-self: stretch;
+	/* Ticket card enhancements */
+	.ticket-card-cancelled {
+		opacity: 0.75;
+		border-left: 4px solid #ff4c51 !important;
+	}
+
+	.ticket-card-active {
+		border-left: 4px solid #28c76f !important;
+	}
+
+	.custom-option-content:hover {
+		border-color: var(--bs-primary) !important;
+	}
+
+	.custom-option-content input:checked ~ .custom-option-header {
+		color: var(--bs-primary);
+	}
+
+	/* Flatpickr z-index fix - ensure calendar appears above modal */
+	.flatpickr-calendar {
+		z-index: 9999 !important;
+	}
+
+	.flatpickr-calendar.open {
+		z-index: 9999 !important;
+	}
+
+	/* Ensure modal backdrop doesn't cover flatpickr */
+	.modal-backdrop {
+		z-index: 1050 !important;
+	}
+
+	.modal {
+		z-index: 1055 !important;
 	}
 </style>
 <style>
@@ -250,75 +280,175 @@
 
 <div class="px-lg-6 px-0 mt-4">
 
-	<div class="searchbar card shadow card rounded-5 p-4" style="">
+	<div class="searchbar card shadow card rounded-5 p-4">
 
 		<div class="row">
 
-			<div class="d-flex justify-content-between">
+			<div class="d-flex justify-content-between align-items-start">
 
 				@{
-					if (!String.IsNullOrEmpty(ViewBag.dateFilter))
+					var hasFilters = !String.IsNullOrEmpty(ViewBag.dateFilter) || !String.IsNullOrEmpty(ViewBag.statusFilter);
+					
+					if (hasFilters)
 					{
 						<div>
 							<h3 class="mb-1">
-								بلیط‌های خریداری شده
+								بلیط‌های فیلتر شده
 							</h3>
-							<h5 class="fw-normal">
-								در بازه
-								@ViewBag.dateFilter
-							</h5>
+							@if (!String.IsNullOrEmpty(ViewBag.dateFilter))
+							{
+								<h6 class="fw-normal text-muted">
+									<i class="ti ti-calendar"></i>
+									بازه: @ViewBag.dateFilter
+								</h6>
+							}
+							@if (!String.IsNullOrEmpty(ViewBag.statusFilter))
+							{
+								<h6 class="fw-normal text-muted">
+									<i class="ti ti-filter"></i>
+									وضعیت: 
+									@if (ViewBag.statusFilter == "active")
+									{
+										<span class="badge bg-label-success">فعال</span>
+									}
+									else if (ViewBag.statusFilter == "cancelled")
+									{
+										<span class="badge bg-label-danger">کنسل شده</span>
+									}
+								</h6>
+							}
 						</div>
 					}
-
 					else
 					{
-
 						<h3>
-							آخرین‌ بلیط‌ ها
+							آخرین بلیط‌ها
 						</h3>
 					}
 				}
 
-				<div>
-					<button class="btn btn-primary d-inline" data-bs-target="#paymentmodal" data-bs-toggle="modal">
+				<div class="d-flex gap-2">
+					@if (hasFilters)
+					{
+						<a class="btn btn-label-secondary" asp-action="Index">
+							<i class="ti ti-x"></i>
+							حذف فیلترها
+						</a>
+					}
+					<button class="btn btn-primary" data-bs-target="#filterModal" data-bs-toggle="modal">
 						<i class="ti ti-filter"></i>
 						فیلتر
 					</button>
 				</div>
-
-
 			</div>
+
+			<!-- Statistics Cards -->
+			<div class="row mt-3 mb-2">
+				<div class="col-md-4 col-12 mb-2">
+					<div class="card border shadow-none">
+						<div class="card-body p-3">
+							<div class="d-flex align-items-center">
+								<div class="avatar me-3">
+									<span class="avatar-initial rounded bg-label-primary">
+										<i class="ti ti-ticket ti-md"></i>
+									</span>
+								</div>
+								<div>
+									<p class="mb-0 text-muted small">کل بلیط‌ها</p>
+									<h4 class="mb-0">@ViewBag.totalTickets</h4>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4 col-12 mb-2">
+					<div class="card border shadow-none">
+						<div class="card-body p-3">
+							<div class="d-flex align-items-center">
+								<div class="avatar me-3">
+									<span class="avatar-initial rounded bg-label-success">
+										<i class="ti ti-check ti-md"></i>
+									</span>
+								</div>
+								<div>
+									<p class="mb-0 text-muted small">بلیط‌های فعال</p>
+									<h4 class="mb-0">@ViewBag.activeTickets</h4>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-4 col-12 mb-2">
+					<div class="card border shadow-none">
+						<div class="card-body p-3">
+							<div class="d-flex align-items-center">
+								<div class="avatar me-3">
+									<span class="avatar-initial rounded bg-label-danger">
+										<i class="ti ti-x ti-md"></i>
+									</span>
+								</div>
+								<div>
+									<p class="mb-0 text-muted small">کنسل شده</p>
+									<h4 class="mb-0">@ViewBag.cancelledTickets</h4>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div class="py-2">
 
 				@if (ViewBag.tickets.Count < 1)
 				{
-
-					if (!String.IsNullOrEmpty(ViewBag.dateFilter))
+					var hasActiveFilters = !String.IsNullOrEmpty(ViewBag.dateFilter) || (!String.IsNullOrEmpty(ViewBag.statusFilter) && ViewBag.statusFilter != "all");
+					
+					if (hasActiveFilters)
 					{
-						<div class="col-12 d-flex text-center align-items-center py-3 mt-2" style="flex-direction: column;">
-
-							<h5>
-								<i class="ti ti-ticket"></i>
-								بلیطی پیدا نشد
+						<div class="col-12 d-flex text-center align-items-center py-5 mt-3" style="flex-direction: column;">
+							<div class="avatar avatar-lg mb-3">
+								<span class="avatar-initial rounded-circle bg-label-warning">
+									<i class="ti ti-search-off ti-lg"></i>
+								</span>
+							</div>
+							<h5 class="mb-2">
+								بلیطی یافت نشد
 							</h5>
-							<small>
-								در بازه زمانی که جستجو کردید، بلیطی یافت نشد. میتوانید فیلترها را تغییر دهید
-							</small>
-
+							<p class="text-muted mb-3">
+								با فیلترهای انتخاب شده، بلیطی پیدا نشد.
+								<br/>
+								می‌توانید فیلترها را تغییر دهید یا حذف کنید.
+							</p>
+							<div class="d-flex gap-2">
+								<button class="btn btn-primary" data-bs-target="#filterModal" data-bs-toggle="modal">
+									<i class="ti ti-filter"></i>
+									تغییر فیلتر
+								</button>
+								<a class="btn btn-label-secondary" asp-action="Index">
+									<i class="ti ti-x"></i>
+									حذف فیلترها
+								</a>
+							</div>
 						</div>
 					}
 					else
 					{
-						<div class="col-12 d-flex text-center align-items-center py-3 mt-2" style="flex-direction: column;">
-
-							<h5>
-								<i class="ti ti-ticket"></i>
+						<div class="col-12 d-flex text-center align-items-center py-5 mt-3" style="flex-direction: column;">
+							<div class="avatar avatar-lg mb-3">
+								<span class="avatar-initial rounded-circle bg-label-primary">
+									<i class="ti ti-ticket-off ti-lg"></i>
+								</span>
+							</div>
+							<h5 class="mb-2">
 								هنوز بلیطی وجود ندارد
 							</h5>
-							<small>
-								شما هنوز بلیطی خریداری نکرده اید می‌توانید از لینک، سفرهای سواری را جستجو کنید
-							</small>
-							<a class="btn btn-primary mt-3" asp-controller="Home" asp-action="Index">
+							<p class="text-muted mb-3">
+								شما هنوز بلیطی خریداری نکرده‌اید.
+								<br/>
+								می‌توانید از دکمه زیر سفرهای سواری را جستجو کنید.
+							</p>
+							<a class="btn btn-primary btn-lg" asp-controller="Home" asp-action="Index">
+								<i class="ti ti-search"></i>
 								جستجوی سفرها
 							</a>
 						</div>
@@ -327,9 +457,37 @@
 
 				@foreach (Ticket ticket in ViewBag.tickets)
 				{
-					<div class="col-12 card rounded-5 p-3 mt-2">
+					<div class="col-12 card rounded-5 p-3 mt-2 @(ticket.IsCancelled ? "ticket-card-cancelled" : "ticket-card-active")">
 
 						<div class="col-12 row rounded-5 p-0 ">
+							<div class="d-flex justify-content-between align-items-start col-12 mb-2">
+								<div class="d-flex align-items-center">
+									@if (ticket.IsCancelled)
+									{
+										<span class="badge bg-label-danger me-2">
+											<i class="ti ti-x ti-xs"></i>
+											کنسل شده
+										</span>
+									}
+									else
+									{
+										<span class="badge bg-label-success me-2">
+											<i class="ti ti-check ti-xs"></i>
+											فعال
+										</span>
+									}
+									<small class="text-muted">
+										کد رزرو: <strong>@ticket.TicketCode</strong>
+									</small>
+								</div>
+								@if (ticket.IsCancelled)
+								{
+									<span class="badge bg-label-secondary">
+										تاریخ کنسلی: @ticket.RegisteredAt.ToPersianDate().ToShortDateString()
+									</span>
+								}
+							</div>
+
 							<div class="d-flex justify-content-center align-items-center col-6 col-md-1 ps-1">
 								@* <svg xmlns="http://www.w3.org/2000/svg" width="70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-ticket">
 							<path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -484,55 +642,104 @@
 <div class="col-12">
 	<small class="text-light fw-medium"></small>
 	<div class="mt-4">
-		<!-- Modal -->
-		<div aria-hidden="true" class="modal fade py-2" id="paymentmodal" tabindex="-1">
+		<!-- Filter Modal -->
+		<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
-					<div class="modal-header ">
-						<div class="d-flex justify-content-start align-items-center mt-2">
-							<i class="ti ti-filter ti-lg text-warning"></i>
-							<div class="ms-3">
-
-								<h3 class="modal-title" id="modalCenterTitle">فیلتر بلیط‌ ها</h3>
-								<small>
-									بلیط‌ های فروخته شده‌ی آژانس
+					<div class="modal-header">
+						<div class="d-flex justify-content-start align-items-center w-100">
+							<i class="ti ti-filter ti-lg text-primary me-2"></i>
+							<div class="flex-grow-1">
+								<h3 class="modal-title mb-0" id="filterModalLabel">فیلتر بلیط‌ها</h3>
+								<small class="text-muted">
+									فیلتر بلیط‌های خریداری شده
 								</small>
 							</div>
-							<button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 					</div>
-					<div class="modal-body pb-1">
-						<div class="col-12 mt-2">
-							<div>
-								<h5 style="align-self:end;">
+					<div class="modal-body pb-3">
+						<form asp-action="Filter" method="get">
+							<!-- Date Range Filter - NOW AT THE TOP -->
+							<div class="mb-4">
+								<h5 class="mb-3">
 									<i class="ti ti-calendar-month"></i>
-									فیلتر بر اساس زمان خرید
+									فیلتر بر اساس تاریخ خرید
 								</h5>
-
-								<small style="font-size: .7rem;" class="text-muted d-block">
-
-									<a class="ms-2" asp-action="Index">
-										<i class="ti ti-backspace"></i>
-										پاک کردن فیلتر
-									</a>
+								<small style="font-size: .75rem;" class="text-muted d-block mb-2">
+									<i class="ti ti-info-circle"></i>
+									بازه زمانی را انتخاب کنید (تقویم شمسی)
 								</small>
-
+								<input value="@ViewBag.dateFilter" name="datesFilter" class="form-control form-control-lg" id="bs-rangepicker-basic" type="text" placeholder="انتخاب بازه تاریخ...">
 							</div>
-							<form class="d-flex justify-content-between ms-1 " asp-action="Filter" method="get">
-								<input value="@ViewBag.dateFilter" name="datesFilter" class="form-control" id="bs-rangepicker-basic" type="text">
 
-								<button type="submit" class="btn btn-primary ms-2">
-									جستجو
+							<hr class="my-4" />
+
+							<!-- Status Filter - NOW AT THE BOTTOM -->
+							<div class="mb-3">
+								<h5 class="mb-3">
+									<i class="ti ti-checkbox"></i>
+									وضعیت بلیط
+								</h5>
+								<div class="row">
+									<div class="col-12">
+										<div class="form-check custom-option custom-option-basic mb-2">
+											<label class="form-check-label custom-option-content" for="statusAll">
+												<input class="form-check-input" type="radio" name="statusFilter" value="all" id="statusAll" 
+													@(String.IsNullOrEmpty(ViewBag.statusFilter) || ViewBag.statusFilter == "all" ? "checked" : "") />
+												<span class="custom-option-header">
+													<span class="h6 mb-0">
+														<i class="ti ti-list"></i>
+														همه بلیط‌ها
+													</span>
+												</span>
+											</label>
+										</div>
+									</div>
+									<div class="col-12">
+										<div class="form-check custom-option custom-option-basic mb-2">
+											<label class="form-check-label custom-option-content" for="statusActive">
+												<input class="form-check-input" type="radio" name="statusFilter" value="active" id="statusActive"
+													@(ViewBag.statusFilter == "active" ? "checked" : "") />
+												<span class="custom-option-header">
+													<span class="h6 mb-0">
+														<i class="ti ti-check text-success"></i>
+														فقط فعال
+													</span>
+												</span>
+											</label>
+										</div>
+									</div>
+									<div class="col-12">
+										<div class="form-check custom-option custom-option-basic mb-2">
+											<label class="form-check-label custom-option-content" for="statusCancelled">
+												<input class="form-check-input" type="radio" name="statusFilter" value="cancelled" id="statusCancelled"
+													@(ViewBag.statusFilter == "cancelled" ? "checked" : "") />
+												<span class="custom-option-header">
+													<span class="h6 mb-0">
+														<i class="ti ti-x text-danger"></i>
+														فقط کنسل شده
+													</span>
+												</span>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="d-flex gap-2 mt-4">
+								<button type="submit" class="btn btn-primary flex-grow-1">
+									<i class="ti ti-search"></i>
+									اعمال فیلتر
 								</button>
-							</form>
-
-						</div>
+								<a asp-action="Index" class="btn btn-label-secondary">
+									<i class="ti ti-x"></i>
+									پاک کردن
+								</a>
+							</div>
+						</form>
 					</div>
-
-					<hr />
-
 				</div>
-
 			</div>
 		</div>
 	</div>

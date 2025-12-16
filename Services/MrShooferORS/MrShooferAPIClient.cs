@@ -114,17 +114,34 @@ namespace Application.Services.MrShooferORS
     {
       var response = await _client.PostAsJsonAsync<TicketTempReserveRequestModel>("/Tickets/reserverTemporarily", ticket);
 
-      if ((int)response.StatusCode != 200)
-        throw new Exception();
-
-
       var jsonresult = await response.Content.ReadAsStringAsync();
+
+      if (!response.IsSuccessStatusCode)
+      {
+        // Try to extract error message from API response
+        try
+        {
+          var errorNode = JsonNode.Parse(jsonresult);
+          var errorMessage = errorNode?["error"]?.ToString() 
+                          ?? errorNode?["message"]?.ToString() 
+                          ?? errorNode?["Message"]?.ToString()
+                          ?? jsonresult;
+          throw new Exception($"MrShoofer API Error ({(int)response.StatusCode}): {errorMessage}");
+        }
+        catch (JsonException)
+        {
+          throw new Exception($"MrShoofer API Error ({(int)response.StatusCode}): {jsonresult}");
+        }
+      }
 
       var node = JsonNode.Parse(jsonresult);
 
+      if (node?["ticketCode"] == null)
+      {
+        throw new Exception($"MrShoofer API returned unexpected response: {jsonresult}");
+      }
 
       return node["ticketCode"].ToString();
-
     }
 
     public async Task<TicketConfirmationResponse> ConfirmReserve(ConfirmReserveRequestModel confirmreservemodel)

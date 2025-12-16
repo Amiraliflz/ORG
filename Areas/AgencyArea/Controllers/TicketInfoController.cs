@@ -31,34 +31,28 @@ namespace Application.Areas.AgencyArea
 
       if (agency == null)
       {
-        // No agency found for the current user; show empty list gracefully
         ViewBag.tickets = new List<Ticket>();
+        ViewBag.totalTickets = 0;
+        ViewBag.activeTickets = 0;
+        ViewBag.cancelledTickets = 0;
         return View();
       }
 
       var tickets = agency.SoldTickets ?? new List<Ticket>();
       ViewBag.tickets = tickets.OrderByDescending(t => t.RegisteredAt).ToList();
+      
+      // Statistics
+      ViewBag.totalTickets = tickets.Count;
+      ViewBag.activeTickets = tickets.Count(t => !t.IsCancelled);
+      ViewBag.cancelledTickets = tickets.Count(t => t.IsCancelled);
 
       return View();
     }
 
 
     [HttpGet]
-    public async Task<IActionResult> Filter(string datesFilter)
+    public async Task<IActionResult> Filter(string datesFilter, string statusFilter)
     {
-      // Date filters
-      string[] date_strings = (datesFilter ?? string.Empty).Replace(" ", "").Split('-');
-      if (date_strings.Length < 2)
-      {
-        return RedirectToAction(nameof(Index));
-      }
-
-      DateTime startDate = new PersianDate(date_strings[0]).ToDateTime();
-      startDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, 0, 0, 0);
-
-      DateTime endDate = new PersianDate(date_strings[1]).ToDateTime();
-      endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 23, 59, 59);
-
       var username = User?.Identity != null ? User.Identity.Name : null;
 
       var agency = await context.Agencies
@@ -69,14 +63,53 @@ namespace Application.Areas.AgencyArea
       if (agency == null)
       {
         ViewBag.tickets = new List<Ticket>();
+        ViewBag.totalTickets = 0;
+        ViewBag.activeTickets = 0;
+        ViewBag.cancelledTickets = 0;
         return View("Index");
       }
 
       var ticketsQuery = agency.SoldTickets.AsQueryable();
-      ticketsQuery = FilterTickets_by_date(ticketsQuery, startDate, endDate);
 
-      ViewBag.dateFilter = datesFilter;
-      ViewBag.tickets = ticketsQuery.OrderByDescending(t => t.RegisteredAt).ToList();
+      // Apply date filter if provided
+      if (!string.IsNullOrEmpty(datesFilter))
+      {
+        string[] date_strings = datesFilter.Replace(" ", "").Split('-');
+        if (date_strings.Length >= 2)
+        {
+          DateTime startDate = new PersianDate(date_strings[0]).ToDateTime();
+          startDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, 0, 0, 0);
+
+          DateTime endDate = new PersianDate(date_strings[1]).ToDateTime();
+          endDate = new DateTime(endDate.Year, endDate.Month, endDate.Day, 23, 59, 59);
+
+          ticketsQuery = FilterTickets_by_date(ticketsQuery, startDate, endDate);
+          ViewBag.dateFilter = datesFilter;
+        }
+      }
+
+      // Apply status filter if provided
+      if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "all")
+      {
+        if (statusFilter == "active")
+        {
+          ticketsQuery = ticketsQuery.Where(t => !t.IsCancelled);
+        }
+        else if (statusFilter == "cancelled")
+        {
+          ticketsQuery = ticketsQuery.Where(t => t.IsCancelled);
+        }
+        ViewBag.statusFilter = statusFilter;
+      }
+
+      var filteredTickets = ticketsQuery.OrderByDescending(t => t.RegisteredAt).ToList();
+      ViewBag.tickets = filteredTickets;
+      
+      // Statistics for all tickets
+      var allTickets = agency.SoldTickets ?? new List<Ticket>();
+      ViewBag.totalTickets = allTickets.Count;
+      ViewBag.activeTickets = allTickets.Count(t => !t.IsCancelled);
+      ViewBag.cancelledTickets = allTickets.Count(t => t.IsCancelled);
 
       return View("Index");
     }
