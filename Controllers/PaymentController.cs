@@ -9,67 +9,24 @@ namespace Application.Controllers
     [Route("[controller]/[action]")]
     public class PaymentController : Controller
     {
-        private readonly ZarinpalService _zarinpalService;
+        private readonly IPaymentService _paymentService;
         private readonly AppDbContext _context;
         private readonly ILogger<PaymentController> _logger;
         private readonly MrShooferAPIClient _mrShooferClient;
         private readonly IConfiguration _configuration;
 
         public PaymentController(
-            ZarinpalService zarinpalService, 
+            IPaymentService paymentService, 
             AppDbContext context,
             ILogger<PaymentController> logger,
             MrShooferAPIClient mrShooferClient,
             IConfiguration configuration)
         {
-            _zarinpalService = zarinpalService;
+            _paymentService = paymentService;
             _context = context;
             _logger = logger;
             _mrShooferClient = mrShooferClient;
             _configuration = configuration;
-        }
-
-        /// <summary>
-        /// Mock payment gateway for localhost testing
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> MockGateway(string authority)
-        {
-            if (!_zarinpalService.IsMockPaymentEnabled)
-            {
-                return NotFound("Mock payment is not enabled");
-            }
-
-            // Find the ticket by authority
-            var ticket = await _context.Tickets
-                .FirstOrDefaultAsync(t => t.PaymentAuthority == authority);
-
-            if (ticket == null)
-            {
-                return NotFound("تراکنش یافت نشد");
-            }
-
-            ViewBag.Authority = authority;
-            ViewBag.Ticket = ticket;
-            ViewBag.Amount = ticket.TicketFinalPrice;
-            ViewBag.AmountInRials = ticket.TicketFinalPrice * 10;
-
-            return View();
-        }
-
-        /// <summary>
-        /// Process mock payment (simulate success or failure)
-        /// </summary>
-        [HttpPost]
-        public IActionResult ProcessMockPayment(string authority, bool success)
-        {
-            if (!_zarinpalService.IsMockPaymentEnabled)
-            {
-                return NotFound("Mock payment is not enabled");
-            }
-
-            var status = success ? "OK" : "NOK";
-            return RedirectToAction("Verify", new { Authority = authority, Status = status });
         }
 
         /// <summary>
@@ -112,8 +69,8 @@ namespace Application.Controllers
                 // Convert price from Toman to Rial (multiply by 10)
                 int amountInRials = ticket.TicketFinalPrice * 10;
 
-                // Verify payment with Zarinpal (or mock)
-                var (success, refId, cardPan, message) = await _zarinpalService.VerifyPaymentAsync(Authority, amountInRials);
+                // Verify payment with payment service
+                var (success, refId, cardPan, message) = await _paymentService.VerifyPaymentAsync(Authority, amountInRials);
 
                 if (!success)
                 {
@@ -208,7 +165,7 @@ namespace Application.Controllers
         /// Payment failed page
         /// </summary>
         [HttpGet]
-        public IActionResult PaymentFailed(string message = null)
+        public IActionResult PaymentFailed(string? message = null)
         {
             ViewBag.ErrorMessage = message ?? "پرداخت ناموفق بود";
             return View();

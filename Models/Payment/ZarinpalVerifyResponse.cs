@@ -5,10 +5,20 @@ namespace Application.Models.Payment
     public partial class ZarinpalVerifyResponse
     {
         [JsonPropertyName("data")]
-        public ZarinpalVerifyData Data { get; set; }
+        public ZarinpalVerifyData? Data { get; set; }
 
         [JsonPropertyName("errors")]
-        public ZarinpalErrorData Errors { get; set; }
+        public object? Errors { get; set; } // Can be array [] or object
+        
+        // Helper to get typed error data
+        public ZarinpalErrorData? GetErrorData()
+        {
+            if (Errors is System.Text.Json.JsonElement jsonElement && jsonElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<ZarinpalErrorData>(jsonElement.GetRawText());
+            }
+            return null;
+        }
     }
 
     public class ZarinpalVerifyData
@@ -39,8 +49,8 @@ namespace Application.Models.Payment
     public partial class ZarinpalVerifyResponse
     {
         // Legacy properties for old code
-        public int Status => Data?.Code ?? Errors?.Code ?? 0;
+        public int Status => Data?.Code ?? GetErrorData()?.Code ?? 0;
         public long RefId => Data?.RefId ?? 0;
-        public string CardPan => Data?.CardPan;
+        public string? CardPan => Data?.CardPan;
     }
 }

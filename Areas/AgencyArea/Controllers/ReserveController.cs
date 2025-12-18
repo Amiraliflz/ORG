@@ -27,7 +27,7 @@ namespace Application.Areas.AgencyArea
     private readonly AppDbContext context;
     private readonly CustomerServiceSmsSender customerSmsSender;
     private readonly IConfiguration configuration;
-    private readonly ZarinpalService _zarinpalService;
+    private readonly IPaymentService _paymentService;
     private readonly ILogger<ReserveController> _logger;
     private Agency agency;
 
@@ -38,7 +38,7 @@ namespace Application.Areas.AgencyArea
       AppDbContext context, 
       CustomerServiceSmsSender smssender, 
       IConfiguration configuration,
-      ZarinpalService zarinpalService,
+      IPaymentService paymentService,
       ILogger<ReserveController> logger)
     {
       this.configuration = configuration;
@@ -46,7 +46,7 @@ namespace Application.Areas.AgencyArea
       this.context = context;
       _userManager = usermanager;
       this.apiclient = apiclient;
-      _zarinpalService = zarinpalService;
+      _paymentService = paymentService;
       _logger = logger;
       
       // Ensure guest agency exists when controller is initialized
@@ -327,10 +327,10 @@ namespace Application.Areas.AgencyArea
       int amountInRials = newticket.TicketFinalPrice * 10; // Convert Toman to Rial
       string description = $"خرید بلیط {newticket.TripOrigin} به {newticket.TripDestination}";
       
-      _logger.LogInformation("Requesting Zarinpal payment. Amount in Rials: {Amount}, TripCode: {TripCode}", 
+      _logger.LogInformation("Requesting payment. Amount in Rials: {Amount}, TripCode: {TripCode}", 
         amountInRials, viewModel.TripCode);
       
-      var (success, authority, message) = await _zarinpalService.RequestPaymentAsync(
+      var (success, authority, message) = await _paymentService.RequestPaymentAsync(
         amountInRials,
         description,
         newticket.PhoneNumber,
@@ -343,13 +343,13 @@ namespace Application.Areas.AgencyArea
         newticket.PaymentAuthority = authority;
         await context.SaveChangesAsync();
 
-        _logger.LogInformation("Zarinpal payment request successful. Authority: {Authority}, TicketId: {TicketId}", 
+        _logger.LogInformation("Payment request successful. Authority: {Authority}, TicketId: {TicketId}", 
           authority, newticket.Id);
 
-        // ✅ STEP 3: REDIRECT TO ZARINPAL PAYMENT GATEWAY
-        var paymentUrl = _zarinpalService.GetPaymentGatewayUrl(authority);
+        // ✅ STEP 3: REDIRECT TO PAYMENT GATEWAY
+        var paymentUrl = _paymentService.GetPaymentGatewayUrl(authority);
         
-        _logger.LogInformation("Redirecting to Zarinpal. URL: {PaymentUrl}", paymentUrl);
+        _logger.LogInformation("Redirecting to payment gateway. URL: {PaymentUrl}", paymentUrl);
         
         return Redirect(paymentUrl);
       }

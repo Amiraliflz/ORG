@@ -34,8 +34,9 @@ builder.Services.AddTransient<MrShooferAPIClient>(serviceProvider =>
 
 builder.Services.AddTransient<CustomerServiceSmsSender>();
 
-// Register HttpClient for ZarinpalService with timeout configuration
-builder.Services.AddHttpClient<ZarinpalService>(client =>
+// Register Payment Service with Dependency Inversion Principle
+// This allows easy swapping to other payment providers (IDPay, Sep, etc.)
+builder.Services.AddHttpClient<IPaymentService, ZarinpalService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
 });

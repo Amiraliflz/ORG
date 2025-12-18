@@ -1,0 +1,84 @@
+using Application.Services.Payment;
+
+namespace Application.Services.Payment
+{
+    /// <summary>
+    /// Example implementation of IPaymentService for another payment gateway
+    /// This demonstrates how easy it is to add new payment providers thanks to Dependency Inversion Principle
+    /// 
+    /// To use this service instead of Zarinpal:
+    /// 1. Implement all the methods according to your payment gateway's API
+    /// 2. Update Program.cs to register IdpayService instead of ZarinpalService:
+    ///    builder.Services.AddHttpClient<IPaymentService, IdpayService>(client => { ... });
+    /// 3. No changes needed in PaymentController or any other code!
+    /// </summary>
+    public class IdpayService : IPaymentService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<IdpayService> _logger;
+        private readonly string _apiKey;
+        private readonly string _callbackUrl;
+
+        public IdpayService(
+            HttpClient httpClient,
+            IConfiguration configuration,
+            ILogger<IdpayService> logger)
+        {
+            _httpClient = httpClient;
+            _configuration = configuration;
+            _logger = logger;
+
+            _apiKey = configuration["Idpay:ApiKey"] ?? string.Empty;
+            _callbackUrl = configuration["Idpay:CallbackUrl"] ?? string.Empty;
+
+            // Validate API Key
+            if (string.IsNullOrWhiteSpace(_apiKey))
+            {
+                _logger.LogError("❌ Idpay ApiKey is not configured!");
+                throw new InvalidOperationException("Idpay ApiKey is required");
+            }
+
+            _logger.LogInformation("Idpay payment service initialized");
+        }
+
+        public async Task<(bool Success, string Authority, string Message)> RequestPaymentAsync(
+            int amount, 
+            string description, 
+            string mobile, 
+            string? email = null)
+        {
+            // TODO: Implement Idpay payment request
+            // Example:
+            // POST https://api.idpay.ir/v1.1/payment
+            // Headers: X-API-KEY, X-SANDBOX
+            // Body: { order_id, amount, name, phone, mail, desc, callback }
+            
+            _logger.LogInformation("Idpay RequestPayment: Amount={Amount}, Mobile={Mobile}", amount, mobile);
+            
+            throw new NotImplementedException("Idpay payment request not yet implemented");
+        }
+
+        public async Task<(bool Success, long RefId, string CardPan, string Message)> VerifyPaymentAsync(
+            string authority, 
+            int amount)
+        {
+            // TODO: Implement Idpay payment verification
+            // Example:
+            // POST https://api.idpay.ir/v1.1/payment/verify
+            // Headers: X-API-KEY, X-SANDBOX
+            // Body: { id, order_id }
+            
+            _logger.LogInformation("Idpay VerifyPayment: Authority={Authority}, Amount={Amount}", authority, amount);
+            
+            throw new NotImplementedException("Idpay payment verification not yet implemented");
+        }
+
+        public string GetPaymentGatewayUrl(string authority)
+        {
+            // Idpay typically returns the payment URL in the response
+            // Or you can construct it like: https://idpay.ir/p/ws/{id}
+            return $"https://idpay.ir/p/ws/{authority}";
+        }
+    }
+}
