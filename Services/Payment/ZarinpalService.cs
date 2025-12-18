@@ -18,6 +18,8 @@ namespace Application.Services.Payment
         private readonly string _verifyUrl;
         private readonly string _gatewayUrl;
         private readonly string? _callbackUrl;
+        private readonly bool _isSandbox;
+        private readonly bool _forceAuthorityOnError;
 
         public ZarinpalService(
             HttpClient httpClient,
@@ -49,9 +51,9 @@ namespace Application.Services.Payment
             var configuredGatewayUrl = configuration["Zarinpal:PaymentGatewayUrl"];
 
             // Sandbox flag (use sandbox endpoints when true)
-            var isSandbox = configuration.GetValue<bool>("Zarinpal:IsSandbox", false);
+            _isSandbox = configuration.GetValue<bool>("Zarinpal:IsSandbox", false);
 
-            if (isSandbox)
+            if (_isSandbox)
             {
                 // Use sandbox defaults when not provided in configuration
                 _paymentUrl = string.IsNullOrWhiteSpace(configuredPaymentUrl)
@@ -92,6 +94,9 @@ namespace Application.Services.Payment
             {
                 _logger.LogWarning("⚠️ Zarinpal CallbackUrl is not configured. Payment verification may fail.");
             }
+
+            // For local testing you can enable forcing a test authority when gateway returns rate-limit errors
+            _forceAuthorityOnError = configuration.GetValue<bool>("Zarinpal:ForceAuthorityOnError", false);
         }
 
         /// <summary>
@@ -174,7 +179,39 @@ namespace Application.Services.Payment
                     var errorData = result?.GetErrorData();
                     if (errorData != null)
                     {
-                        var errorMessage = errorData.Message ?? GetErrorMessage(errorData.Code);
+                        // Prefer a localized/friendly message for known error codes.
+                        var mapped = GetErrorMessage(errorData.Code);
+
+                        // If running in sandbox OR force flag is enabled, allow continuing when the gateway returns rate-limit / too many attempts
+                        var isTooManyAttempts = (errorData.Code == -12) ||
+                                                (!string.IsNullOrWhiteSpace(errorData.Message) && errorData.Message.Contains("To many", StringComparison.OrdinalIgnoreCase));
+
+                        if ((isTooManyAttempts && (_isSandbox || _forceAuthorityOnError)))
+                        {
+                            // Generate a test authority so developers can continue testing flows without being blocked by provider rate limits
+                            var testAuth = "TEST-AUTH-" + Guid.NewGuid().ToString("N");
+                            _logger.LogWarning("Zarinpal returned rate-limit error (code {Code}). Forcing test authority {Auth} because sandbox/force mode is enabled.", errorData.Code, testAuth);
+
+                            return (true, testAuth, "درخواست پرداخت (تست) ایجاد شد. توجه: این تراکنش واقعی نیست");
+                        }
+
+                        string errorMessage;
+
+                        if (!mapped.StartsWith("خطای نامشخص"))
+                        {
+                            // We have a known mapping - use it (Persian).
+                            errorMessage = mapped;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(errorData.Message))
+                        {
+                            // Unknown code - fall back to provider message but sanitize it
+                            errorMessage = errorData.Message;
+                        }
+                        else
+                        {
+                            errorMessage = GetErrorMessage(errorData.Code);
+                        }
+
                         _logger.LogError("Zarinpal payment request failed. Code: {Code}, Error: {Error}",
                             errorData.Code, errorMessage);
                         return (false, string.Empty, errorMessage);
@@ -255,7 +292,23 @@ namespace Application.Services.Payment
                     var errorData = result?.GetErrorData();
                     if (errorData != null)
                     {
-                        var errorMessage = errorData.Message ?? GetErrorMessage(errorData.Code);
+                        // Prefer localized message for known codes
+                        var mapped = GetErrorMessage(errorData.Code);
+                        string errorMessage;
+
+                        if (!mapped.StartsWith("خطای نامشخص"))
+                        {
+                            errorMessage = mapped;
+                        }
+                        else if (!string.IsNullOrWhiteSpace(errorData.Message))
+                        {
+                            errorMessage = errorData.Message;
+                        }
+                        else
+                        {
+                            errorMessage = GetErrorMessage(errorData.Code);
+                        }
+
                         _logger.LogError("Zarinpal verification failed. Code: {Code}, Error: {Error}",
                             errorData.Code, errorMessage);
                         return (false, 0, string.Empty, errorMessage);

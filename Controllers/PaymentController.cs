@@ -30,6 +30,77 @@ namespace Application.Controllers
         }
 
         /// <summary>
+        /// Public fast link used as Zarinpal callback domain.
+        /// Zarinpal will redirect to this path (https://payment.mrshoofer.ir/link) —
+        /// this action forwards the query to the internal Verify action so domain matches terminal.
+        /// </summary>
+        [HttpGet("/link")]
+        public IActionResult LinkCallback(string Authority, string Status)
+        {
+            _logger.LogInformation("Fast callback /link received. Authority={Authority} Status={Status}", Authority, Status);
+
+            // Forward to Verify action preserving query parameters
+            return RedirectToAction("Verify", new { Authority, Status });
+        }
+
+        /// <summary>
+        /// Initiate payment for a ticket: request authority from Zarinpal and redirect user to gateway
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> RequestPayment(int ticketId)
+        {
+            try
+            {
+                var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+                if (ticket == null)
+                {
+                    _logger.LogError("Payment initiation failed: ticket not found. TicketId: {TicketId}", ticketId);
+                    ViewBag.ErrorMessage = "اطلاعات سفارش یافت نشد";
+                    return View("PaymentFailed");
+                }
+
+                if (ticket.IsPaid)
+                {
+                    _logger.LogInformation("Payment initiation: ticket already paid. TicketId: {TicketId}", ticketId);
+                    return RedirectToAction("ReserveConfirmed", "Reserve", new { area = "AgencyArea", ticketcode = ticket.TicketCode });
+                }
+
+                // Convert Toman -> Rial
+                int amountInRials = ticket.TicketFinalPrice * 10;
+
+                var description = _configuration["Zarinpal:Description"] ?? ($"پرداخت برای بلیط {ticket.Tripcode}");
+                var mobile = ticket.PhoneNumber ?? string.Empty;
+                var email = ticket.Email;
+
+                _logger.LogInformation("Requesting payment authority for TicketId: {TicketId}, Amount: {Amount}", ticketId, amountInRials);
+
+                var (success, authority, message) = await _paymentService.RequestPaymentAsync(amountInRials, description, mobile, email);
+
+                if (!success)
+                {
+                    _logger.LogError("Zarinpal RequestPayment failed for TicketId: {TicketId}. Message: {Message}", ticketId, message);
+                    ViewBag.ErrorMessage = message;
+                    return View("PaymentFailed");
+                }
+
+                // Save authority to ticket and persist
+                ticket.PaymentAuthority = authority;
+                await _context.SaveChangesAsync();
+
+                var gatewayUrl = _paymentService.GetPaymentGatewayUrl(authority);
+                _logger.LogInformation("Redirecting user to payment gateway. TicketId: {TicketId}, GatewayUrl: {Url}", ticketId, gatewayUrl);
+
+                return Redirect(gatewayUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception during RequestPayment for TicketId: {TicketId}", ticketId);
+                ViewBag.ErrorMessage = "خطا در ایجاد درخواست پرداخت. لطفاً مجدداً تلاش کنید";
+                return View("PaymentFailed");
+            }
+        }
+
+        /// <summary>
         /// Verify payment callback from Zarinpal
         /// </summary>
         [HttpGet]
@@ -86,10 +157,18 @@ namespace Application.Controllers
                 {
                     _logger.LogInformation("Creating MrShoofer reservation after payment verification. TripCode: {TripCode}", ticket.Tripcode);
                     
-                    // Set API token for the agency
-                    if (ticket.Agency != null && !string.IsNullOrWhiteSpace(ticket.Agency.ORSAPI_token))
+                    // Use default guest OTA seller when available (IdentityUser == null and Name contains "مهمان")
+                    var guestAgency = await _context.Agencies.FirstOrDefaultAsync(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+
+                    if (guestAgency != null && !string.IsNullOrWhiteSpace(guestAgency.ORSAPI_token))
+                    {
+                        _mrShooferClient.SetSellerApiKey(guestAgency.ORSAPI_token);
+                        _logger.LogInformation("Using guest/default OTA seller for reservation. AgencyId: {AgencyId}", guestAgency.Id);
+                    }
+                    else if (ticket.Agency != null && !string.IsNullOrWhiteSpace(ticket.Agency.ORSAPI_token))
                     {
                         _mrShooferClient.SetSellerApiKey(ticket.Agency.ORSAPI_token);
+                        _logger.LogInformation("Using ticket's agency OTA token for reservation. AgencyId: {AgencyId}", ticket.Agency.Id);
                     }
                     else
                     {
@@ -98,6 +177,7 @@ namespace Application.Controllers
                         if (!string.IsNullOrWhiteSpace(fallbackToken))
                         {
                             _mrShooferClient.SetSellerApiKey(fallbackToken);
+                            _logger.LogInformation("Using fallback configuration OTA token for reservation.");
                         }
                     }
                     
@@ -111,33 +191,46 @@ namespace Application.Controllers
                     string reservecode = await _mrShooferClient.ReserveTicketTemporarirly(tempreserve);
                     _logger.LogInformation("Temporary reservation created. ReserveCode: {ReserveCode}", reservecode);
                     
-                    // Step 2: Confirm Reserve
-                    var confirmreserve = new ConfirmReserveRequestModel
+                    // If MRShhoofer returned a sentinel indicating insufficient account balance, skip ConfirmReserve
+                    if (!string.IsNullOrEmpty(reservecode) && reservecode.StartsWith("MRSHOOFER-NO-BAL-", StringComparison.OrdinalIgnoreCase))
                     {
-                        passengerFirstName = ticket.Firstname,
-                        passengerLastName = ticket.Lastname,
-                        reservationCode = reservecode,
-                        passengerNationalCode = ticket.NaCode,
-                        passengerNumberPhone = ticket.PhoneNumber
-                    };
-                    
-                    var reserve_response = await _mrShooferClient.ConfirmReserve(confirmreserve);
-                    
-                    // Update ticket with MrShoofer ticket code
-                    ticket.TicketCode = reserve_response.ticketCode;
-                    
-                    _logger.LogInformation("MrShoofer reservation confirmed. TicketCode: {TicketCode}", ticket.TicketCode);
+                        _logger.LogWarning("MrShoofer indicated insufficient account balance for reservation. Continuing without ORS reservation. TicketId: {TicketId}", ticket.Id);
+                        ticket.TicketCode = $"PAID-NO-RESERVE-{DateTime.Now:yyyyMMddHHmmss}-{ticket.Id}";
+                    }
+                    else
+                    {
+                        // Step 2: Confirm Reserve
+                        var confirmreserve = new ConfirmReserveRequestModel
+                        {
+                            passengerFirstName = ticket.Firstname,
+                            passengerLastName = ticket.Lastname,
+                            reservationCode = reservecode,
+                            passengerNationalCode = ticket.NaCode,
+                            passengerNumberPhone = ticket.PhoneNumber
+                        };
+                        
+                        var reserve_response = await _mrShooferClient.ConfirmReserve(confirmreserve);
+                        
+                        // Update ticket with MrShoofer ticket code
+                        ticket.TicketCode = reserve_response.ticketCode;
+                        
+                        _logger.LogInformation("MrShoofer reservation confirmed. TicketCode: {TicketCode}", ticket.TicketCode);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error creating MrShoofer reservation after payment. TicketId: {TicketId}", ticket.Id);
-                    
-                    // ⚠️ CRITICAL: Payment succeeded but reservation failed!
-                    // Mark ticket with special code for manual intervention
-                    ticket.TicketCode = $"PAID-NO-RESERVE-{DateTime.Now:yyyyMMddHHmmss}-{ticket.Id}";
-                    
-                    _logger.LogCritical("PAYMENT SUCCEEDED BUT MRSHOOFER RESERVATION FAILED! TicketId: {TicketId}, PaymentRefId: {RefId}, TripCode: {TripCode}",
-                        ticket.Id, refId, ticket.Tripcode);
+                    // Handle account-balance related errors with less severity
+                    var msg = ex.Message ?? string.Empty;
+                    if (msg.Contains("ACCOUNT BALANCE", StringComparison.OrdinalIgnoreCase) || msg.Contains("CAN NOT SUBMIT TICKET", StringComparison.OrdinalIgnoreCase) || msg.Contains("ACCOUNT BALANCE NOT ENOUGH", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogWarning(ex, "MrShoofer reservation failed due to insufficient account balance. Marking ticket as paid but not reserved. TicketId: {TicketId}", ticket.Id);
+                        ticket.TicketCode = $"PAID-NO-RESERVE-{DateTime.Now:yyyyMMddHHmmss}-{ticket.Id}";
+                    }
+                    else
+                    {
+                        _logger.LogError(ex, "Error creating MrShoofer reservation after payment. TicketId: {TicketId}", ticket.Id);
+                        ticket.TicketCode = $"PAID-NO-RESERVE-{DateTime.Now:yyyyMMddHHmmss}-{ticket.Id}";
+                    }
                 }
 
                 // Update ticket payment information

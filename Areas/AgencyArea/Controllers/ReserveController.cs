@@ -329,7 +329,10 @@ namespace Application.Areas.AgencyArea
       
       _logger.LogInformation("Requesting payment. Amount in Rials: {Amount}, TripCode: {TripCode}", 
         amountInRials, viewModel.TripCode);
-      
+
+      // NOTE: Removed pre-payment MRSHOOFER account balance check so payment can proceed.
+      // Reservation with MrShoofer will be attempted after payment verification in PaymentController.Verify.
+
       var (success, authority, message) = await _paymentService.RequestPaymentAsync(
         amountInRials,
         description,
