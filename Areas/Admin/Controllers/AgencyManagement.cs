@@ -220,14 +220,6 @@ namespace Application.Areas.Admin.Controllers
       return Json(new { data = agecyResult });
     }
 
-    [NonAction]
-    private async Task<int> GetAgencyBalance(string api_token)
-    {
-      apiClient.SetSellerApiKey(api_token);
-
-      return (int)Convert.ToDouble(await apiClient.GetAccountBalance());
-    }
-
     public async Task<IActionResult> GetAgencyTickets(int id)
     {
       var tickets = context.Tickets.Where(t => t.Agency.Id == id)
@@ -251,7 +243,6 @@ namespace Application.Areas.Admin.Controllers
 
       return Json(new { data = tickets });
     }
-
 
     [HttpPost]
     public async Task<IActionResult> ChargeAgencyBalance(ChargeAgencyBalanceViewModel viewmodel)
@@ -297,11 +288,67 @@ namespace Application.Areas.Admin.Controllers
       await context.SaveChangesAsync();
 
 
-
       TempData["status"] = "success";
       TempData["message"] = "حساب اعتبار فروشنده‌ی" + $" {agency.Name} " + "با موفقیت به مبلغ" + $" {amount.ToString("N0")} ، شارژ گردید";
 
       return RedirectToAction("DetailOverview", new {id = agency.Id});
+    }
+
+    /// <summary>
+    /// Mark an agency as the default OTA seller. This agency's ORSAPI_token will be preferred
+    /// when creating reservations (ReserveController will pick IsDefaultSeller first).
+    /// Only one agency will be marked as default at a time.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> SetDefaultSeller(int id)
+    {
+      var agency = await context.Agencies.FindAsync(id);
+      if (agency == null)
+      {
+        return NotFound();
+      }
+
+      // Unset any previously default sellers
+      var currentDefaults = context.Agencies.Where(a => a.IsDefaultSeller && a.Id != id).ToList();
+      foreach (var a in currentDefaults)
+      {
+        a.IsDefaultSeller = false;
+        context.Agencies.Update(a);
+      }
+
+      agency.IsDefaultSeller = true;
+      context.Agencies.Update(agency);
+
+      await context.SaveChangesAsync();
+
+      TempData["status"] = "success";
+      TempData["message"] = $"آژانس {agency.Name} به‌عنوان حساب پیش‌فرض تنظیم شد.";
+
+      return RedirectToAction("DetailOverview", new { id = agency.Id });
+    }
+
+    public async Task<int> GetAgencyBalance(string api_token)
+    {
+      apiClient.SetSellerApiKey(api_token);
+
+      var balanceStr = await apiClient.GetAccountBalance();
+      if (string.IsNullOrWhiteSpace(balanceStr)) return 0;
+
+      // Remove common formatting characters
+      balanceStr = balanceStr.Replace(",", "").Replace("\u00A0", "");
+
+      if (double.TryParse(balanceStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var val))
+      {
+        return (int)val;
+      }
+
+      // Try parse with current culture as a last resort
+      if (double.TryParse(balanceStr, out val))
+      {
+        return (int)val;
+      }
+
+      return 0;
     }
   }
 }

@@ -15,5 +15,8 @@ namespace Application.Models
 
     public IdentityUser IdentityUser { get; set; }
     public ICollection<Ticket> SoldTickets { get; set; }
+
+    // When true this agency will be used as the default OTA seller (used for creating reservations)
+    public bool IsDefaultSeller { get; set; } = false;
   }
 }

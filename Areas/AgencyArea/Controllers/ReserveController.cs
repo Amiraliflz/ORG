@@ -110,7 +110,7 @@ namespace Application.Areas.AgencyArea
       if (trip == null)
       {
         _logger.LogError("Trip info is null after all retry attempts for TripCode: {TripCode}", tripcode);
-        TempData["ErrorMessage"] = "اطلاعات سفر یافت نشد. لطفاً بعداً مجدداً تلاش کنید.";
+        TempData["ErrorMessage"] = "اطلاعات سفر یافت نشد. لطفا بعدا تلاش کنید";
         return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
       }
 
@@ -417,8 +417,31 @@ namespace Application.Areas.AgencyArea
       string tokenToUse = null;
       Agency agencyToUse = null;
 
+      // 1) If a specific default agency username is configured, prefer it (e.g. Test1)
+      var defaultAgencyUsername = configuration["MrShoofer:DefaultAgencyUsername"];
+      if (!string.IsNullOrWhiteSpace(defaultAgencyUsername))
+      {
+        try
+        {
+          var defaultIdentity = _userManager.FindByNameAsync(defaultAgencyUsername).Result;
+          if (defaultIdentity != null)
+          {
+            var agencyByUser = this.context.Agencies.FirstOrDefault(a => a.IdentityUser != null && a.IdentityUser.Id == defaultIdentity.Id);
+            if (agencyByUser != null && !string.IsNullOrWhiteSpace(agencyByUser.ORSAPI_token))
+            {
+              agencyToUse = agencyByUser;
+              tokenToUse = agencyByUser.ORSAPI_token;
+            }
+          }
+        }
+        catch
+        {
+          // ignore lookup errors and continue to fallbacks
+        }
+      }
+
       // Use agency token if authenticated, otherwise use guest agency
-      if (User.Identity.IsAuthenticated)
+      if (agencyToUse == null && User.Identity.IsAuthenticated)
       {
         var identityUser = _userManager.GetUserAsync(User).Result;
         agencyToUse = this.context.Agencies
@@ -433,13 +456,23 @@ namespace Application.Areas.AgencyArea
       // If no agency found (guest user or authenticated user without agency)
       if (agencyToUse == null)
       {
-        // Get the guest agency (agency with no IdentityUser)
-        agencyToUse = this.context.Agencies
-          .FirstOrDefault(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
-        
-        if (agencyToUse != null && !string.IsNullOrWhiteSpace(agencyToUse.ORSAPI_token))
+        // Prefer an explicit default seller if configured
+        var defaultSeller = this.context.Agencies.FirstOrDefault(a => a.IsDefaultSeller && !string.IsNullOrWhiteSpace(a.ORSAPI_token));
+        if (defaultSeller != null)
         {
-          tokenToUse = agencyToUse.ORSAPI_token;
+          agencyToUse = defaultSeller;
+          tokenToUse = defaultSeller.ORSAPI_token;
+        }
+        else
+        {
+          // Get the guest agency (agency with no IdentityUser)
+          agencyToUse = this.context.Agencies
+            .FirstOrDefault(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+
+          if (agencyToUse != null && !string.IsNullOrWhiteSpace(agencyToUse.ORSAPI_token))
+          {
+            tokenToUse = agencyToUse.ORSAPI_token;
+          }
         }
       }
 
@@ -474,7 +507,7 @@ namespace Application.Areas.AgencyArea
           Address = "تهران",
           AdminMobile = "09900000000",
           DateJoined = DateTime.Now,
-          ORSAPI_token = configuration["MrShoofer:SellerToken"] ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjU1NCIsImp0aSI6Ijk1ZTI1NjYzLTkzM2EtNGY1ZS04ZTdiLTMwNGQ0Yjg3M2Q3NiIsImV4cCI6MTkyMjc3ODkwOCwiaXNzIjoibXJzaG9vZmVyLmlyIiwiYXVkIjoibiJzaG9vZmVyLmlyIn0.2r5WoGmqb5Ra_6epV5jR3Y0RlHs5bcwE0li0wo1ricE",
+          ORSAPI_token = configuration["MrShoofer:SellerToken"] ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjU1NCIsImp0aSI6Ijk1ZTI1NjYzLTkzM2EtNGY1ZS04ZTdiLTMwNGQ0Yjg3M2Q3NiIsImV4cCI6MTkyMjc3ODkwOCwiaXNzIjoibXJzaG9vZmVyLmlyIiwiYXVkIjoibXJzaG9vZmVyLmlyIn0.2r5WoGmqb5Ra_6epV5jR3Y0RlHs5bcwE0li0wo1ricE",
           Commission = 0,
           IdentityUser = null
         };

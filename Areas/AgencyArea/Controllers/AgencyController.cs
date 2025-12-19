@@ -54,8 +54,33 @@ namespace Application.Areas.AgencyArea
 
       ViewBag.Last7weekprofit = analyzer.GetLast7DaysProfit();
 
+      // Only fetch account balance for real agencies (not the guest/default agency)
+      long? balance = null;
+      try
+      {
+        if (agency != null && agency.IdentityUser != null)
+        {
+          var balStr = await _apiClient.GetAccountBalance();
+          if (!string.IsNullOrWhiteSpace(balStr))
+          {
+            if (double.TryParse(balStr.Replace(",", ""), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var val))
+            {
+              balance = (long)val;
+            }
+            else if (double.TryParse(balStr, out val))
+            {
+              balance = (long)val;
+            }
+          }
+        }
+      }
+      catch
+      {
+        // ignore balance fetch errors
+        balance = null;
+      }
 
-      ViewBag.agancy_balance = (long)Convert.ToDecimal(await _apiClient.GetAccountBalance());
+      ViewBag.agancy_balance = balance;
 
       ViewBag.today_soldTickets = agency.SoldTickets
         .Where(t => t.RegisteredAt >= DateTime.Today && t.RegisteredAt < DateTime.Today.AddDays(1))
