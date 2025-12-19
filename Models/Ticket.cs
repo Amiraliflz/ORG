@@ -24,6 +24,7 @@ namespace Application.Models
     public string ServiceName { set; get; }
     public string CarName { get; set; }
 
+
     // Payment Information
     public bool IsPaid { get; set; } = false;
     public string? PaymentAuthority { get; set; }
