@@ -89,7 +89,7 @@ namespace Application.Services.Payment
             }
 
             _callbackUrl = configuration["Zarinpal:CallbackUrl"];
-            
+
             if (string.IsNullOrWhiteSpace(_callbackUrl))
             {
                 _logger.LogWarning("⚠️ Zarinpal CallbackUrl is not configured. Payment verification may fail.");
@@ -115,6 +115,14 @@ namespace Application.Services.Payment
         {
             try
             {
+                _logger.LogInformation("=== ZARINPAL PAYMENT REQUEST DEBUG ===");
+                _logger.LogInformation("MerchantId: {MerchantId}", _merchantId);
+                _logger.LogInformation("CallbackUrl from config: {CallbackUrl}", _callbackUrl);
+                _logger.LogInformation("Amount (Rials): {Amount}", amount);
+                _logger.LogInformation("Description: {Description}", description);
+                _logger.LogInformation("Mobile: {Mobile}", mobile);
+                _logger.LogInformation("Email: {Email}", email ?? "null");
+
                 var request = new ZarinpalPaymentRequest
                 {
                     MerchantId = _merchantId,
@@ -126,9 +134,8 @@ namespace Application.Services.Payment
                 };
 
                 var json = JsonSerializer.Serialize(request);
-                _logger.LogInformation("Zarinpal Payment Request JSON: {Json}", json);
-                _logger.LogInformation("Zarinpal Payment URL: {Url}", _paymentUrl);
-                _logger.LogInformation("Zarinpal Callback URL: {CallbackUrl}", _callbackUrl);
+                _logger.LogInformation("=== FULL REQUEST JSON BEING SENT ===");
+                _logger.LogInformation("{Json}", json);
 
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -136,8 +143,7 @@ namespace Application.Services.Payment
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 _logger.LogInformation("Zarinpal HTTP Status: {StatusCode}", response.StatusCode);
-                _logger.LogInformation("Zarinpal Payment Response (first 500 chars): {Response}",
-                    responseContent.Length > 500 ? responseContent.Substring(0, 500) : responseContent);
+                _logger.LogInformation("Zarinpal Payment Response (FULL): {Response}", responseContent);
 
                 // Check if response is HTML (error page)
                 if (responseContent.TrimStart().StartsWith("<") || responseContent.TrimStart().StartsWith("<!DOCTYPE"))
@@ -149,7 +155,7 @@ namespace Application.Services.Payment
                 // Check HTTP status
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Zarinpal HTTP error. Status: {Status}, Response: {Response}",
+                    _logger.LogError("Zarinpal HTTP error. Status: {Status}, Full Response: {Response}",
                         response.StatusCode, responseContent);
                     return (false, string.Empty, $"خطا در ارتباط با درگاه پرداخت (کد: {response.StatusCode})");
                 }
@@ -216,7 +222,7 @@ namespace Application.Services.Payment
                             errorData.Code, errorMessage);
                         return (false, string.Empty, errorMessage);
                     }
-                    
+
                     _logger.LogError("Zarinpal returned unexpected response format. Response: {Response}", responseContent);
                     return (false, string.Empty, "خطای نامشخص در درگاه پرداخت");
                 }
@@ -313,7 +319,7 @@ namespace Application.Services.Payment
                             errorData.Code, errorMessage);
                         return (false, 0, string.Empty, errorMessage);
                     }
-                    
+
                     _logger.LogError("Zarinpal verify returned unexpected response format. Response: {Response}", responseContent);
                     return (false, 0, string.Empty, "خطای نامشخص در تایید پرداخت");
                 }
