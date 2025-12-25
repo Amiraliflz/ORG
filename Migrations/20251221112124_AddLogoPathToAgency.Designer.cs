@@ -3,6 +3,7 @@ using System;
 using Application.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Application.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251221112124_AddLogoPathToAgency")]
+    partial class AddLogoPathToAgency
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,6 +74,9 @@ namespace Application.Migrations
 
                     b.Property<bool>("IsDefaultSeller")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("LogoPath")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -265,9 +271,6 @@ namespace Application.Migrations
 
                     b.Property<string>("Tripcode")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("WebappToken")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

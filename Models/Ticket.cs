@@ -32,6 +32,9 @@ namespace Application.Models
     public DateTime? PaidAt { get; set; }
     public string? CardPan { get; set; }
 
+    // Webapp secret token (optional)
+    public string? WebappToken { get; set; }
+
     // nav prop
     public Agency Agency { get; set; }
   }

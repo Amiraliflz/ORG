@@ -3,6 +3,8 @@ using Application.Services.Payment;
 using Application.Services.MrShooferORS;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using System.Text;
 
 namespace Application.Controllers
 {
@@ -14,19 +16,22 @@ namespace Application.Controllers
         private readonly ILogger<PaymentController> _logger;
         private readonly MrShooferAPIClient _mrShooferClient;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public PaymentController(
             IPaymentService paymentService, 
             AppDbContext context,
             ILogger<PaymentController> logger,
             MrShooferAPIClient mrShooferClient,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory)
         {
             _paymentService = paymentService;
             _context = context;
             _logger = logger;
             _mrShooferClient = mrShooferClient;
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -156,7 +161,7 @@ namespace Application.Controllers
                 try
                 {
                     _logger.LogInformation("Creating MrShoofer reservation after payment verification. TripCode: {TripCode}", ticket.Tripcode);
-                    
+
                     // Use default guest OTA seller when available (IdentityUser == null and Name contains "مهمان")
                     var guestAgency = await _context.Agencies.FirstOrDefaultAsync(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
 
@@ -180,17 +185,17 @@ namespace Application.Controllers
                             _logger.LogInformation("Using fallback configuration OTA token for reservation.");
                         }
                     }
-                    
+
                     // Step 1: Temporary Reserve
                     var tempreserve = new TicketTempReserveRequestModel
                     {
                         isPrivate = true,
                         tripCode = ticket.Tripcode
                     };
-                    
+
                     string reservecode = await _mrShooferClient.ReserveTicketTemporarirly(tempreserve);
                     _logger.LogInformation("Temporary reservation created. ReserveCode: {ReserveCode}", reservecode);
-                    
+
                     // If MRShhoofer returned a sentinel indicating insufficient account balance, skip ConfirmReserve
                     if (!string.IsNullOrEmpty(reservecode) && reservecode.StartsWith("MRSHOOFER-NO-BAL-", StringComparison.OrdinalIgnoreCase))
                     {
@@ -208,12 +213,18 @@ namespace Application.Controllers
                             passengerNationalCode = ticket.NaCode,
                             passengerNumberPhone = ticket.PhoneNumber
                         };
-                        
+
                         var reserve_response = await _mrShooferClient.ConfirmReserve(confirmreserve);
-                        
+
                         // Update ticket with MrShoofer ticket code
                         ticket.TicketCode = reserve_response.ticketCode;
-                        
+
+                        // If ORS returned a webapp token include it on the ticket for later notification/redirect
+                        if (!string.IsNullOrWhiteSpace(reserve_response?.webappToken))
+                        {
+                            ticket.WebappToken = reserve_response.webappToken;
+                        }
+
                         _logger.LogInformation("MrShoofer reservation confirmed. TicketCode: {TicketCode}", ticket.TicketCode);
                     }
                 }
@@ -242,6 +253,57 @@ namespace Application.Controllers
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Ticket updated successfully. TicketCode: {TicketCode}, RefId: {RefId}", ticket.TicketCode, refId);
+
+                // If ticket has a webapp token, POST JSON to webapp endpoint with retries and then redirect user to webapp URL
+                if (!string.IsNullOrWhiteSpace(ticket.WebappToken))
+                {
+                    var webappBase = _configuration["Webapp:BaseUrl"] ?? "https://webapp.mrshoofer.ir";
+                    var targetUrl = $"{webappBase}/o?t={System.Net.WebUtility.UrlEncode(ticket.WebappToken)}";
+
+                    var client = _httpClientFactory.CreateClient();
+                    client.Timeout = TimeSpan.FromSeconds(5);
+
+                    bool notified = false;
+                    int attempts = 0;
+                    int maxAttempts = 3;
+
+                    var payload = new { webappToken = ticket.WebappToken };
+                    var payloadJson = JsonSerializer.Serialize(payload);
+
+                    while (attempts < maxAttempts && !notified)
+                    {
+                        attempts++;
+                        try
+                        {
+                            _logger.LogInformation("Calling webapp registration endpoint (POST). Attempt {Attempt}/{MaxAttempts}. Url={Url}", attempts, maxAttempts, targetUrl);
+
+                            using var content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+                            var resp = await client.PostAsync(targetUrl, content);
+                            if (resp.IsSuccessStatusCode)
+                            {
+                                notified = true;
+                                _logger.LogInformation("Webapp registration POST succeeded on attempt {Attempt}", attempts);
+                                break;
+                            }
+
+                            _logger.LogWarning("Webapp registration POST returned non-success status {Status} on attempt {Attempt}", resp.StatusCode, attempts);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Exception when calling webapp registration POST on attempt {Attempt}", attempts);
+                        }
+
+                        await Task.Delay(500 * attempts);
+                    }
+
+                    if (!notified)
+                    {
+                        _logger.LogError("Failed to notify webapp after {MaxAttempts} attempts. Token={Token}", maxAttempts, ticket.WebappToken);
+                    }
+
+                    // Redirect user to webapp URL (regardless of notify result)
+                    return Redirect(targetUrl);
+                }
 
                 // Redirect to success page
                 return RedirectToAction("ReserveConfirmed", "Reserve", new { area = "AgencyArea", ticketcode = ticket.TicketCode });

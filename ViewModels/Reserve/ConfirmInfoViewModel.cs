@@ -20,5 +20,8 @@ namespace Application.ViewModels.Reserve
     public string Nacode { get; set; }
     [Required(ErrorMessage = "جنسیت مسافر را انتخاب کنید")]
     public string Gender { set; get; }
+
+    // Optional webapp token provided by client (will be sent to webapp after payment)
+    public string? WebappToken { get; set; }
   }
 }

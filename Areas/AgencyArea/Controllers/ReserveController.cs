@@ -299,7 +299,9 @@ namespace Application.Areas.AgencyArea
         CarName = trip.carModelName,
         // ⚠️ Temporary ticket code - will be replaced with MrShoofer ticket code after payment
         TicketCode = $"PENDING-{DateTime.Now:yyyyMMddHHmmss}",
-        IsPaid = false
+        IsPaid = false,
+        // Store WebappToken if provided by client
+        WebappToken = viewModel.WebappToken
       };
 
       // Associate with agency
