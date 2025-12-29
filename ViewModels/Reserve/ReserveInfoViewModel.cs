@@ -29,5 +29,8 @@ namespace Application.ViewModels.Reserve
 
     [Required]
     public string TripCode { get; set; }
+
+    // Optional token provided by webapp clients so we can redirect back after purchase
+    public string? WebappToken { get; set; }
   }
 }
