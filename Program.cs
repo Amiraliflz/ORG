@@ -126,6 +126,13 @@ else
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
+// Ensure Zarinpal receives the origin domain as referrer (avoids the "میان‌پی" interstitial)
+app.Use(async (context, next) =>
+{
+  context.Response.Headers["Referrer-Policy"] = "strict-origin";
+  await next();
+});
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
