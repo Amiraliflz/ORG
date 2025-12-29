@@ -64,6 +64,10 @@ namespace Application.Areas.AgencyArea
       if (string.IsNullOrEmpty(tripcode))
         return BadRequest();
 
+      // Capture optional webapp token from query string (supports both "webapptoken" and short "t")
+      var webappToken = Request.Query["webapptoken"].FirstOrDefault()
+        ?? Request.Query["t"].FirstOrDefault();
+
       ViewData["ReservationId"] = tripcode;
 
       // Retry logic for MrShoofer API
@@ -127,8 +131,15 @@ namespace Application.Areas.AgencyArea
             // IMPORTANT: Remove the data from TempData after reading it
             // This ensures it's only used once and won't persist on page refresh
             TempData.Remove("SavedReserveData");
-            
+
             // Pass the saved data to the view
+            if (string.IsNullOrWhiteSpace(savedData.WebappToken))
+            {
+              savedData.WebappToken = webappToken;
+            }
+
+            ViewBag.WebappToken = savedData.WebappToken;
+
             return View(savedData);
           }
           catch
@@ -138,6 +149,8 @@ namespace Application.Areas.AgencyArea
           }
         }
       }
+
+      ViewBag.WebappToken = webappToken;
 
       return View();
     }
@@ -233,13 +246,13 @@ namespace Application.Areas.AgencyArea
           .Where(x => x.Value.Errors.Count > 0)
           .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() })
           .ToList();
-        
-        _logger.LogWarning("ModelState invalid. Errors: {Errors}", 
+
+        _logger.LogWarning("ModelState invalid. Errors: {Errors}",
           JsonConvert.SerializeObject(errors));
-        
+
         // Return user back to reservation page with errors
         TempData["ErrorMessage"] = "اطلاعات فرم ناقص است: " + string.Join(", ", errors.SelectMany(e => e.Errors));
-        return RedirectToAction("Reservetrip", new { tripcode = viewModel?.TripCode });
+        return RedirectToAction("Reservetrip", new { tripcode = viewModel?.TripCode, webapptoken = viewModel?.WebappToken });
       }
       
       _logger.LogInformation("ModelState is valid. Proceeding with payment request...");
@@ -390,6 +403,8 @@ namespace Application.Areas.AgencyArea
       
       ViewBag.trip = await apiclient.GetTripInfo(ticket.Tripcode);
       ViewBag.ticket = ticket;
+      ViewBag.WebappToken = ticket.WebappToken;
+      ViewBag.WebappBase = configuration["Webapp:BaseUrl"] ?? "https://webapp.mrshoofer.ir";
 
       // Send SMS to customer after successful payment
       try

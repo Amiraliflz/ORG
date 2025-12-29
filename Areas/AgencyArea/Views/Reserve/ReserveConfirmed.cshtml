@@ -7,6 +7,15 @@
 
     var ticket = (Ticket)ViewBag.ticket;
 
+    // Build webapp url if token provided
+    string webappToken = ticket?.WebappToken ?? string.Empty;
+    string webappBase = ViewBag.WebappBase as string ?? "https://webapp.mrshoofer.ir";
+    string webappUrl = string.Empty;
+    if (!string.IsNullOrWhiteSpace(webappToken))
+    {
+        webappUrl = $"{webappBase}/o?t={System.Net.WebUtility.UrlEncode(webappToken)}";
+    }
+
     Dictionary<int, string> monthName = new Dictionary<int, string>()
     {
     {1,"فروردین" },
@@ -317,6 +326,12 @@
               <div>
 
 
+                    @if (!string.IsNullOrWhiteSpace(webappUrl))
+                    {
+                        <a class="btn rounded-pill btn-label-success me-2" href="@webappUrl" target="_blank">
+                            رفتن به وب‌اپ
+                        </a>
+                    }
                     <button class="btn rounded-pill btn-icon btn-label-secondary waves-effect" type="button">
                     <span class="ti ti-share-2"></span>
                     </button>
