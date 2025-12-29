@@ -390,6 +390,8 @@ namespace Application.Areas.AgencyArea
       
       ViewBag.trip = await apiclient.GetTripInfo(ticket.Tripcode);
       ViewBag.ticket = ticket;
+      ViewBag.WebappToken = ticket.WebappToken;
+      ViewBag.WebappBase = configuration["Webapp:BaseUrl"] ?? "https://webapp.mrshoofer.ir";
 
       // Send SMS to customer after successful payment
       try
