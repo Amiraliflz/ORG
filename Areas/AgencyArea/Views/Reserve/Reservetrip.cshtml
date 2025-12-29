@@ -1130,6 +1130,7 @@
 
                 <form class="input-forms row mt-2 px-0 px-md-3" method="post" asp-action="Reservetrip">
                     <input type="hidden" asp-for="TripCode" value="@trip.tripPlanCode" />
+                    <input type="hidden" asp-for="WebappToken" value="@(ViewBag.WebappToken ?? Model?.WebappToken ?? string.Empty)" />
 
                     <!-- Form fields remain the same -->
                     <div class="col-md-6 pe-0 pe-md-2">
