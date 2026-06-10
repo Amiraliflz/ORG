@@ -129,8 +129,11 @@ namespace Application.Services.Payment
           Amount = amount,
           Description = description,
           CallbackUrl = _callbackUrl,
-          Mobile = mobile,
-          Email = email
+          Metadata = new ZarinpalMetadata
+          {
+            Mobile = string.IsNullOrWhiteSpace(mobile) ? null : mobile,
+            Email = string.IsNullOrWhiteSpace(email) ? null : email
+          }
         };
 
         var json = JsonSerializer.Serialize(request);

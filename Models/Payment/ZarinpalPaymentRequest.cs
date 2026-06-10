@@ -16,10 +16,18 @@ namespace Application.Models.Payment
         [JsonPropertyName("callback_url")]
         public string? CallbackUrl { get; set; }
 
+        [JsonPropertyName("metadata")]
+        public ZarinpalMetadata? Metadata { get; set; }
+    }
+
+    public class ZarinpalMetadata
+    {
         [JsonPropertyName("mobile")]
-        public string Mobile { get; set; } = string.Empty;
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Mobile { get; set; }
 
         [JsonPropertyName("email")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Email { get; set; }
     }
 }

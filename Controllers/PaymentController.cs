@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace Application.Controllers
 {
@@ -317,6 +318,50 @@ namespace Application.Controllers
         }
 
         /// <summary>
+        /// Entry point from main app — validates HMAC, calls Zarinpal, returns HTML redirect page.
+        /// Main app redirects user here; this server's IP is whitelisted with Zarinpal.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Start(int ticketId, long t, string sig)
+        {
+            // Validate timestamp (10-minute window)
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (Math.Abs(now - t) > 600)
+                return Content(ErrorHtml("لینک پرداخت منقضی شده است. لطفاً دوباره تلاش کنید."), "text/html");
+
+            // Validate HMAC signature
+            var sharedKey = _configuration["PaymentServer:SharedKey"] ?? string.Empty;
+            var expected = ComputeHmac($"{ticketId}:{t}", sharedKey);
+            if (!CryptographicOperations.FixedTimeEquals(
+                    Encoding.UTF8.GetBytes(sig),
+                    Encoding.UTF8.GetBytes(expected)))
+                return Content(ErrorHtml("درخواست نامعتبر است."), "text/html");
+
+            var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+            if (ticket == null)
+                return Content(ErrorHtml("اطلاعات سفارش یافت نشد."), "text/html");
+
+            if (ticket.IsPaid)
+                return Redirect(Url.Action("ReserveConfirmed", "Reserve", new { area = "AgencyArea", ticketcode = ticket.TicketCode })!);
+
+            int amountInRials = ticket.TicketFinalPrice * 10;
+            var description = _configuration["Zarinpal:Description"] ?? $"پرداخت برای بلیط {ticket.Tripcode}";
+
+            var (success, authority, message) = await _paymentService.RequestPaymentAsync(
+                amountInRials, description, ticket.PhoneNumber ?? string.Empty, ticket.Email);
+
+            if (!success)
+                return Content(ErrorHtml($"خطا در ایجاد درخواست پرداخت: {message}"), "text/html");
+
+            ticket.PaymentAuthority = authority;
+            await _context.SaveChangesAsync();
+
+            var gatewayUrl = _paymentService.GetPaymentGatewayUrl(authority);
+
+            return Content(RedirectHtml(gatewayUrl), "text/html");
+        }
+
+        /// <summary>
         /// Payment failed page
         /// </summary>
         [HttpGet]
@@ -324,6 +369,39 @@ namespace Application.Controllers
         {
             ViewBag.ErrorMessage = message ?? "پرداخت ناموفق بود";
             return View();
+        }
+
+        internal static string ComputeHmac(string data, string key)
+        {
+            var keyBytes = Encoding.UTF8.GetBytes(key);
+            var dataBytes = Encoding.UTF8.GetBytes(data);
+            var hash = HMACSHA256.HashData(keyBytes, dataBytes);
+            return Convert.ToBase64String(hash);
+        }
+
+        private static string RedirectHtml(string url)
+        {
+            var safeUrl = System.Web.HttpUtility.HtmlAttributeEncode(url);
+            return "<html lang='fa' dir='rtl'><head><meta charset='UTF-8'>" +
+                   "<title>در حال انتقال به درگاه پرداخت...</title>" +
+                   "<style>body{font-family:Tahoma,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f5f5f5}" +
+                   ".box{text-align:center;background:white;padding:40px;border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,.1)}" +
+                   ".spinner{width:40px;height:40px;border:4px solid #eee;border-top-color:#6c63ff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}" +
+                   "@keyframes spin{to{transform:rotate(360deg)}}</style></head>" +
+                   "<body><div class='box'><div class='spinner'></div>" +
+                   "<p>در حال انتقال به درگاه پرداخت زرین‌پال...</p>" +
+                   "<a href='" + safeUrl + "'>اگر منتقل نشدید اینجا کلیک کنید</a></div>" +
+                   "<script>window.location.href='" + safeUrl + "';</script></body></html>";
+        }
+
+        private static string ErrorHtml(string msg)
+        {
+            var safeMsg = System.Web.HttpUtility.HtmlEncode(msg);
+            return "<html lang='fa' dir='rtl'><head><meta charset='UTF-8'><title>خطا</title>" +
+                   "<style>body{font-family:Tahoma,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f5f5f5}" +
+                   ".box{text-align:center;background:white;padding:40px;border-radius:12px;color:#e53e3e}</style></head>" +
+                   "<body><div class='box'><h2>خطا</h2><p>" + safeMsg + "</p>" +
+                   "<a href='javascript:history.back()'>بازگشت</a></div></body></html>";
         }
     }
 }

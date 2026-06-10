@@ -18,11 +18,16 @@ namespace Application.Services.MrShooferORS
       PropertyNameCaseInsensitive = true
     };
 
-    public MrShooferAPIClient(HttpClient client, string baseurl)
+    // Shared client for the static login method — avoids socket exhaustion from new HttpClient() per call
+    private static readonly HttpClient _loginClient = new HttpClient
+    {
+      BaseAddress = new Uri("https://mrbilit.mrshoofer.ir"),
+      Timeout = TimeSpan.FromSeconds(30)
+    };
+
+    public MrShooferAPIClient(HttpClient client)
     {
       _client = client;
-
-      _client.BaseAddress = new Uri(baseurl);
     }
 
 
@@ -37,11 +42,7 @@ namespace Application.Services.MrShooferORS
     public static async Task<string> GetSellerApiKey_LoginAsync(string username, string password)
     {
 
-      HttpClient loginclient = new HttpClient();
-      loginclient.BaseAddress = new Uri("https://mrbilit.mrshoofer.ir");
-
-
-      var result = await loginclient.GetAsync($"/Account/Login?adminnumberphone={username}&password={password}");
+      var result = await _loginClient.GetAsync($"/Account/Login?adminnumberphone={username}&password={password}");
       var node = JsonNode.Parse(await result.Content.ReadAsStringAsync());
 
       return node["token"].ToString();
@@ -62,7 +63,7 @@ namespace Application.Services.MrShooferORS
 
     public async Task<IList<SearchedTrip>> SearchTrips(DateTime startspan, DateTime endspan, int originCityId, int destinationCityid, int? originterminalId = null, int? destinationterminalid = null)
     {
-      string searchurl = $"https://mrbilit.mrshoofer.ir/Trips/GetPlanedTripsbyCityID/{startspan:yyyy-MM-dd}/{endspan:yyyy-MM-dd}/{originCityId}/{destinationCityid}";
+      string searchurl = $"/Trips/GetPlanedTripsbyCityID/{startspan:yyyy-MM-dd}/{endspan:yyyy-MM-dd}/{originCityId}/{destinationCityid}";
 
 
       if (originterminalId != null)
@@ -87,7 +88,7 @@ namespace Application.Services.MrShooferORS
     public async Task<SearchedTrip> GetTripInfo(string tripcode)
     {
 
-      string searchurl = $"https://mrbilit.mrshoofer.ir/Trips/getTripinfo?tripcode={tripcode}";
+      string searchurl = $"/Trips/getTripinfo?tripcode={tripcode}";
       
       var response = await _client.GetAsync(searchurl);
       response.EnsureSuccessStatusCode();
@@ -146,7 +147,7 @@ namespace Application.Services.MrShooferORS
 
     public async Task<TicketConfirmationResponse> ConfirmReserve(ConfirmReserveRequestModel confirmreservemodel)
     {
-      var response = await _client.PostAsJsonAsync<ConfirmReserveRequestModel>("https://mrbilit.mrshoofer.ir/Tickets/confirmReserve", confirmreservemodel);
+      var response = await _client.PostAsJsonAsync<ConfirmReserveRequestModel>("/Tickets/confirmReserve", confirmreservemodel);
 
       // When error happend
       if ((int)response.StatusCode != 200)
@@ -166,7 +167,7 @@ namespace Application.Services.MrShooferORS
 
     public async Task<string> RegisterOTA(RegisterOTADTO registerOTADTO)
     {
-      string url = "https://mrbilit.mrshoofer.ir/OTAManagement/RegisterNewOTA";
+      string url = "/OTAManagement/RegisterNewOTA";
 
 
 
@@ -271,7 +272,7 @@ namespace Application.Services.MrShooferORS
 
     public async Task<List<AvaiableDirection>> GetAvaiableOTADirectionsAsync()
     {
-      string url = "https://mrbilit.mrshoofer.ir/Directions/getAvailableDirections";
+      string url = "/Directions/getAvailableDirections";
       using var response = await _client.GetAsync(url);
       if (!response.IsSuccessStatusCode)
       {
@@ -392,7 +393,7 @@ namespace Application.Services.MrShooferORS
       var content = new StringContent($"charge_amount={amount}", Encoding.UTF8, "application/x-www-form-urlencoded");
 
       // Make the POST request
-      var response = await _client.PostAsync("https://mrbilit.mrshoofer.ir/OTAManagement/ChargeOTA", content);
+      var response = await _client.PostAsync("/OTAManagement/ChargeOTA", content);
       if (!response.IsSuccessStatusCode)
       {
         throw new Exception();

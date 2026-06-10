@@ -417,3 +417,13 @@ ASALocalRun/
 # wal and shm files - SQLite
 *-wal
 *-shm
+
+# Database backups
+*.dump
+*.bak
+
+# VS Code workspace settings
+.vscode/
+
+# Docker image exports
+*.tar.gz

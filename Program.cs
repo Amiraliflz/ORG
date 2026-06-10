@@ -22,14 +22,12 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
 builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();
 
-// Configure MrShooferAPIClient with timeout and retry logic
-builder.Services.AddTransient<MrShooferAPIClient>(serviceProvider =>
+// Configure MrShooferAPIClient via IHttpClientFactory — connection pooling prevents socket exhaustion
+builder.Services.AddHttpClient<MrShooferAPIClient>((serviceProvider, client) =>
 {
-    var httpClient = new HttpClient
-    {
-        Timeout = TimeSpan.FromSeconds(30) // 30 second timeout
-    };
-    return new MrShooferAPIClient(httpClient, "https://mrbilit.mrshoofer.ir");
+    var config = serviceProvider.GetRequiredService<IConfiguration>();
+    client.BaseAddress = new Uri(config["MrShoofer:ApiBaseUrl"] ?? "https://mrbilit.mrshoofer.ir");
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddTransient<CustomerServiceSmsSender>();

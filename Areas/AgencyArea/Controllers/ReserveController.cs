@@ -1,3 +1,4 @@
+using Application.Controllers;
 using Application.Data;
 using Application.Services;
 using Application.Services.MrShooferORS;
@@ -338,52 +339,17 @@ namespace Application.Areas.AgencyArea
       _logger.LogInformation("Preliminary ticket saved to database. TripCode: {TripCode}, TicketId: {TicketId}, Price: {Price}", 
         viewModel.TripCode, newticket.Id, newticket.TicketFinalPrice);
 
-      // ✅ STEP 2: REQUEST PAYMENT FROM ZARINPAL (BEFORE MRSHOOFER RESERVATION)
-      int amountInRials = newticket.TicketFinalPrice * 10; // Convert Toman to Rial
-      string description = $"خرید بلیط {newticket.TripOrigin} به {newticket.TripDestination}";
-      
-      _logger.LogInformation("Requesting payment. Amount in Rials: {Amount}, TripCode: {TripCode}", 
-        amountInRials, viewModel.TripCode);
+      // ✅ STEP 2: REDIRECT USER TO PAYMENT SERVER (pay.mrshoofer.ir)
+      // The payment server's IP is whitelisted with Zarinpal — it calls Zarinpal and redirects user.
+      var paymentServerBase = configuration["PaymentServer:BaseUrl"] ?? "https://pay.mrshoofer.ir";
+      var sharedKey = configuration["PaymentServer:SharedKey"] ?? string.Empty;
+      var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+      var sig = PaymentController.ComputeHmac($"{newticket.Id}:{timestamp}", sharedKey);
+      var paymentStartUrl = $"{paymentServerBase}/Payment/Start?ticketId={newticket.Id}&t={timestamp}&sig={Uri.EscapeDataString(sig)}";
 
-      // NOTE: Removed pre-payment MRSHOOFER account balance check so payment can proceed.
-      // Reservation with MrShoofer will be attempted after payment verification in PaymentController.Verify.
+      _logger.LogInformation("Redirecting user to payment server. TicketId: {TicketId}, Url: {Url}", newticket.Id, paymentStartUrl);
 
-      var (success, authority, message) = await _paymentService.RequestPaymentAsync(
-        amountInRials,
-        description,
-        newticket.PhoneNumber,
-        null // Email is optional
-      );
-
-      if (success)
-      {
-        // Save payment authority and ticket ID for callback
-        newticket.PaymentAuthority = authority;
-        await context.SaveChangesAsync();
-
-        _logger.LogInformation("Payment request successful. Authority: {Authority}, TicketId: {TicketId}", 
-          authority, newticket.Id);
-
-        // ✅ STEP 3: REDIRECT TO PAYMENT GATEWAY
-        var paymentUrl = _paymentService.GetPaymentGatewayUrl(authority);
-        
-        _logger.LogInformation("Redirecting to payment gateway. URL: {PaymentUrl}", paymentUrl);
-        
-        return Redirect(paymentUrl);
-      }
-      else
-      {
-        // Payment request failed
-        _logger.LogError("Zarinpal payment request failed. Message: {Message}, TripCode: {TripCode}", 
-          message, viewModel.TripCode);
-        
-        // Delete the preliminary ticket since payment failed
-        context.Tickets.Remove(newticket);
-        await context.SaveChangesAsync();
-        
-        TempData["ErrorMessage"] = message;
-        return RedirectToAction("PaymentFailed", "Payment");
-      }
+      return Redirect(paymentStartUrl);
     }
 
     public async Task<IActionResult> ReserveConfirmed(string ticketcode)

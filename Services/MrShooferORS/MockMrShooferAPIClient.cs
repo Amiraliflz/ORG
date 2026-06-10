@@ -7,7 +7,7 @@ namespace Application.Services.MrShooferORS
     /// </summary>
     public class MockMrShooferAPIClient : MrShooferAPIClient
     {
-        public MockMrShooferAPIClient() : base(new HttpClient(), "http://localhost")
+        public MockMrShooferAPIClient() : base(new HttpClient { BaseAddress = new Uri("http://localhost") })
         {
         }
 
