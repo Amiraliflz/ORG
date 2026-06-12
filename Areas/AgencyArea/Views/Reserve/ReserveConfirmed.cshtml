@@ -54,7 +54,7 @@
 <script>
     Swal.fire({
         title: 'سفر ثبت شد',
-        text: 'سفر سواری با موفقیت ثبت شد و پرداخت از طریق اعتبار آژانس انجام گرفت همچنین پیام حاوی لینک بلیط به مسافر ارسال گردید',
+        text: 'سفر با موفقیت ثبت شد.',
         confirmButtonText: 'متوجه شدم',
         icon: 'success',
         customClass: {
@@ -68,15 +68,34 @@
 <style>
 
     @@media only screen and (max-width: 600px) {
+        .px-14 { padding-left: .2rem !important; padding-right: .2rem !important; }
+        .step-title { font-size: .75rem !important; }
 
-        .px-14 {
-            padding-left: .2rem !important;
-            padding-right: .2rem !important;
+        /* Header action row — stack on small screens */
+        .rc-action-row { flex-direction: column !important; gap: .6rem; }
+        .rc-col-home, .rc-col-title, .rc-col-actions {
+            width: 100% !important; max-width: 100% !important;
+            text-align: center !important; justify-content: center !important;
         }
+        .rc-col-title .fs-3 { font-size: 1.15rem !important; line-height: 1.5rem !important; }
+        .rc-col-home .btn, .rc-col-actions .btn { font-size: .82rem !important; }
 
-        .step-title {
-            font-size: .75rem !important;
-        }
+        /* Trip card origin/destination */
+        .mt.pt-3 { margin: 0 !important; padding-top: .4rem !important; }
+        .mt.pt-3 .fs-4 { font-size: .95rem !important; }
+        .mt.pt-3 small { font-size: .65rem !important; }
+
+        /* Date / time / car columns */
+        .col-4.d-flex.flex-column { padding-left: .1rem !important; padding-right: .1rem !important; }
+        .col-4.d-flex.flex-column > small { font-size: .62rem !important; }
+        .col-4 .fs-5, .col-4 .text-blck.fs-5 { font-size: .82rem !important; }
+        .carmodel { font-size: .6rem !important; padding: .12rem .35rem !important; }
+
+        /* Passenger fields */
+        .col-6.col-md-3 { margin-bottom: .4rem; }
+
+        /* Price section */
+        .rc-price-row { flex-direction: column !important; gap: .35rem; }
     }
 
 </style>
@@ -251,12 +270,41 @@
         border-radius: 1.25rem;
     }
 
-    .w-full {
-        width: 100%;
+    .w-full { width: 100%; }
+
+    /* Pop-up toast */
+    .rc-toast {
+        position: fixed; top: 1.3rem; left: 50%;
+        transform: translateX(-50%) translateY(calc(-100% - 2rem));
+        z-index: 9999; min-width: 300px; max-width: 90vw;
+        background: #28c76f; color: #fff; border-radius: 1rem;
+        padding: .8rem 1.4rem; display: flex; align-items: center; gap: .65rem;
+        font-size: .9rem; font-weight: 500;
+        box-shadow: 0 4px 20px rgba(40,199,111,.28);
+        transition: transform .38s cubic-bezier(.34,1.56,.64,1);
+        pointer-events: none;
     }
+    .rc-toast.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
 </style>
 
 
+
+<div id="rc-sms-toast" class="rc-toast">
+    <i class="ti ti-message-check" style="font-size:1.25rem;flex-shrink:0"></i>
+    <span>پیامکی حاوی لینک سفر به شماره <strong>@ticket?.PhoneNumber</strong> ارسال شد</span>
+</div>
+
+<script>
+    (function () {
+        var el = document.getElementById('rc-sms-toast');
+        if (!el) return;
+        var key = 'sms-toast-@ticket?.TicketCode';
+        if (sessionStorage.getItem(key)) return;
+        sessionStorage.setItem(key, '1');
+        setTimeout(function () { el.classList.add('show'); }, 200);
+        setTimeout(function () { el.classList.remove('show'); }, 5200);
+    })();
+</script>
 
 <div class="main_container px-lg-6 px-0">
     <div class="bg-white rounded-5 border-1 border-divider w-full rounded-3xl py-7.5 px-14 shadow-1__2__gray/75 ">
@@ -307,22 +355,21 @@
     </div>
 
     <div class="downside-contaner mt-5 row px-lg-5">
-        <div class="mb-0 px-0 d-flex row">
+        <div class="mb-0 px-0 d-flex row rc-action-row">
 
-
-            <div class="col-3 d-flex justify-content-start">
-                <a class="btn rounded  btn-secondary " type="button" asp-controller="Home" asp-action="Index">
+            <div class="col-3 d-flex justify-content-start rc-col-home">
+                <a class="btn rounded-pill btn-secondary" type="button" asp-controller="Home" asp-action="Index">
                     بازگشت به خانه
                     <i class="ti ti-home"></i>
                 </a>
             </div>
 
-            <div class="d-flex col-6" style="flex-direction: column; align-items: center;">
+            <div class="d-flex col-6 rc-col-title" style="flex-direction: column; align-items: center;">
                 <span class="fs-3 ms-1 font-bold d-block" style="line-height: 2rem; --tw-text-opacity: 1; color: rgb(41 38 61 / var(--tw-text-opacity));">ثـبت موفقیت آمیز</span>
                 <small class="">سفر با موفقیت ثبت شد</small>
             </div>
 
-            <div class="col-3 d-flex justify-content-end">
+            <div class="col-3 d-flex justify-content-end rc-col-actions">
               <div>
 
 
@@ -345,16 +392,6 @@
         </div>
 
 
-        <div class="alert alert-success d-flex align-items-center mt-3 alert-dismissible" role="alert">
-            <span class="alert-icon text-primary me-2">
-                <i class="ti ti-message"></i>
-            </span>
-            پیامکی حاوی لینک اطلاعات سفر و جزییات، به شماره تلفن
-
-            مسافر (@ticket.PhoneNumber) ارسال شد 
-
-            <button aria-label="بستن" class="btn-close" data-bs-dismiss="alert" type="button"></button>
-        </div>
 
         <div class="col-12">
 
@@ -607,7 +644,7 @@
 
                                 <small style="font-size: .7rem;" class="text-muted d-block">
                                     <i class="ti ti-info-circle ti-sm"></i>
-                                    این سفر و جزییات باقی سفرهای ثبت شده، در صفحه‌ی بلیط های آژانس قابل مشاهده می‌باشد
+                                    این سفر و جزییات باقی سفرهای ثبت شده، در صفحه‌ی سفرهای من قابل مشاهده می‌باشد
                                 </small>
 
                                 <small style="font-size: .7rem;" class="text-muted d-block">
@@ -639,53 +676,15 @@
                             </div>
                         </div>
                     </div>
-                <div class="col-12 mt-5 px-md-4 px-lg-5 pt-2 pb-3">
-                    <div class="mt-2 d-flex" style="justify-content: space-between;">
-                        <div>
-
-                            <h4 style="align-self:end;" class="mb-1">
-                                قیمت نهایی سفر
-
-                            </h4>
-                            @* <small style="font-size: .7rem;" class="text-muted d-block">
-                                <i class="ti ti-info-circle ti-sm"></i>
-                             قوانین کنسلی در انتهای همین صفحه درج شده است.
-                            </small> *@
-
-                        </div>
-                        <div>
-
+                <div class="col-12 mt-4 px-md-4 px-lg-5 pt-2 pb-3">
+                    <div class="d-flex rc-price-row" style="justify-content: space-between; align-items: center;">
+                        <h5 class="mb-0">قیمت نهایی سفر</h5>
+                        <div class="text-start">
                             @if (trip.afterdiscticketprice != trip.originalTicketprice)
                             {
-                                <div class="text-end mb-0">
-                                    <h5 class="text-black mb-0">
-                                        <s>
-                                            <bdi>
-                                                <svg class="toman">
-                                                    <use xlink:href="#toman">
-                                                        <symbol id="toman" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-                                                            <path clip-rule="evenodd" d="M3.057 1.742L3.821 1l.78.75-.776.741-.768-.749zm3.23 2.48c0 .622-.16 1.111-.478 1.467-.201.221-.462.39-.783.505a3.251 3.251 0 01-1.083.163h-.555c-.421 0-.801-.074-1.139-.223a2.045 2.045 0 01-.9-.738A2.238 2.238 0 011 4.148c0-.059.001-.117.004-.176.03-.55.204-1.158.525-1.827l1.095.484c-.257.532-.397 1-.419 1.403-.002.04-.004.08-.004.12 0 .252.055.458.166.618a.887.887 0 00.5.354c.085.028.178.048.278.06.079.01.16.014.243.014h.555c.458 0 .769-.081.933-.244.14-.139.21-.383.21-.731V2.02h1.2v2.202zm5.433 3.184l-.72-.7.709-.706.735.707-.724.7zm-2.856.308c.542 0 .973.19 1.293.569.297.346.445.777.445 1.293v.364h.18v-.004h.41c.221 0 .377-.028.467-.084.093-.055.14-.14.14-.258v-.069c.004-.243.017-1.044 0-1.115L13 8.05v1.574a1.4 1.4 0 01-.287.863c-.306.405-.804.607-1.495.607h-.627c-.061.733-.434 1.257-1.117 1.573-.267.122-.58.21-.937.265a5.845 5.845 0 01-.914.067v-1.159c.612 0 1.072-.082 1.38-.247.25-.132.376-.298.376-.499h-.515c-.436 0-.807-.113-1.113-.339-.367-.273-.55-.667-.55-1.18 0-.488.122-.901.367-1.24.296-.415.728-.622 1.296-.622zm.533 2.226v-.364c0-.217-.048-.389-.143-.516a.464.464 0 00-.39-.187.478.478 0 00-.396.187.705.705 0 00-.136.449.65.65 0 00.003.067c.008.125.066.22.177.283.093.054.21.08.352.08h.533zM9.5 6.707l.72.7.724-.7L10.209 6l-.709.707zm-6.694 4.888h.03c.433-.01.745-.106.937-.29.024.012.065.035.12.068l.074.039.081.042c.135.073.261.133.379.18.345.146.67.22.977.22a1.216 1.216 0 00.87-.34c.3-.285.449-.714.449-1.286a2.19 2.19 0 00-.335-1.145c-.299-.457-.732-.685-1.3-.685-.502 0-.916.192-1.242.575-.113.132-.21.284-.294.456-.032.062-.06.125-.084.191a.504.504 0 00-.03.078 1.67 1.67 0 00-.022.06c-.103.309-.171.485-.205.53-.072.09-.214.14-.427.147-.123-.005-.209-.03-.256-.076-.057-.054-.085-.153-.085-.297V7l-1.201-.5v3.562c0 .261.048.496.143.703.071.158.168.296.29.413.123.118.266.211.43.28.198.084.42.13.665.136v.001h.036zm2.752-1.014a.778.778 0 00.044-.353.868.868 0 00-.165-.47c-.1-.134-.217-.201-.35-.201-.18 0-.33.103-.447.31-.042.071-.08.158-.114.262a2.434 2.434 0 00-.04.12l-.015.053-.015.046c.142.118.323.216.544.293.18.062.325.092.433.092.044 0 .086-.05.125-.152z" fill-rule="evenodd"></path>
-                                                        </symbol>
-                                                    </use>
-                                                </svg>@trip.originalTicketprice.ToString("N0")
-                                            </bdi>
-                                        </s>
-                                    </h5>
-                                </div>
+                                <div class="text-muted text-decoration-line-through" style="font-size:.85rem">@trip.originalTicketprice.ToString("N0") تومان</div>
                             }
-
-
-                            <h4 class="text-primary mb-1 text-end">
-                                <bdi>
-                                    <svg class="toman">
-                                        <use xlink:href="#toman">
-                                            <symbol id="toman" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-                                                <path clip-rule="evenodd" d="M3.057 1.742L3.821 1l.78.75-.776.741-.768-.749zm3.23 2.48c0 .622-.16 1.111-.478 1.467-.201.221-.462.39-.783.505a3.251 3.251 0 01-1.083.163h-.555c-.421 0-.801-.074-1.139-.223a2.045 2.045 0 01-.9-.738A2.238 2.238 0 011 4.148c0-.59.001-.117.004-.176.03-.55.204-1.158.525-1.827l1.095.484c-.257.532-.397 1-.419 1.403-.002.04-.004.08-.004.12 0 .252.055.458.166.618a.887.887 0 00.5.354c.085.028.178.048.278.06.079.01.16.014.243.014h.555c.458 0 .769-.081.933-.244.14-.139.21-.383.21-.731V2.02h1.2v2.202zm5.433 3.184l-.72-.7.709-.706.735.707-.724.7zm-2.856.308c.542 0 .973.19 1.293.569.297.346.445.777.445 1.293v.364h.18v-.004h.41c.221 0 .377-.028.467-.084.093-.055.14-.14.14-.258v-.069c.004-.243.017-1.044 0-1.115L13 8.05v1.574a1.4 1.4 0 01-.287.863c-.306.405-.804.607-1.495.607h-.627c-.061.733-.434 1.257-1.117 1.573-.267.122-.58.21-.937.265a5.845 5.845 0 01-.914.067v-1.159c.612 0 1.072-.082 1.38-.247.25-.132.376-.298.376-.499h-.515c-.436 0-.807-.113-1.113-.339-.367-.273-.55-.667-.55-1.18 0-.488.122-.901.367-1.24.296-.415.728-.622 1.296-.622zm.533 2.226v-.364c0-.217-.048-.389-.143-.516a.464.464 0 00-.39-.187.478.478 0 00-.396.187.705.705 0 00-.136.449.65.65 0 00.003.067c.008.125.066.22.177.283.093.054.21.08.352.08h.533zM9.5 6.707l.72.7.724-.7L10.209 6l-.709.707zm-6.694 4.888h.03c.433-.01.745-.106.937-.29.024.012.065.035.12.068l.074.039.081.042c.135.073.261.133.379.18.345.146.67.22.977.22a1.216 1.216 0 00.87-.34c.3-.285.449-.714.449-1.286a2.19 2.19 0 00-.335-1.145c-.299-.457-.732-.685-1.3-.685-.502 0-.916.192-1.242.575-.113.132-.21.284-.294.456-.032.062-.06.125-.084.191a.504.504 0 00-.03.078 1.67 1.67 0 00-.022.06c-.103.309-.171.485-.205.53-.072.09-.214.14-.427.147-.123-.005-.209-.03-.256-.076-.057-.054-.085-.153-.085-.297V7l-1.201-.5v3.562c0 .261.048.496.143.703.071.158.168.296.29.413.123.118.266.211.43.28.198.084.42.13.665.136v.001h.036zm2.752-1.014a.778.778 0 00.044-.353.868.868 0 00-.165-.47c-.1-.134-.217-.201-.35-.201-.18 0-.33.103-.447.31-.042.071-.08.158-.114.262a2.434 2.434 0 00-.04.12l-.015.053-.015.046c.142.118.323.216.544.293.18.062.325.092.433.092.044 0 .086-.05.125-.152z" fill-rule="evenodd"></path>
-                                            </symbol>
-                                        </use>
-                                    </svg>@trip.afterdiscticketprice.ToString("N0")
-                                </bdi>
-                            </h4>
+                            <h4 class="text-primary mb-0">@trip.afterdiscticketprice.ToString("N0") <small class="text-muted fs-6">تومان</small></h4>
                         </div>
                     </div>
                 </div>

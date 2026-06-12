@@ -2,6 +2,8 @@
     Layout = "_AgencySideLayout";
     ViewData["title"] = "کیف پول من";
     decimal balance = ViewBag.Balance ?? 0m;
+    var successMsg = TempData["Success"] as string;
+    var errorMsg   = TempData["Error"]   as string;
 }
 
 <style>
@@ -13,7 +15,38 @@
 }
 .amount-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1rem}
 @@media(max-width:400px){.amount-grid{grid-template-columns:1fr 1fr}}
+.wallet-cards .card{border-radius:1rem!important;box-shadow:0 2px 12px rgba(105,108,255,.07)}
+.tickets-ghost-btn{background:#fff;color:#696cff;border:1.5px solid #e7e7ff;border-radius:2rem;padding:.38rem 1.1rem;font-size:.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;font-weight:500;transition:all .18s;box-shadow:0 1px 6px rgba(105,108,255,.08)}
+.tickets-ghost-btn:hover{background:#f0f0ff;color:#696cff;border-color:#b0b0ff}
+/* Pop-up toasts */
+.w-toast{position:fixed;top:1.3rem;left:50%;transform:translateX(-50%) translateY(calc(-100% - 2rem));z-index:9999;min-width:280px;max-width:90vw;border-radius:1rem;padding:.75rem 1.2rem;display:flex;align-items:flex-start;gap:.6rem;font-size:.88rem;font-weight:500;transition:transform .38s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.w-toast.show{transform:translateX(-50%) translateY(0);pointer-events:auto}
+.w-toast-success{background:#28c76f;color:#fff;box-shadow:0 4px 20px rgba(40,199,111,.28)}
+.w-toast-error{background:#ff4c51;color:#fff;box-shadow:0 4px 20px rgba(255,76,81,.28)}
+.w-toast-close{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;padding:0;margin-right:auto;font-size:1rem;line-height:1;flex-shrink:0}
+.w-toast-close:hover{opacity:1}
 </style>
+
+@if (!string.IsNullOrEmpty(successMsg))
+{
+    <div id="wt-ok" class="w-toast w-toast-success">
+        <i class="ti ti-circle-check" style="font-size:1.2rem;flex-shrink:0;margin-top:.1rem"></i>
+        <span style="flex:1">@successMsg</span>
+        <button class="w-toast-close" onclick="this.closest('.w-toast').classList.remove('show')" aria-label="بستن">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div id="wt-err" class="w-toast w-toast-error">
+        <i class="ti ti-alert-circle" style="font-size:1.2rem;flex-shrink:0;margin-top:.1rem"></i>
+        <span style="flex:1">@errorMsg</span>
+        <button class="w-toast-close" onclick="this.closest('.w-toast').classList.remove('show')" aria-label="بستن">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+}
 
 <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -22,30 +55,15 @@
             <h4 class="fw-bold mb-1">کیف پول من</h4>
             <small class="text-muted">@ViewBag.CustomerPhone</small>
         </div>
-        <a asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets" class="btn btn-outline-primary">
-            <i class="ti ti-ticket me-1"></i> بلیط‌های من
+        <a asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets" class="tickets-ghost-btn">
+            <i class="ti ti-ticket"></i> بلیط‌های من
         </a>
     </div>
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible mb-4" role="alert">
-            <i class="ti ti-circle-check me-2"></i>@TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible mb-4" role="alert">
-            <i class="ti ti-alert-circle me-2"></i>@TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
 
     <div class="row g-4 wallet-cards">
         <!-- Balance card -->
         <div class="col-md-4">
-            <div class="card rounded-4 p-4 text-center h-100">
+            <div class="card p-4 text-center h-100">
                 <i class="ti ti-wallet ti-3x text-success mb-3"></i>
                 <h6 class="text-muted mb-1">موجودی کیف پول</h6>
                 <h2 class="fw-bold text-success mb-0">@balance.ToString("N0")</h2>
@@ -59,7 +77,7 @@
 
         <!-- Top-up form -->
         <div class="col-md-4">
-            <div class="card rounded-4 p-4 h-100">
+            <div class="card p-4 h-100">
                 <h6 class="fw-bold mb-3">
                     <i class="ti ti-plus-circle me-1 text-primary"></i>
                     شارژ کیف پول
@@ -75,7 +93,6 @@
                         <div class="form-text text-muted" id="amountHint">حداقل مبلغ شارژ: ۱٬۰۰۰ تومان</div>
                     </div>
 
-                    <!-- Quick amount buttons -->
                     <div class="amount-grid">
                         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setAmount(50000)">۵۰ هزار</button>
                         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setAmount(100000)">۱۰۰ هزار</button>
@@ -93,7 +110,7 @@
 
         <!-- Guide -->
         <div class="col-md-4">
-            <div class="card rounded-4 p-4 h-100">
+            <div class="card p-4 h-100">
                 <h6 class="fw-bold mb-3">راهنما</h6>
                 <ul class="text-muted small" style="line-height:2rem;">
                     <li>مبلغ دلخواه را وارد کنید و پرداخت کنید</li>
@@ -107,9 +124,20 @@
 </div>
 
 <script>
+    // Only show on fresh navigation (redirect after top-up), never on reload or back/forward
+    var navType = (performance.getEntriesByType('navigation')[0] || {}).type || 'navigate';
+    if (navType !== 'navigate') return;
+    ['wt-ok', 'wt-err'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        setTimeout(function () { el.classList.add('show'); }, 80);
+        setTimeout(function () { el.classList.remove('show'); }, 5000);
+    });
+
+    // Amount input
     const display = document.getElementById('amountDisplay');
-    const hidden = document.getElementById('amountHidden');
-    const hint = document.getElementById('amountHint');
+    const hidden  = document.getElementById('amountHidden');
+    const hint    = document.getElementById('amountHint');
 
     function formatNum(n) {
         return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -120,20 +148,17 @@
         this.value = formatNum(this.value);
         hidden.value = raw;
         const num = parseInt(raw, 10);
-        if (!isNaN(num)) {
-            hint.textContent = `مبلغ انتخابی: ${num.toLocaleString('en-US')} تومان`;
-        } else {
-            hint.textContent = 'حداقل مبلغ شارژ: ۱٬۰۰۰ تومان';
-        }
+        hint.textContent = !isNaN(num)
+            ? `مبلغ انتخابی: ${num.toLocaleString('en-US')} تومان`
+            : 'حداقل مبلغ شارژ: ۱٬۰۰۰ تومان';
     });
 
     function setAmount(val) {
         display.value = val.toLocaleString('en-US');
-        hidden.value = val;
+        hidden.value  = val;
         hint.textContent = `مبلغ انتخابی: ${val.toLocaleString('en-US')} تومان`;
     }
 
-    // Validate before submit
     display.closest('form').addEventListener('submit', function (e) {
         const val = parseInt(hidden.value, 10);
         if (!val || val < 1000) {
