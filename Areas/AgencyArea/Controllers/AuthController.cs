@@ -372,19 +372,32 @@ namespace Application.Areas.AgencyArea
       if (user == null)
       {
         // Phone verified — create account now
-        user = new IdentityUser { UserName = numberphone, PhoneNumber = numberphone };
+        var newUser = new IdentityUser { UserName = numberphone, PhoneNumber = numberphone };
         var password = Guid.NewGuid().ToString("N")[..8] + "Aa1!";
-        var result = await _usermanager.CreateAsync(user, password);
+        var result = await _usermanager.CreateAsync(newUser, password);
+
         if (!result.Succeeded)
         {
-          ViewBag.errormessage = "خطا در ایجاد حساب. لطفاً دوباره تلاش کنید";
-          ViewBag.numberphone = numberphone;
-          ViewBag.ReturnUrl = ReturnUrl;
-          TempData.Keep();
-          return View();
+          // DuplicateUserName means the account was just created by another request — find and sign in
+          var isDuplicate = result.Errors.Any(e => e.Code == "DuplicateUserName");
+          user = isDuplicate ? await _usermanager.FindByNameAsync(numberphone) : null;
+
+          if (user == null)
+          {
+            ViewBag.errormessage = "خطا در ایجاد حساب. لطفاً دوباره تلاش کنید";
+            ViewBag.numberphone = numberphone;
+            ViewBag.ReturnUrl = ReturnUrl;
+            TempData.Keep();
+            return View();
+          }
+          // Existing account found — sign in without marking as new
         }
-        await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", "Customer"));
-        isNewUser = true;
+        else
+        {
+          user = newUser;
+          await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", "Customer"));
+          isNewUser = true;
+        }
       }
 
       await _signInManager.SignInAsync(user, isPersistent: true, authenticationMethod: "OTP");

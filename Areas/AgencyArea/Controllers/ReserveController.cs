@@ -168,10 +168,19 @@ namespace Application.Areas.AgencyArea
     public async Task<IActionResult> Reservetrip(ReserveInfoViewModel viewmodel)
     {
       // NO AUTHENTICATION CHECK - Allow all users (guests and authenticated)
-      
+
+      // Normalize Persian/Arabic-Indic digits to ASCII before validation
+      if (viewmodel != null)
+      {
+        viewmodel.NaCode      = NormalizePersianDigits(viewmodel.NaCode);
+        viewmodel.NumebrPhone = NormalizePersianDigits(viewmodel.NumebrPhone);
+        ModelState.Clear();
+        TryValidateModel(viewmodel);
+      }
+
       if (!ModelState.IsValid)
       {
-        return RedirectToAction("Reservetrip", new { tripcode = viewmodel.TripCode });
+        return RedirectToAction("Reservetrip", new { tripcode = viewmodel?.TripCode });
       }
 
       // Get trip info with retry logic
@@ -629,6 +638,18 @@ namespace Application.Areas.AgencyArea
         context.Agencies.Add(newGuestAgency);
         await context.SaveChangesAsync();
       }
+    }
+
+    private static string NormalizePersianDigits(string? value)
+    {
+      if (string.IsNullOrEmpty(value)) return value ?? string.Empty;
+      var chars = value.ToCharArray();
+      for (int i = 0; i < chars.Length; i++)
+      {
+        if (chars[i] >= '۰' && chars[i] <= '۹') chars[i] = (char)(chars[i] - '۰' + '0');
+        else if (chars[i] >= '٠' && chars[i] <= '٩') chars[i] = (char)(chars[i] - '٠' + '0');
+      }
+      return new string(chars);
     }
   }
 

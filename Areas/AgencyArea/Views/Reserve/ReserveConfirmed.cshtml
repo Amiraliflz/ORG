@@ -17,20 +17,20 @@
     }
 
     Dictionary<int, string> monthName = new Dictionary<int, string>()
-    {
-    {1,"فروردین" },
-    {2,"اردیبهشت"},
-    {3, "خرداد"},
-    {4, "تیر" },
-    {5,"مرداد"},
-    {6, "شهریور" },
-    {7, "مهر" },
-    {8, "آبان" },
-    {9, "آذر" },
-    {10, "دی" },
-    {11, "بهمن" },
-    {12, "اسفند" }
-    };
+{
+{1,"فروردین" },
+{2,"اردیبهشت"},
+{3, "خرداد"},
+{4, "تیر" },
+{5,"مرداد"},
+{6, "شهریور" },
+{7, "مهر" },
+{8, "آبان" },
+{9, "آذر" },
+{10, "دی" },
+{11, "بهمن" },
+{12, "اسفند" }
+};
 
 }
 
@@ -49,7 +49,7 @@
 @section VendorScripts {
 }
 
-    <script src="~/vendor/libs/sweetalert2/sweetalert2.js"></script>
+<script src="~/vendor/libs/sweetalert2/sweetalert2.js"></script>
 
 <script>
     Swal.fire({
@@ -66,38 +66,86 @@
 
 
 <style>
-
     @@media only screen and (max-width: 600px) {
-        .px-14 { padding-left: .2rem !important; padding-right: .2rem !important; }
-        .step-title { font-size: .75rem !important; }
+        .px-14 {
+            padding-left: .2rem !important;
+            padding-right: .2rem !important;
+        }
+
+        .step-title {
+            font-size: .75rem !important;
+        }
 
         /* Header action row — stack on small screens */
-        .rc-action-row { flex-direction: column !important; gap: .6rem; }
-        .rc-col-home, .rc-col-title, .rc-col-actions {
-            width: 100% !important; max-width: 100% !important;
-            text-align: center !important; justify-content: center !important;
+        .rc-action-row {
+            flex-direction: column !important;
+            gap: .6rem;
         }
-        .rc-col-title .fs-3 { font-size: 1.15rem !important; line-height: 1.5rem !important; }
-        .rc-col-home .btn, .rc-col-actions .btn { font-size: .82rem !important; }
+
+        .rc-col-home,
+        .rc-col-title,
+        .rc-col-actions {
+            width: 100% !important;
+            max-width: 100% !important;
+            text-align: center !important;
+            justify-content: center !important;
+        }
+
+        .rc-col-title .fs-3 {
+            font-size: 1.15rem !important;
+            line-height: 1.5rem !important;
+        }
+
+        .rc-col-home .btn,
+        .rc-col-actions .btn {
+            font-size: .82rem !important;
+        }
 
         /* Trip card origin/destination */
-        .mt.pt-3 { margin: 0 !important; padding-top: .4rem !important; }
-        .mt.pt-3 .fs-4 { font-size: .95rem !important; }
-        .mt.pt-3 small { font-size: .65rem !important; }
+        .mt.pt-3 {
+            margin: 0 !important;
+            padding-top: .4rem !important;
+        }
+
+        .mt.pt-3 .fs-4 {
+            font-size: .95rem !important;
+        }
+
+        .mt.pt-3 small {
+            font-size: .65rem !important;
+        }
 
         /* Date / time / car columns */
-        .col-4.d-flex.flex-column { padding-left: .1rem !important; padding-right: .1rem !important; }
-        .col-4.d-flex.flex-column > small { font-size: .62rem !important; }
-        .col-4 .fs-5, .col-4 .text-blck.fs-5 { font-size: .82rem !important; }
-        .carmodel { font-size: .6rem !important; padding: .12rem .35rem !important; }
+        .col-4.d-flex.flex-column {
+            padding-left: .1rem !important;
+            padding-right: .1rem !important;
+        }
+
+        .col-4.d-flex.flex-column>small {
+            font-size: .62rem !important;
+        }
+
+        .col-4 .fs-5,
+        .col-4 .text-blck.fs-5 {
+            font-size: .82rem !important;
+        }
+
+        .carmodel {
+            font-size: .6rem !important;
+            padding: .12rem .35rem !important;
+        }
 
         /* Passenger fields */
-        .col-6.col-md-3 { margin-bottom: .4rem; }
+        .col-6.col-md-3 {
+            margin-bottom: .4rem;
+        }
 
         /* Price section */
-        .rc-price-row { flex-direction: column !important; gap: .35rem; }
+        .rc-price-row {
+            flex-direction: column !important;
+            gap: .35rem;
+        }
     }
-
 </style>
 
 
@@ -124,7 +172,8 @@
         padding-bottom: .42em !important;
     }
 
-    .border-divider, .border-gray-75 {
+    .border-divider,
+    .border-gray-75 {
         --tw-border-opacity: 1;
         border-color: rgb(230 232 238 / var(--tw-border-opacity));
     }
@@ -148,11 +197,12 @@
     }
 
     .shadow-7\.5__13__5__gray30 {
-        --tw-shadow: 0 1.875rem 3.125rem 1.25rem hsla(0,0%,95%,.3);
+        --tw-shadow: 0 1.875rem 3.125rem 1.25rem hsla(0, 0%, 95%, .3);
         --tw-shadow-colored: 0 1.875rem 3.125rem 1.25rem var(--tw-shadow-color);
     }
 
-    .shadow-1__4\.5__black\/8, .shadow-7\.5__13__5__gray30 {
+    .shadow-1__4\.5__black\/8,
+    .shadow-7\.5__13__5__gray30 {
         box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
     }
 
@@ -160,7 +210,9 @@
         justify-content: space-between;
     }
 
-    *, :after, :before {
+    *,
+    :after,
+    :before {
         box-sizing: border-box;
         border: 0 solid #a0a0b3;
     }
@@ -229,12 +281,13 @@
     }
 
 
-    .shadow-1__2__gray\/75, .shadow-1__6__gray\/75 {
+    .shadow-1__2__gray\/75,
+    .shadow-1__6__gray\/75 {
         box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
     }
 
     .shadow-1__2__gray\/75 {
-        --tw-shadow: 0px 2px 8px 0px rgba(38,50,80,.07);
+        --tw-shadow: 0px 2px 8px 0px rgba(38, 50, 80, .07);
         --tw-shadow-colored: 0px 2px 8px 0px var(--tw-shadow-color);
     }
 
@@ -253,7 +306,8 @@
         background-color: rgb(255 255 255 / var(--tw-bg-opacity));
     }
 
-    .border-divider, .border-gray-75 {
+    .border-divider,
+    .border-gray-75 {
         --tw-border-opacity: 1;
         border-color: rgb(230 232 238 / var(--tw-border-opacity));
     }
@@ -270,21 +324,37 @@
         border-radius: 1.25rem;
     }
 
-    .w-full { width: 100%; }
+    .w-full {
+        width: 100%;
+    }
 
     /* Pop-up toast */
     .rc-toast {
-        position: fixed; top: 1.3rem; left: 50%;
+        position: fixed;
+        top: 1.3rem;
+        left: 50%;
         transform: translateX(-50%) translateY(calc(-100% - 2rem));
-        z-index: 9999; min-width: 300px; max-width: 90vw;
-        background: #28c76f; color: #fff; border-radius: 1rem;
-        padding: .8rem 1.4rem; display: flex; align-items: center; gap: .65rem;
-        font-size: .9rem; font-weight: 500;
-        box-shadow: 0 4px 20px rgba(40,199,111,.28);
-        transition: transform .38s cubic-bezier(.34,1.56,.64,1);
+        z-index: 9999;
+        min-width: 300px;
+        max-width: 90vw;
+        background: #28c76f;
+        color: #fff;
+        border-radius: 1rem;
+        padding: .8rem 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        font-size: .9rem;
+        font-weight: 500;
+        box-shadow: 0 4px 20px rgba(40, 199, 111, .28);
+        transition: transform .38s cubic-bezier(.34, 1.56, .64, 1);
         pointer-events: none;
     }
-    .rc-toast.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
+    .rc-toast.show {
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+    }
 </style>
 
 
@@ -365,12 +435,14 @@
             </div>
 
             <div class="d-flex col-6 rc-col-title" style="flex-direction: column; align-items: center;">
-                <span class="fs-3 ms-1 font-bold d-block" style="line-height: 2rem; --tw-text-opacity: 1; color: rgb(41 38 61 / var(--tw-text-opacity));">ثـبت موفقیت آمیز</span>
+                <span class="fs-3 ms-1 font-bold d-block"
+                    style="line-height: 2rem; --tw-text-opacity: 1; color: rgb(41 38 61 / var(--tw-text-opacity));">ثـبت
+                    موفقیت آمیز</span>
                 <small class="">سفر با موفقیت ثبت شد</small>
             </div>
 
             <div class="col-3 d-flex justify-content-end rc-col-actions">
-              <div>
+                <div>
 
 
                     @if (!string.IsNullOrWhiteSpace(webappUrl))
@@ -380,22 +452,23 @@
                         </a>
                     }
                     <button class="btn rounded-pill btn-icon btn-label-secondary waves-effect" type="button">
-                    <span class="ti ti-share-2"></span>
+                        <span class="ti ti-share-2"></span>
                     </button>
-                    <a target="_blank" href="/TripReceiptPdf?reference=@ticket.TicketCode" class="btn rounded-pill btn-icon btn-label-primary " type="button">
+                    <a target="_blank" href="/TripReceiptPdf?reference=@ticket.TicketCode"
+                        class="btn rounded-pill btn-icon btn-label-primary " type="button">
                         <span class="ti ti-printer"></span>
                     </a>
-                
 
-              </div>
-              </div>
+
+                </div>
+            </div>
         </div>
 
 
 
         <div class="col-12">
 
-         
+
             <div class="card rounded-5 p-3 col-12 mt-4">
 
                 <div class="headline d-flex justify-between">
@@ -412,16 +485,14 @@
 
 
                 <div class="d-flex justify-content-around mt-3">
-                    <span>
-                      <strong>
-                        رفرنس : @ticket.TicketCode
-                      </strong>
-                    </span>
-
-                    <span>
-
-                        کد سفر : @ticket.Tripcode
-                    </span>
+                    @if (!string.IsNullOrWhiteSpace(ticket.TicketCode) &&
+                                        !ticket.TicketCode.StartsWith("PAID-NO-RESERVE") && !ticket.TicketCode.StartsWith("PENDING"))
+                    {
+                        <span>
+                            <strong> رفرنس : @ticket.TicketCode</strong>
+                        </span>
+                    }
+                    <span>کد سفر : @ticket.Tripcode</span>
                 </div>
 
                 @* مبدا و مقصد *@
@@ -429,43 +500,43 @@
                 <div class="mx-lg-5 px-lg-5 mt-2">
 
 
-                <div class="mt pt-3 col-12 d-flex px-md-5 px-1 m-2" style="justify-content: space-between;">
-                    <span>
-                        <small class="d-block ms-1 ">
-                            <img src="/redpin.png" height="18px;" />
-                            مبدا
-                        </small>
-                        <span class="text-blck fs-4 text-bold fw-bold">
-                            @trip.originCityName
-                        </span>
-                        <small>
-                            @trip.oringinLocationName
-                        </small>
-                    </span>
-
-                    <span style="align-self: end;" class="mb-1">
+                    <div class="mt pt-3 col-12 d-flex px-md-5 px-1 m-2" style="justify-content: space-between;">
                         <span>
-                            ......
-                        </span>
-                        <img src="/taxi.png" height="40px" />
-                        <span>
-                            ......
-                        </span>
-                    </span>
-
-                    <span>
-                        <small class="d-block ms-1">
-                            <img src="/redpin.png" height="18px;" />
-                            مقصد
-                        </small>
+                            <small class="d-block ms-1 ">
+                                <img src="/redpin.png" height="18px;" />
+                                مبدا
+                            </small>
                             <span class="text-blck fs-4 text-bold fw-bold">
-                            @trip.destinationCityName
+                                @trip.originCityName
+                            </span>
+                            <small>
+                                @trip.oringinLocationName
+                            </small>
                         </span>
-                        <small>
-                            @trip.destinationLocationName
-                        </small>
-                    </span>
-                </div>
+
+                        <span style="align-self: end;" class="mb-1">
+                            <span>
+                                ......
+                            </span>
+                            <img src="/taxi.png" height="40px" />
+                            <span>
+                                ......
+                            </span>
+                        </span>
+
+                        <span>
+                            <small class="d-block ms-1">
+                                <img src="/redpin.png" height="18px;" />
+                                مقصد
+                            </small>
+                            <span class="text-blck fs-4 text-bold fw-bold">
+                                @trip.destinationCityName
+                            </span>
+                            <small>
+                                @trip.destinationLocationName
+                            </small>
+                        </span>
+                    </div>
                 </div>
 
                 <hr />
@@ -498,7 +569,7 @@
                             </div>
                         </div>
                         <div>
-                          @pdate.ToShortDateString()
+                            @pdate.ToShortDateString()
                         </div>
                     </div>
 
@@ -550,7 +621,10 @@
                         <span class="text-blck fs-5">
                             <div class="d-flex mt-1" style="justify-content: space-between; font-size: 1rem;">
                                 <span>
-                                    @{ var models = (trip.carModelName ?? string.Empty).Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries); }
+                                    @{
+                                        var models = (trip.carModelName ?? string.Empty).Split('|',
+                                        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                                    }
                                     @foreach (var m in models)
                                     {
                                         <span class="text-blck badge bg-label-primary rounded-pill carmodel me-1">@m</span>
@@ -566,7 +640,7 @@
                 <div class="ms-4 mt-3">
 
                     <h3 class="mb-0">اطلاعات مسافر</h3>
-                <small>سرپرست مسافرین</small>
+                    <small>سرپرست مسافرین</small>
                     <div class=" p-md-3 mt-0">
                         <div class="row">
                             @* <div class="col-2">
@@ -601,7 +675,7 @@
                                     </h5>
                                 </div>
 
-								<div class="col-6 col-md-3">
+                                <div class="col-6 col-md-3">
                                     <small class="text-muted d-block">نام خانوادگی</small>
                                     <h5 class="d-inline">
                                         @ticket.Lastname
@@ -609,25 +683,25 @@
                                 </div>
 
 
-								<div class="col-6 col-md-3">
+                                <div class="col-6 col-md-3">
                                     <small class="text-muted d-block">کد ملی</small>
                                     <h5 class="d-inline">
                                         @ticket.NaCode
                                     </h5>
                                 </div>
 
-								<div class="col-6 col-md-3 d-flex align-items-center">
-                                        <small class="text-muted d-block">
-                                            شماره تلفن همراه
-                                        </small>
+                                <div class="col-6 col-md-3 d-flex align-items-center">
+                                    <small class="text-muted d-block">
+                                        شماره تلفن همراه
+                                    </small>
 
-                                        <h5 class="d-inline text-center" id="numberphone_display">
-                                            @ticket.PhoneNumber
-                                        </h5>
-                                    </div>
+                                    <h5 class="d-inline text-center" id="numberphone_display">
+                                        @ticket.PhoneNumber
+                                    </h5>
                                 </div>
                             </div>
-                            <div class="mt-5">
+                        </div>
+                        <div class="mt-5">
 
                             <small style="font-size: .7rem;" class="text-muted d-block">
                                 <i class="ti ti-info-circle ti-sm"></i>
@@ -636,55 +710,60 @@
                                 <i class="ti ti-info-circle ti-sm"></i>
                                 مسافر بعد از ثبت موفقیت آمیر سفر، پیامی حاوی لینک بلیط و جزییات سفر دریافت می‌کند
                             </small>
-                                <small style="font-size: .7rem;" class="text-muted d-block">
-                                    <i class="ti ti-info-circle ti-sm"></i>
-                                    کیفیت انجام سفر و رضایت مشتری‌، توسط مسترشوفر بعد از هر سفر با نظر مسافر، ارزیابی خواهد شد
-                                </small>
-
-
-                                <small style="font-size: .7rem;" class="text-muted d-block">
-                                    <i class="ti ti-info-circle ti-sm"></i>
-                                    این سفر و جزییات باقی سفرهای ثبت شده، در صفحه‌ی سفرهای من قابل مشاهده می‌باشد
-                                </small>
-
-                                <small style="font-size: .7rem;" class="text-muted d-block">
+                            <small style="font-size: .7rem;" class="text-muted d-block">
                                 <i class="ti ti-info-circle ti-sm"></i>
-                                    بنا بر قوانین سازمان راهداری و حمل‌ونقل جاده‌ای، نهایت ظرفیت مسافرین خودروی تاکسی بین شهری 3 نفر می‌باشد
+                                کیفیت انجام سفر و رضایت مشتری‌، توسط مسترشوفر بعد از هر سفر با نظر مسافر، ارزیابی خواهد
+                                شد
                             </small>
-                                <small style="font-size: .7rem;" class="text-muted d-block">
-                                    <i class="ti ti-info-circle ti-sm"></i>
-                                    در صورت وجود مبدا یا مقصد اضافه، جزییات و هزینه‌ی کیلومتر ماضاف، توسط همکاران مسترشوفر با مسافر هماهنگ می‌شود
-                                </small>
-                            </div>
 
-                            <span>
-                                <h6 class="text-blck mt-4">قوانین کنسلی</h6>
-                            </span>
-                            <p style="line-height:1.2rem !important; ">
-                                در صورت خرید سفر، و کنسل کردن سفر از طرف مسافر، تا 1 ساعت بعد از
-                                ثبت سفر کنسلی
-                                بدون جریمه
-                                انجام می‌شود در غیر این صورت؛
-                            </p>
 
-                            <div class="ms-1 text-muted">
+                            <small style="font-size: .7rem;" class="text-muted d-block">
+                                <i class="ti ti-info-circle ti-sm"></i>
+                                این سفر و جزییات باقی سفرهای ثبت شده، در صفحه‌ی سفرهای من قابل مشاهده می‌باشد
+                            </small>
 
-                                <small class="d-flex">تا 24 ساعت مانده به سفر  15 درصد  </small>
-                                <small class="d-flex">تا 4 ساعت قبل سفر 30 درصد  </small>
-                                <small class="d-flex">3 ساعت قبل سفر به بعد 70 درصد</small>
+                            <small style="font-size: .7rem;" class="text-muted d-block">
+                                <i class="ti ti-info-circle ti-sm"></i>
+                                بنا بر قوانین سازمان راهداری و حمل‌ونقل جاده‌ای، نهایت ظرفیت مسافرین خودروی تاکسی بین
+                                شهری 3 نفر می‌باشد
+                            </small>
+                            <small style="font-size: .7rem;" class="text-muted d-block">
+                                <i class="ti ti-info-circle ti-sm"></i>
+                                در صورت وجود مبدا یا مقصد اضافه، جزییات و هزینه‌ی کیلومتر ماضاف، توسط همکاران مسترشوفر
+                                با مسافر هماهنگ می‌شود
+                            </small>
+                        </div>
 
-                            </div>
+                        <span>
+                            <h6 class="text-blck mt-4">قوانین کنسلی</h6>
+                        </span>
+                        <p style="line-height:1.2rem !important; ">
+                            در صورت خرید سفر، و کنسل کردن سفر از طرف مسافر، تا 1 ساعت بعد از
+                            ثبت سفر کنسلی
+                            بدون جریمه
+                            انجام می‌شود در غیر این صورت؛
+                        </p>
+
+                        <div class="ms-1 text-muted">
+
+                            <small class="d-flex">تا 24 ساعت مانده به سفر 15 درصد </small>
+                            <small class="d-flex">تا 4 ساعت قبل سفر 30 درصد </small>
+                            <small class="d-flex">3 ساعت قبل سفر به بعد 70 درصد</small>
+
                         </div>
                     </div>
+                </div>
                 <div class="col-12 mt-4 px-md-4 px-lg-5 pt-2 pb-3">
                     <div class="d-flex rc-price-row" style="justify-content: space-between; align-items: center;">
                         <h5 class="mb-0">قیمت نهایی سفر</h5>
                         <div class="text-start">
                             @if (trip.afterdiscticketprice != trip.originalTicketprice)
                             {
-                                <div class="text-muted text-decoration-line-through" style="font-size:.85rem">@trip.originalTicketprice.ToString("N0") تومان</div>
+                                <div class="text-muted text-decoration-line-through" style="font-size:.85rem">
+                                    @trip.originalTicketprice.ToString("N0") تومان</div>
                             }
-                            <h4 class="text-primary mb-0">@trip.afterdiscticketprice.ToString("N0") <small class="text-muted fs-6">تومان</small></h4>
+                            <h4 class="text-primary mb-0">@trip.afterdiscticketprice.ToString("N0") <small
+                                    class="text-muted fs-6">تومان</small></h4>
                         </div>
                     </div>
                 </div>
@@ -694,37 +773,34 @@
                         برای پرینت کردن بلیط سفر بدون قیمت، از دکمه پرینت در بالای صفحه استفاده کنید
                     </p>
                 </div>
-             </div>
-
-            
-
-
-
-
             </div>
-        </div>
 
-        <div class="col-12 mt-4">
-            
-            <div class="row">
 
-                <div class="col-12">
-                    <p class="text-muted" style="line-height: 1.3rem !important; font-size: .8rem !important;">
-                        <img src="/location.png" height="22px;" />
-                        پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط
 
-                        <strong>
-                            مسترشوفر
-                        </strong>
 
-                        با مسافر هماهنگ خواهد شد.
-                    </p>
-                </div>
-            </div>
+
+
         </div>
     </div>
 
+    <div class="col-12 mt-4">
+
+        <div class="row">
+
+            <div class="col-12">
+                <p class="text-muted" style="line-height: 1.3rem !important; font-size: .8rem !important;">
+                    <img src="/location.png" height="22px;" />
+                    پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط
+
+                    <strong>
+                        مسترشوفر
+                    </strong>
+
+                    با مسافر هماهنگ خواهد شد.
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
-
-
+</div>

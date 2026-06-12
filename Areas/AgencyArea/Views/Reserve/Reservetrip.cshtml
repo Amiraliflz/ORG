@@ -22,6 +22,18 @@
     <script src="~/js/reserve-trip-modals.js"></script>
 
     <script>
+        // Normalize Persian/Arabic-Indic digits to ASCII on any numeric input
+        function normalizePersianDigits(el) {
+            var v = el.value
+                .replace(/[۰-۹]/g, function(d){ return d.charCodeAt(0) - 0x06F0; })
+                .replace(/[٠-٩]/g, function(d){ return d.charCodeAt(0) - 0x0660; });
+            if (v !== el.value) {
+                el.value = v;
+                // Trigger jQuery Validate recheck after normalization
+                $(el).valid();
+            }
+        }
+
         $(document).ready(function () {
             // Add custom regex method to jQuery Validate (for fallback)
             $.validator.addMethod("regex", function(value, element, regexp) {
@@ -37,8 +49,12 @@
                 }
             });
 
-            // NOTE: Removed AJAX form handler - forms should submit normally
-            // This allows server-side redirects to Zarinpal to work properly
+            // Normalize Persian digits before form submit (covers paste/autofill)
+            $('form.input-forms').on('submit', function () {
+                $(this).find('input[inputmode="numeric"]').each(function () {
+                    normalizePersianDigits(this);
+                });
+            });
         });
     </script>
 }
@@ -1196,7 +1212,8 @@
                                     کدملی
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="NaCode" autocomplete="off" class="form-control form-control" id="NaCodeInput" placeholder="شماره ملی" type="text">
+                                <input asp-for="NaCode" autocomplete="off" class="form-control form-control" id="NaCodeInput" placeholder="شماره ملی" type="text"
+                                       oninput="normalizePersianDigits(this)" inputmode="numeric">
                                 <span asp-validation-for="NaCode" class="text-danger validation-message"></span>
                             </div>
                         </div>
@@ -1223,7 +1240,8 @@
                                     تلفن مسافر
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="NumebrPhone" autocomplete="off" class="form-control form-control" id="largeInput" placeholder="شماره موبایل" type="text" data-val-regex-pattern="((0?9)|(\+?989))\d{9}">
+                                <input asp-for="NumebrPhone" autocomplete="off" class="form-control form-control" id="largeInput" placeholder="شماره موبایل" type="text" data-val-regex-pattern="((0?9)|(\+?989))\d{9}"
+                                       oninput="normalizePersianDigits(this)" inputmode="numeric">
                                 <span asp-validation-for="NumebrPhone" class="text-danger validation-message"></span>
                             </div>
                         </div>
