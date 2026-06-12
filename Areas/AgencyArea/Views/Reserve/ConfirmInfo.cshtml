@@ -62,15 +62,37 @@
     @@media only screen and (max-width: 600px) {
         .px-14 { padding-left: .2rem !important; padding-right: .2rem !important; }
         .step-title { font-size: .75rem !important; }
-        /* Payment section */
-        .pm-option, .pm-disabled { padding: .8rem .9rem; border-radius: .875rem; }
-        .pm-icon { width: 38px; height: 38px; font-size: 1.1rem; border-radius: .65rem; }
-        .pm-option .fw-semibold { font-size: .88rem; }
-        .pm-radio { width: 18px; height: 18px; }
-        .pm-radio .dot { width: 7px; height: 7px; }
         /* Confirm button full-width on mobile */
         .confirm-btn-wrap { margin-top: .75rem !important; padding-top: 0 !important; }
         .confirm-btn-wrap button { border-radius: 1rem !important; }
+
+        /* ── Trip card mobile fixes ── */
+
+        /* Origin / destination row */
+        .mt.pt-3 { margin: 0 !important; padding-top: .5rem !important; }
+        .mt.pt-3 .fs-5 { font-size: .95rem !important; }
+        .mt.pt-3 small  { font-size: .68rem !important; }
+
+        /* Date / Time / Car — three col-4 columns */
+        .col-4.d-flex.flex-column { padding-left: .1rem !important; padding-right: .1rem !important; }
+        .col-4.d-flex.flex-column > small { font-size: .62rem !important; text-align: center; }
+
+        /* Stack date + day-of-week vertically so they don't collide */
+        .col-4 .d-flex.mt-1 { flex-direction: column !important; align-items: center !important; gap: 0 !important; }
+        .col-4 .d-flex.mt-1 span { font-size: .8rem !important; margin: 0 !important; }
+
+        /* Time value */
+        .col-4 .text-blck.fs-5.mt-1 { font-size: .8rem !important; text-align: center; }
+        .col-4 .text-blck.fs-5.mt-1 small { font-size: .68rem !important; }
+
+        /* Car badge */
+        .carmodel { font-size: .62rem !important; padding: .15rem .4rem !important; }
+
+        /* Price row */
+        .col-12.mt-4 .d-flex[style*="space-between"] { flex-direction: column !important; gap: .2rem; }
+        .col-12.mt-4 h5 { font-size: .95rem !important; margin-bottom: .1rem !important; }
+        .col-12.mt-4 h4 { font-size: 1.1rem !important; }
+        .col-12.mt-4 small { font-size: .65rem !important; }
     }
 
 </style>
@@ -649,12 +671,9 @@
 
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Payment section — full width below both columns -->
-    <div class="col-12 mt-3">
-        <div class="card rounded-5 p-3">
+            <!-- Payment card — desktop only, directly below passenger info -->
+            <div class="card rounded-5 p-3 mt-3 d-none d-md-block">
             <style>
                 .pm-card { border-radius:1rem; border:2px solid #e8e8f0; background:#fff; padding:.85rem .75rem; cursor:pointer; transition:border-color .18s,background .18s,box-shadow .18s; display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
                 .pm-card:hover { border-color:#c5c3f5; box-shadow:0 2px 10px rgba(105,108,255,.1); }
@@ -700,7 +719,7 @@
                                 <div class="pm-card-icon green"><i class="ti ti-wallet"></i></div>
                                 <div>
                                     <div class="fw-semibold" style="font-size:.85rem;line-height:1.2">کیف پول</div>
-                                    <small class="text-success fw-medium" style="font-size:.72rem">@customerBalance.ToString("N0") ت</small>
+                                    <small style="font-size:.72rem;color:#333">اعتبار حساب: @customerBalance.ToString("N0") ت</small>
                                 </div>
                             </div>
                             <div class="pm-radio-dot" id="chk-balance"></div>
@@ -733,6 +752,60 @@
                 با مسافر هماهنگ خواهد شد.
             </p>
         </div>
+        </div>
+    </div>
+
+    <!-- Payment card — mobile only, after trip section -->
+    <div class="card rounded-5 p-3 mt-3 d-md-none">
+        <h6 class="fw-semibold mb-3"><i class="ti ti-credit-card me-1"></i>روش پرداخت</h6>
+        <div class="d-flex flex-column gap-2 w-100 mb-3">
+            <div id="pm-card-online-m" class="pm-card pm-sel-purple" onclick="selectPaymentMethod('zarinpal')">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="pm-card-icon purple"><i class="ti ti-credit-card"></i></div>
+                    <div>
+                        <div class="fw-semibold" style="font-size:.85rem;line-height:1.2">درگاه پرداخت</div>
+                        <small class="text-muted" style="font-size:.72rem">کارت بانکی</small>
+                    </div>
+                </div>
+                <div class="pm-radio-dot" id="chk-online-m"></div>
+            </div>
+            @if (isCustomer)
+            {
+                @if (canPayWithBalance)
+                {
+                    <div id="pm-card-balance-m" class="pm-card" onclick="selectPaymentMethod('balance')">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="pm-card-icon green"><i class="ti ti-wallet"></i></div>
+                            <div>
+                                <div class="fw-semibold" style="font-size:.85rem;line-height:1.2">کیف پول</div>
+                                <small style="font-size:.72rem;color:#333">اعتبار حساب: @customerBalance.ToString("N0") ت</small>
+                            </div>
+                        </div>
+                        <div class="pm-radio-dot" id="chk-balance-m"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="pm-card-disabled">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="pm-card-icon grey"><i class="ti ti-wallet"></i></div>
+                            <div>
+                                <div class="fw-semibold text-muted" style="font-size:.85rem;line-height:1.2">کیف پول</div>
+                                <small class="text-danger" style="font-size:.72rem">موجودی ناکافی</small>
+                            </div>
+                        </div>
+                        <div class="pm-radio-dot"></div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="confirm-btn-wrap">
+            <button data-bs-target="#paymentmodal" data-bs-toggle="modal" class="btn btn-lg btn-primary w-100" style="height:3.5rem !important;border-radius:1.6rem !important;">تایید و ادامه</button>
+        </div>
+        <p class="text-muted mb-0 mt-3" style="line-height:1.3rem;font-size:.8rem;">
+            <img src="/location.png" height="18px;" class="me-1" />
+            پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط <strong>مسترشوفر</strong> با مسافر هماهنگ خواهد شد.
+        </p>
     </div>
 
 </div>
@@ -885,18 +958,19 @@
         currentPaymentMethod = method;
         document.getElementById('payment-method').value = method;
 
-        var cardOnline  = document.getElementById('pm-card-online');
-        var cardBalance = document.getElementById('pm-card-balance');
-        var confirmBtn  = document.getElementById('confirm-btn');
+        // update both desktop and mobile copies
+        var ids = ['pm-card-online', 'pm-card-online-m'];
+        var balIds = ['pm-card-balance', 'pm-card-balance-m'];
+        var confirmBtn = document.getElementById('confirm-btn');
 
         if (method === 'balance') {
-            if (cardBalance) { cardBalance.className = 'pm-card pm-sel-green'; }
-            if (cardOnline)  { cardOnline.className  = 'pm-card'; }
-            if (confirmBtn)  { confirmBtn.innerHTML  = '<i class="ti ti-wallet me-1"></i> تایید و پرداخت از کیف پول'; }
+            ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.className='pm-card'; });
+            balIds.forEach(function(id){ var el=document.getElementById(id); if(el) el.className='pm-card pm-sel-green'; });
+            if (confirmBtn) confirmBtn.innerHTML = '<i class="ti ti-wallet me-1"></i> تایید و پرداخت از کیف پول';
         } else {
-            if (cardOnline)  { cardOnline.className  = 'pm-card pm-sel-purple'; }
-            if (cardBalance) { cardBalance.className = 'pm-card'; }
-            if (confirmBtn)  { confirmBtn.innerHTML  = '<i class="ti ti-credit-card me-1"></i> تایید و پرداخت'; }
+            ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.className='pm-card pm-sel-purple'; });
+            balIds.forEach(function(id){ var el=document.getElementById(id); if(el) el.className='pm-card'; });
+            if (confirmBtn) confirmBtn.innerHTML = '<i class="ti ti-credit-card me-1"></i> تایید و پرداخت';
         }
     }
 
