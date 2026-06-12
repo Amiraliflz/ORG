@@ -52,26 +52,40 @@
 					</li>
 
 					<li class="nav-item">
-						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index" asp-fragment="landingHero">
-
-							<span>
-
-								<i class="ti ti-home"></i>
-								پروفایل من
-							</span>
-
-						</a>
+						@if (User.HasClaim("Role", "Customer"))
+						{
+							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile">
+								<span><i class="ti ti-user-circle"></i> پروفایل من</span>
+							</a>
+						}
+						else if (User.Identity?.IsAuthenticated == true)
+						{
+							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index">
+								<span><i class="ti ti-home"></i> پروفایل من</span>
+							</a>
+						}
+						else
+						{
+							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin"
+							   asp-route-ReturnUrl="/Customer/MyProfile">
+								<span><i class="ti ti-user-circle"></i> پروفایل من</span>
+							</a>
+						}
 					</li>
 
 					<li class="nav-item">
-						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
-
-							<span>
-								<i class="ti ti-certificate-2"></i>
-								سفر‌ های من 
-							</span>
-
-						</a>
+						@if (User.HasClaim("Role", "Customer"))
+						{
+							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
+								<span><i class="ti ti-ticket"></i> سفرهای من</span>
+							</a>
+						}
+						else
+						{
+							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
+								<span><i class="ti ti-certificate-2"></i> سفرهای من</span>
+							</a>
+						}
 					</li>
 					<li class="nav-item">
 						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="FrontPages" asp-action="LandingPage" asp-fragment="landingFAQ">
@@ -127,61 +141,68 @@
 						{
 						<li class="nav-item navbar-dropdown dropdown-user dropdown">
 							<a class="nav-link dropdown-toggle hide-arrow show" data-bs-toggle="dropdown" href="javascript:void(0);" aria-expanded="true">
-								<img src="~/store.png" height="32" />
+								<span style="width:36px;height:36px;border-radius:50%;background:#696cff;display:inline-flex;align-items:center;justify-content:center;">
+								<i class="ti ti-user" style="color:#fff;font-size:1.1rem;"></i>
+							</span>
 							</a>
 							<ul class="dropdown-menu dropdown-menu-end" data-bs-popper="static">
 
-								<li>
-									<a class="dropdown-item" href="pages-profile-user.html">
-										<i class="ti ti-user-check me-2 ti-sm"></i>
-										<span class="align-middle">پروفایل من</span>
-									</a>
-								</li>
-								<li>
-									<a class="dropdown-item" href="pages-account-settings-billing.html">
-										<span class="d-flex align-items-center align-middle">
-											<i class="flex-shrink-0 ti ti-credit-card me-2 ti-sm"></i>
-											<span class="flex-grow-1 align-middle">لیست تراکنش ها</span>
+								@if (User.HasClaim("Role", "Customer"))
+								{
+									<li>
+										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile">
+											<i class="ti ti-user-check me-2 ti-sm"></i>
+											<span class="align-middle">پروفایل من</span>
+										</a>
+									</li>
+									<li>
+										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
+											<i class="ti ti-ticket me-2 ti-sm"></i>
+											<span class="align-middle">سفرهای من</span>
+										</a>
+									</li>
+									<li>
+										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyWallet">
+											<i class="ti ti-wallet me-2 ti-sm"></i>
+											<span class="align-middle">کیف پول</span>
+										</a>
+									</li>
+								}
+								else
+								{
+									<li>
+										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index">
+											<i class="ti ti-user-check me-2 ti-sm"></i>
+											<span class="align-middle">پروفایل من</span>
+										</a>
+									</li>
+									<li>
+										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
+											<i class="ti ti-ticket me-2 ti-sm"></i>
+											<span class="align-middle">سفرهای من</span>
+										</a>
+									</li>
+								}
 
-										</span>
-									</a>
-								</li>
-								<li>
-									<a class="dropdown-item" href="pages-pricing.html">
-										<i class="ti ti-currency-dollar me-2 ti-sm"></i>
-										<span class="align-middle">شارژ حساب</span>
-									</a>
-								</li>
-								<li>
-									<a class="dropdown-item" href="pages-account-settings-account.html">
-										<i class="ti ti-settings me-2 ti-sm"></i>
-										<span class="align-middle">تنظیمات</span>
-									</a>
-								</li>
-
-								<li>
-									<div class="dropdown-divider"></div>
-								</li>
-
-
-								<li>
-									<a class="dropdown-item" href="pages-account-settings-billing.html">
-										<span class="d-flex align-items-center align-middle">
-											<i class="flex-shrink-0 ti ti-heart-handshake me-2 ti-sm"></i>
-											<span class="flex-grow-1 align-middle">پشتیبانی 24/7</span>
-
-										</span>
-									</a>
-								</li>
+								<li><div class="dropdown-divider"></div></li>
 
 								<li>
-									<div class="dropdown-divider"></div>
-								</li>
-								<li>
-									<a class="dropdown-item" href="auth-login-cover.html" target="_blank">
-										<i class="ti ti-logout me-2 ti-sm"></i>
-										<span class="align-middle text-danger">خروج از حساب</span>
+									<a class="dropdown-item" asp-area="AgencyArea" asp-controller="FrontPages" asp-action="LandingPage" asp-fragment="landingFAQ">
+										<i class="ti ti-heart-handshake me-2 ti-sm"></i>
+										<span class="align-middle">پشتیبانی 24/7</span>
 									</a>
+								</li>
+
+								<li><div class="dropdown-divider"></div></li>
+
+								<li>
+									<form asp-area="" asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+										@Html.AntiForgeryToken()
+										<button type="submit" class="dropdown-item">
+											<i class="ti ti-logout me-2 ti-sm"></i>
+											<span class="align-middle text-danger">خروج از حساب</span>
+										</button>
+									</form>
 								</li>
 							</ul>
 						</li>
@@ -191,7 +212,10 @@
 						else
 
 						{
-						<a href="/Auth/LoginCover" class="btn btn-primary" target="_blank"><span class="tf-icons ti ti-login scaleX-n1-rtl me-md-1"></span><span class="d-none d-md-block">ورود / ثبت نام</span></a>
+						<a asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" class="btn btn-primary">
+							<span class="tf-icons ti ti-login scaleX-n1-rtl me-md-1"></span>
+							<span class="d-none d-md-block">ورود / ثبت‌نام</span>
+						</a>
 						}
 					}
 				</li>

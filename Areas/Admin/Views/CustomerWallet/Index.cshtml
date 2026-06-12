@@ -1,0 +1,97 @@
+@using Microsoft.AspNetCore.Identity
+@model IList<(IdentityUser User, decimal Balance)>
+@{
+    ViewData["Title"] = "کیف پول مشتریان";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">کیف پول مشتریان</h4>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible mb-4" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Charge form -->
+        <div class="col-md-4">
+            <div class="card rounded-4 p-4">
+                <h6 class="fw-bold mb-3">شارژ کیف پول</h6>
+                <form method="post" action="/Admin/CustomerWallet/ChargeBalance">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">شماره موبایل مشتری</label>
+                        <input name="phone" class="form-control" placeholder="09xxxxxxxxx" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">مبلغ (تومان)</label>
+                        <input name="amount" type="number" min="1000" step="1000" class="form-control" placeholder="مثلاً 50000" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">توضیحات (اختیاری)</label>
+                        <input name="note" class="form-control" placeholder="دلیل شارژ" />
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="ti ti-wallet me-1"></i> شارژ کیف پول
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Customer list -->
+        <div class="col-md-8">
+            <div class="card rounded-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>شماره موبایل</th>
+                                <th>موجودی (تومان)</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">هنوز مشتری ثبت‌نامی وجود ندارد</td>
+                                </tr>
+                            }
+                            @foreach (var (user, balance) in Model)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@user.UserName</td>
+                                    <td>
+                                        <span class="badge @(balance > 0 ? "bg-label-success" : "bg-label-secondary") rounded-pill py-2 px-3">
+                                            @balance.ToString("N0")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill"
+                                                onclick="prefillPhone('@user.UserName')">
+                                            <i class="ti ti-wallet me-1"></i> شارژ
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function prefillPhone(phone) {
+        document.querySelector('input[name="phone"]').value = phone;
+        document.querySelector('input[name="amount"]').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>

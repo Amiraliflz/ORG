@@ -15,6 +15,7 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 using Application.Models;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace Application.Areas.AgencyArea
 {
@@ -30,17 +31,19 @@ namespace Application.Areas.AgencyArea
     private readonly IConfiguration configuration;
     private readonly IPaymentService _paymentService;
     private readonly ILogger<ReserveController> _logger;
+    private readonly TicketIssuer _ticketIssuer;
     private Agency agency;
 
 
     public ReserveController(
-      MrShooferAPIClient apiclient, 
-      UserManager<IdentityUser> usermanager, 
-      AppDbContext context, 
-      CustomerServiceSmsSender smssender, 
+      MrShooferAPIClient apiclient,
+      UserManager<IdentityUser> usermanager,
+      AppDbContext context,
+      CustomerServiceSmsSender smssender,
       IConfiguration configuration,
       IPaymentService paymentService,
-      ILogger<ReserveController> logger)
+      ILogger<ReserveController> logger,
+      TicketIssuer ticketIssuer)
     {
       this.configuration = configuration;
       customerSmsSender = smssender;
@@ -49,7 +52,8 @@ namespace Application.Areas.AgencyArea
       this.apiclient = apiclient;
       _paymentService = paymentService;
       _logger = logger;
-      
+      _ticketIssuer = ticketIssuer;
+
       // Ensure guest agency exists when controller is initialized
       EnsureGuestAgencyExistsAsync().Wait();
     }
@@ -218,12 +222,22 @@ namespace Application.Areas.AgencyArea
         }
       }
 
+      // Pass customer balance if logged in as customer
+      decimal customerBalance = 0;
+      bool isCustomer = User.HasClaim("Role", "Customer");
+      if (isCustomer)
+      {
+        var balanceClaim = User.FindFirst("CustomerBalance");
+        decimal.TryParse(balanceClaim?.Value, out customerBalance);
+      }
+
       // Set ViewBag data once
       ViewBag.agancy = agency;
       ViewBag.agancy_balance = agencyBalance;
       ViewBag.trip = trip;
       ViewBag.reserveviewmodel = viewmodel;
-
+      ViewBag.IsCustomer = isCustomer;
+      ViewBag.CustomerBalance = customerBalance;
       return View("ConfirmInfo");
     }
 
@@ -339,7 +353,71 @@ namespace Application.Areas.AgencyArea
       _logger.LogInformation("Preliminary ticket saved to database. TripCode: {TripCode}, TicketId: {TicketId}, Price: {Price}", 
         viewModel.TripCode, newticket.Id, newticket.TicketFinalPrice);
 
-      // ✅ STEP 2: REDIRECT USER TO PAYMENT SERVER (pay.mrshoofer.ir)
+      // ✅ STEP 2: PROCESS PAYMENT
+      if (viewModel.PaymentMethod == "balance")
+      {
+        // --- Balance payment path ---
+        if (!User.HasClaim("Role", "Customer"))
+        {
+          TempData["ErrorMessage"] = "برای پرداخت از کیف پول ابتدا وارد حساب کاربری خود شوید";
+          return RedirectToAction("Reservetrip", new { tripcode = viewModel.TripCode });
+        }
+
+        var identityUser = await _userManager.GetUserAsync(User);
+        var balanceClaim = (await _userManager.GetClaimsAsync(identityUser))
+            .FirstOrDefault(c => c.Type == "CustomerBalance");
+        decimal.TryParse(balanceClaim?.Value, out var currentBalance);
+
+        if (currentBalance < newticket.TicketFinalPrice)
+        {
+          TempData["ErrorMessage"] = "موجودی کیف پول کافی نیست";
+          return RedirectToAction("Reservetrip", new { tripcode = viewModel.TripCode });
+        }
+
+        // Deduct balance
+        var newBalance = currentBalance - newticket.TicketFinalPrice;
+        if (balanceClaim != null)
+          await _userManager.RemoveClaimAsync(identityUser, balanceClaim);
+        await _userManager.AddClaimAsync(identityUser, new Claim("CustomerBalance", newBalance.ToString()));
+
+        // ORS reservation
+        string orsTicketCode;
+        string? orsWebappToken = null;
+        try
+        {
+          (orsTicketCode, orsWebappToken) = await _ticketIssuer.ReserveWithOrsAsync(newticket);
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "ORS reservation failed after balance deduction. TicketId: {Id}", newticket.Id);
+
+          // Refund the balance — reverse the deduction
+          var refundClaim = (await _userManager.GetClaimsAsync(identityUser))
+              .FirstOrDefault(c => c.Type == "CustomerBalance");
+          decimal.TryParse(refundClaim?.Value, out var balanceAfterDeduction);
+          if (refundClaim != null)
+            await _userManager.RemoveClaimAsync(identityUser, refundClaim);
+          await _userManager.AddClaimAsync(identityUser,
+              new Claim("CustomerBalance", (balanceAfterDeduction + newticket.TicketFinalPrice).ToString()));
+
+          TempData["ErrorMessage"] = "خطا در رزرو سفر. مبلغ به کیف پول شما بازگشت داده شد.";
+          return RedirectToAction("Reservetrip", new { tripcode = viewModel.TripCode });
+        }
+
+        newticket.TicketCode = orsTicketCode;
+        newticket.IsPaid = true;
+        newticket.PaidAt = DateTime.Now;
+        newticket.PaymentRefId = "WALLET";
+        if (!string.IsNullOrWhiteSpace(orsWebappToken))
+          newticket.WebappToken = orsWebappToken;
+
+        await context.SaveChangesAsync();
+        _logger.LogInformation("Balance payment completed. TicketId: {Id}, TicketCode: {Code}", newticket.Id, newticket.TicketCode);
+
+        return RedirectToAction("ReserveConfirmed", new { ticketcode = newticket.TicketCode });
+      }
+
+      // --- Zarinpal (online) payment path ---
       // The payment server's IP is whitelisted with Zarinpal — it calls Zarinpal and redirects user.
       var paymentServerBase = configuration["PaymentServer:BaseUrl"] ?? "https://pay.mrshoofer.ir";
       var sharedKey = configuration["PaymentServer:SharedKey"] ?? string.Empty;

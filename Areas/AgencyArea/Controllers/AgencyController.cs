@@ -126,12 +126,21 @@ namespace Application.Areas.AgencyArea
     public override void OnActionExecuting(ActionExecutingContext context)
     {
       base.OnActionExecuting(context);
-        
+
       var identityUser = _userManager.GetUserAsync(User).Result;
       agency = _context.Agencies.FirstOrDefault(a => a.IdentityUser == identityUser);
 
+      if (agency == null)
+      {
+        // Customer or other non-agency user — send them to their own area
+        context.Result = User.HasClaim("Role", "Customer")
+            ? RedirectToAction("MyTickets", "Customer")
+            : RedirectToAction("Index", "Home");
+        return;
+      }
 
-      _apiClient.SetSellerApiKey(agency.ORSAPI_token);
+      if (!string.IsNullOrWhiteSpace(agency.ORSAPI_token))
+        _apiClient.SetSellerApiKey(agency.ORSAPI_token);
     }
   }
 }

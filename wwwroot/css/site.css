@@ -1,1 +1,118 @@
-/* Custom styles goes here */
+/* ─────────────────────────────────────────────
+   Global pill-style buttons & curved inputs
+   Colors: primary #696cff  success #28c76f
+   ───────────────────────────────────────────── */
+
+/* ── Inputs & Selects ── */
+.form-control,
+.form-select {
+    border-radius: 1.25rem !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    transition: border-color .18s, box-shadow .18s;
+}
+
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 3px rgba(105, 108, 255, .15) !important;
+    border-color: #696cff !important;
+}
+
+/* Input groups: outer corners only */
+.input-group > .form-control:not(:last-child),
+.input-group > .form-select:not(:last-child) {
+    border-radius: 0 1.25rem 1.25rem 0 !important;
+}
+.input-group > .form-control:not(:first-child),
+.input-group > .form-select:not(:first-child) {
+    border-radius: 1.25rem 0 0 1.25rem !important;
+}
+.input-group > .input-group-text:first-child {
+    border-radius: 0 1.25rem 1.25rem 0 !important;
+}
+.input-group > .input-group-text:last-child {
+    border-radius: 1.25rem 0 0 1.25rem !important;
+}
+.input-group {
+    border-radius: 1.25rem;
+}
+
+/* ── Buttons – base pill shape ── */
+.btn {
+    border-radius: 1.25rem !important;
+    font-weight: 500;
+    letter-spacing: .01em;
+    transition: box-shadow .18s, transform .12s, background .18s;
+}
+
+/* Slight lift on hover */
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Primary – purple glow */
+.btn-primary {
+    box-shadow: 0 2px 12px rgba(105, 108, 255, .30);
+}
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(105, 108, 255, .45);
+}
+.btn-primary:focus,
+.btn-primary:active {
+    box-shadow: 0 0 0 3px rgba(105, 108, 255, .25) !important;
+}
+
+/* Success – green glow */
+.btn-success {
+    box-shadow: 0 2px 12px rgba(40, 199, 111, .28);
+}
+.btn-success:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(40, 199, 111, .42);
+}
+
+/* Outline variants – glow on hover */
+.btn-outline-primary:hover:not(:disabled) {
+    box-shadow: 0 2px 14px rgba(105, 108, 255, .30);
+}
+.btn-outline-success:hover:not(:disabled) {
+    box-shadow: 0 2px 14px rgba(40, 199, 111, .30);
+}
+.btn-outline-danger:hover:not(:disabled) {
+    box-shadow: 0 2px 14px rgba(255, 62, 29, .25);
+}
+
+/* Danger */
+.btn-danger {
+    box-shadow: 0 2px 12px rgba(255, 62, 29, .25);
+}
+
+/* Label ghost buttons */
+.btn-label-primary,
+.btn-label-success,
+.btn-label-secondary,
+.btn-label-warning,
+.btn-label-info,
+.btn-label-danger {
+    box-shadow: none;
+}
+
+/* ── Large buttons – a bit more padding ── */
+.btn-lg {
+    padding: .65rem 1.75rem !important;
+    font-size: 1rem !important;
+    border-radius: 1.5rem !important;
+}
+
+/* ── Mobile tweaks ── */
+@media (max-width: 575.98px) {
+    .btn-lg {
+        width: 100%;
+    }
+    .form-control,
+    .form-select {
+        font-size: .95rem;
+    }
+}

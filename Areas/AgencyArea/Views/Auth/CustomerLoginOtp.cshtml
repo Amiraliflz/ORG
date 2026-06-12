@@ -1,0 +1,101 @@
+@{
+    Layout = "_BlankLayout";
+    ViewData["Title"] = "تأیید شماره موبایل";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-auth.css">
+}
+
+<div class="authentication-wrapper authentication-basic px-4">
+    <div class="authentication-inner py-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="app-brand justify-content-between mb-3 mt-2">
+                    <a href="/" class="app-brand-link gap-2">
+                        <img src="~/logo_full_b.png" style="width:200px;" />
+                    </a>
+                </div>
+
+                <h4 class="mb-1 pt-2">کد تأیید را وارد کنید</h4>
+                <p class="text-muted mb-1">
+                    کد ۵ رقمی به شماره زیر ارسال شد:
+                    <span class="fw-bold d-block mt-1" dir="ltr">@ViewBag.numberphone</span>
+                </p>
+                <a asp-action="CustomerLogin" class="small">تغییر شماره</a>
+
+                <form id="otpForm" asp-action="CustomerLoginOtp" method="post" class="mt-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="numberphone" value="@ViewBag.numberphone" />
+                    @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
+                    {
+                        <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+                    }
+
+                    <p class="mb-2 fw-medium">کد امنیتی ۵ رقمی</p>
+                    <div class="auth-input-wrapper d-flex align-items-center justify-content-sm-between numeral-mask-wrapper ltr mb-3">
+                        <input autocomplete="off" name="code1" type="tel" class="form-control auth-input h-px-50 text-center mx-1 my-2" maxlength="1" autofocus>
+                        <input autocomplete="off" name="code2" type="tel" class="form-control auth-input h-px-50 text-center mx-1 my-2" maxlength="1">
+                        <input autocomplete="off" name="code3" type="tel" class="form-control auth-input h-px-50 text-center mx-1 my-2" maxlength="1">
+                        <input autocomplete="off" name="code4" type="tel" class="form-control auth-input h-px-50 text-center mx-1 my-2" maxlength="1">
+                        <input autocomplete="off" name="code5" type="tel" class="form-control auth-input h-px-50 text-center mx-1 my-2" maxlength="1">
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ViewBag.errormessage as string))
+                    {
+                        <div class="alert alert-danger py-2 mb-3">@ViewBag.errormessage</div>
+                    }
+
+                    <button class="btn btn-primary d-grid w-100 mb-3">ورود</button>
+
+                    <div class="text-center">
+                        <span id="resendTimer" class="text-muted me-1"></span>
+                        کد را دریافت نکردید؟
+                        <a id="resendLink" href="javascript:void(0);" class="disabled">ارسال مجدد</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("otpForm");
+        const inputs = form.querySelectorAll("input[type='tel']");
+        const resendLink = document.getElementById("resendLink");
+        const resendTimer = document.getElementById("resendTimer");
+
+        // Auto-advance and auto-submit
+        inputs.forEach((input, idx) => {
+            input.addEventListener("input", function () {
+                if (this.value.length === 1 && idx < inputs.length - 1)
+                    inputs[idx + 1].focus();
+                if ([...inputs].every(i => i.value.trim() !== ""))
+                    form.submit();
+            });
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Backspace" && !this.value && idx > 0)
+                    inputs[idx - 1].focus();
+            });
+        });
+
+        // Countdown
+        let timeLeft = 90;
+        const tick = setInterval(() => {
+            timeLeft--;
+            const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+            resendTimer.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+            if (timeLeft <= 0) {
+                clearInterval(tick);
+                resendTimer.textContent = "";
+                resendLink.classList.remove("disabled");
+            }
+        }, 1000);
+
+        resendLink.addEventListener("click", function () {
+            if (!this.classList.contains("disabled"))
+                window.location.href = "@Url.Action("CustomerLogin")";
+        });
+    });
+</script>

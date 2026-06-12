@@ -23,5 +23,8 @@ namespace Application.ViewModels.Reserve
 
     // Optional webapp token provided by client (will be sent to webapp after payment)
     public string? WebappToken { get; set; }
+
+    // "zarinpal" or "balance" — set by JS before form submit
+    public string? PaymentMethod { get; set; }
   }
 }

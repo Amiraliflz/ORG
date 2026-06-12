@@ -111,140 +111,145 @@ namespace Application.Services.Payment
         int amount,
         string description,
         string mobile,
-        string? email = null)
+        string? email = null,
+        string? callbackUrl = null)
     {
-      try
+      const int maxAttempts = 3;
+
+      var request = new ZarinpalPaymentRequest
       {
-        _logger.LogInformation("=== ZARINPAL PAYMENT REQUEST DEBUG ===");
-        _logger.LogInformation("MerchantId: {MerchantId}", _merchantId);
-        _logger.LogInformation("CallbackUrl from config: {CallbackUrl}", _callbackUrl);
-        _logger.LogInformation("Amount (Rials): {Amount}", amount);
-        _logger.LogInformation("Description: {Description}", description);
-        _logger.LogInformation("Mobile: {Mobile}", mobile);
-        _logger.LogInformation("Email: {Email}", email ?? "null");
-
-        var request = new ZarinpalPaymentRequest
+        MerchantId = _merchantId,
+        Amount = amount,
+        Description = description,
+        CallbackUrl = callbackUrl ?? _callbackUrl,
+        Metadata = new ZarinpalMetadata
         {
-          MerchantId = _merchantId,
-          Amount = amount,
-          Description = description,
-          CallbackUrl = _callbackUrl,
-          Metadata = new ZarinpalMetadata
-          {
-            Mobile = string.IsNullOrWhiteSpace(mobile) ? null : mobile,
-            Email = string.IsNullOrWhiteSpace(email) ? null : email
-          }
-        };
-
-        var json = JsonSerializer.Serialize(request);
-        _logger.LogInformation("=== FULL REQUEST JSON BEING SENT ===");
-        _logger.LogInformation("{Json}", json);
-
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        var response = await _httpClient.PostAsync(_paymentUrl, content);
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        _logger.LogInformation("Zarinpal HTTP Status: {StatusCode}", response.StatusCode);
-        _logger.LogInformation("Zarinpal Payment Response (FULL): {Response}", responseContent);
-
-        // Check if response is HTML (error page)
-        if (responseContent.TrimStart().StartsWith("<") || responseContent.TrimStart().StartsWith("<!DOCTYPE"))
-        {
-          _logger.LogError("Zarinpal returned HTML instead of JSON. Response: {Response}", responseContent);
-          return (false, string.Empty, "خطا در ارتباط با درگاه پرداخت. لطفاً بعداً مجدداً تلاش کنید.");
+          Mobile = string.IsNullOrWhiteSpace(mobile) ? null : mobile,
+          Email = string.IsNullOrWhiteSpace(email) ? null : email
         }
+      };
 
-        // Check HTTP status
-        if (!response.IsSuccessStatusCode)
-        {
-          _logger.LogError("Zarinpal HTTP error. Status: {Status}, Full Response: {Response}",
-              response.StatusCode, responseContent);
-          return (false, string.Empty, $"خطا در ارتباط با درگاه پرداخت (کد: {response.StatusCode})");
-        }
+      var json = JsonSerializer.Serialize(request);
+      _logger.LogInformation("Zarinpal payment request. MerchantId={MerchantId}, Amount={Amount}", _merchantId, amount);
 
-        ZarinpalPaymentResponse? result;
+      for (int attempt = 1; attempt <= maxAttempts; attempt++)
+      {
         try
         {
-          result = JsonSerializer.Deserialize<ZarinpalPaymentResponse>(responseContent);
-        }
-        catch (JsonException ex)
-        {
-          _logger.LogError(ex, "Failed to parse Zarinpal response. Response: {Response}", responseContent);
-          return (false, string.Empty, "خطا در پردازش پاسخ درگاه پرداخت");
-        }
+          var content = new StringContent(json, Encoding.UTF8, "application/json");
+          var response = await _httpClient.PostAsync(_paymentUrl, content);
+          var responseContent = await response.Content.ReadAsStringAsync();
 
-        // Status codes for API v4:
-        // 100 = Success
-        // 101 = Already verified
-        // Negative codes = Error
-        if (result?.Data != null && result.Data.Code == 100 && !string.IsNullOrEmpty(result.Data.Authority))
-        {
-          _logger.LogInformation("Zarinpal payment request successful. Authority: {Authority}", result.Data.Authority);
-          return (true, result.Data.Authority, "درخواست پرداخت با موفقیت ثبت شد");
-        }
-        else
-        {
+          _logger.LogInformation("Zarinpal attempt {Attempt}: HTTP {StatusCode}", attempt, response.StatusCode);
+
+          // HTML response = gateway error page (sandbox down or blocked)
+          if (responseContent.TrimStart().StartsWith("<"))
+          {
+            _logger.LogWarning("Zarinpal returned HTML on attempt {Attempt}", attempt);
+            if (_isSandbox || _forceAuthorityOnError)
+            {
+              var testAuth = "TEST-" + Guid.NewGuid().ToString()[..31];
+              return (true, testAuth, "تست: درگاه شبیه‌ساز در دسترس نیست — authority آزمایشی ایجاد شد");
+            }
+            // Transient — retry on 5xx, give up on 4xx
+            if (response.IsSuccessStatusCode || (int)response.StatusCode >= 500)
+            {
+              if (attempt < maxAttempts) { await Task.Delay(1500 * attempt); continue; }
+            }
+            return (false, string.Empty, "خطا در ارتباط با درگاه پرداخت. لطفاً بعداً مجدداً تلاش کنید.");
+          }
+
+          // 5xx = transient server error → retry
+          if ((int)response.StatusCode >= 500)
+          {
+            _logger.LogWarning("Zarinpal returned {Status} on attempt {Attempt}", response.StatusCode, attempt);
+            if (_isSandbox || _forceAuthorityOnError)
+            {
+              var testAuth = "TEST-" + Guid.NewGuid().ToString()[..31];
+              return (true, testAuth, "تست: درگاه شبیه‌ساز در دسترس نیست — authority آزمایشی ایجاد شد");
+            }
+            if (attempt < maxAttempts) { await Task.Delay(1500 * attempt); continue; }
+            return (false, string.Empty, $"خطا در ارتباط با درگاه پرداخت (کد: {response.StatusCode})");
+          }
+
+          // 4xx = non-transient HTTP error
+          if (!response.IsSuccessStatusCode)
+          {
+            _logger.LogError("Zarinpal HTTP {Status} on attempt {Attempt}: {Response}", response.StatusCode, attempt, responseContent);
+            return (false, string.Empty, $"خطا در ارتباط با درگاه پرداخت (کد: {response.StatusCode})");
+          }
+
+          ZarinpalPaymentResponse? result;
+          try { result = JsonSerializer.Deserialize<ZarinpalPaymentResponse>(responseContent); }
+          catch (JsonException ex)
+          {
+            _logger.LogError(ex, "Failed to parse Zarinpal response: {Response}", responseContent);
+            return (false, string.Empty, "خطا در پردازش پاسخ درگاه پرداخت");
+          }
+
+          if (result?.Data != null && result.Data.Code == 100 && !string.IsNullOrEmpty(result.Data.Authority))
+          {
+            _logger.LogInformation("Zarinpal payment request successful. Authority: {Authority}", result.Data.Authority);
+            return (true, result.Data.Authority, "درخواست پرداخت با موفقیت ثبت شد");
+          }
+
           var errorData = result?.GetErrorData();
           if (errorData != null)
           {
-            // Prefer a localized/friendly message for known error codes.
             var mapped = GetErrorMessage(errorData.Code);
 
-            // If running in sandbox OR force flag is enabled, allow continuing when the gateway returns rate-limit / too many attempts
-            var isTooManyAttempts = (errorData.Code == -12) ||
-                                    (!string.IsNullOrWhiteSpace(errorData.Message) && errorData.Message.Contains("To many", StringComparison.OrdinalIgnoreCase));
+            var isTooManyAttempts = errorData.Code == -12 ||
+                (!string.IsNullOrWhiteSpace(errorData.Message) && errorData.Message.Contains("To many", StringComparison.OrdinalIgnoreCase));
 
-            if ((isTooManyAttempts && (_isSandbox || _forceAuthorityOnError)))
+            if (isTooManyAttempts && (_isSandbox || _forceAuthorityOnError))
             {
-              // Generate a test authority so developers can continue testing flows without being blocked by provider rate limits
-              var testAuth = "TEST-AUTH-" + Guid.NewGuid().ToString("N");
-              _logger.LogWarning("Zarinpal returned rate-limit error (code {Code}). Forcing test authority {Auth} because sandbox/force mode is enabled.", errorData.Code, testAuth);
-
+              var testAuth = "TEST-" + Guid.NewGuid().ToString()[..31];
+              _logger.LogWarning("Zarinpal rate-limit (code {Code}). Forcing test authority.", errorData.Code);
               return (true, testAuth, "درخواست پرداخت (تست) ایجاد شد. توجه: این تراکنش واقعی نیست");
             }
 
-            string errorMessage;
+            var errorMessage = !mapped.StartsWith("خطای نامشخص") ? mapped
+                : !string.IsNullOrWhiteSpace(errorData.Message) ? errorData.Message
+                : GetErrorMessage(errorData.Code);
 
-            if (!mapped.StartsWith("خطای نامشخص"))
-            {
-              // We have a known mapping - use it (Persian).
-              errorMessage = mapped;
-            }
-            else if (!string.IsNullOrWhiteSpace(errorData.Message))
-            {
-              // Unknown code - fall back to provider message but sanitize it
-              errorMessage = errorData.Message;
-            }
-            else
-            {
-              errorMessage = GetErrorMessage(errorData.Code);
-            }
-
-            _logger.LogError("Zarinpal payment request failed. Code: {Code}, Error: {Error}",
-                errorData.Code, errorMessage);
+            _logger.LogError("Zarinpal error code {Code}: {Error}", errorData.Code, errorMessage);
             return (false, string.Empty, errorMessage);
           }
 
-          _logger.LogError("Zarinpal returned unexpected response format. Response: {Response}", responseContent);
+          _logger.LogError("Zarinpal unexpected response: {Response}", responseContent);
           return (false, string.Empty, "خطای نامشخص در درگاه پرداخت");
         }
+        catch (TaskCanceledException ex)
+        {
+          _logger.LogWarning(ex, "Zarinpal timeout on attempt {Attempt}/{Max}", attempt, maxAttempts);
+          if (_isSandbox || _forceAuthorityOnError)
+          {
+            var testAuth = "TEST-" + Guid.NewGuid().ToString()[..31];
+            return (true, testAuth, "تست: درگاه شبیه‌ساز در دسترس نیست — authority آزمایشی ایجاد شد");
+          }
+          if (attempt < maxAttempts) { await Task.Delay(1500 * attempt); continue; }
+          return (false, string.Empty, "زمان اتصال به درگاه پرداخت به پایان رسید. لطفاً دوباره تلاش کنید.");
+        }
+        catch (HttpRequestException ex)
+        {
+          _logger.LogWarning(ex, "Zarinpal network error on attempt {Attempt}/{Max}", attempt, maxAttempts);
+          if (_isSandbox || _forceAuthorityOnError)
+          {
+            var testAuth = "TEST-" + Guid.NewGuid().ToString()[..31];
+            return (true, testAuth, "تست: درگاه شبیه‌ساز در دسترس نیست — authority آزمایشی ایجاد شد");
+          }
+          if (attempt < maxAttempts) { await Task.Delay(1500 * attempt); continue; }
+          return (false, string.Empty, "خطا در ارتباط با سرور درگاه پرداخت. لطفاً اتصال اینترنت خود را بررسی کنید.");
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Zarinpal exception on attempt {Attempt}", attempt);
+          return (false, string.Empty, $"خطا در ارسال درخواست: {ex.Message}");
+        }
       }
-      catch (HttpRequestException ex)
-      {
-        _logger.LogError(ex, "HTTP error during Zarinpal payment request");
-        return (false, string.Empty, "خطا در ارتباط با سرور درگاه پرداخت. لطفاً اتصال اینترنت خود را بررسی کنید.");
-      }
-      //catch (TaskCanceledException ex)
-      //{
-      //    _logger.LogError(ex, "Timeout during Zarinpal payment request");
-      //    return (false, string.Empty, "زمان اتصال به درگاه پرداخت به پایان رسید. لطفاً دوباره تلاش کنید.");
-      //}
-      catch (Exception ex)
-      {
-        _logger.LogError(ex, "Exception during Zarinpal payment request");
-        return (false, string.Empty, $"خطا در ارسال درخواست: {ex.Message}");
-      }
+
+      // Should never reach here, but satisfies compiler
+      return (false, string.Empty, "خطا در ارتباط با درگاه پرداخت");
     }
 
     /// <summary>
@@ -257,6 +262,14 @@ namespace Application.Services.Payment
         string authority,
         int amount)
     {
+      // Auto-pass test authorities generated when sandbox gateway was unavailable
+      if ((_isSandbox || _forceAuthorityOnError) && authority.StartsWith("TEST-", StringComparison.OrdinalIgnoreCase))
+      {
+        var fakeRefId = new Random().Next(10000000, 99999999);
+        _logger.LogWarning("Test authority detected in sandbox mode. Auto-passing verification. RefId={RefId}", fakeRefId);
+        return (true, fakeRefId, "0000-****-****-0000", "تست: پرداخت آزمایشی تایید شد");
+      }
+
       try
       {
         var request = new ZarinpalVerifyRequest

@@ -1,0 +1,146 @@
+@{
+    Layout = "_AgencySideLayout";
+    ViewData["title"] = "کیف پول من";
+    decimal balance = ViewBag.Balance ?? 0m;
+}
+
+<style>
+@@media(max-width:575.98px){
+  .wallet-header{flex-direction:column;align-items:flex-start!important;gap:.75rem}
+  .wallet-header a{width:100%;text-align:center}
+  .amount-grid{grid-template-columns:1fr 1fr!important}
+  .wallet-cards .card{padding:1.1rem!important}
+}
+.amount-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:1rem}
+@@media(max-width:400px){.amount-grid{grid-template-columns:1fr 1fr}}
+</style>
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 wallet-header">
+        <div>
+            <h4 class="fw-bold mb-1">کیف پول من</h4>
+            <small class="text-muted">@ViewBag.CustomerPhone</small>
+        </div>
+        <a asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets" class="btn btn-outline-primary">
+            <i class="ti ti-ticket me-1"></i> بلیط‌های من
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible mb-4" role="alert">
+            <i class="ti ti-circle-check me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible mb-4" role="alert">
+            <i class="ti ti-alert-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4 wallet-cards">
+        <!-- Balance card -->
+        <div class="col-md-4">
+            <div class="card rounded-4 p-4 text-center h-100">
+                <i class="ti ti-wallet ti-3x text-success mb-3"></i>
+                <h6 class="text-muted mb-1">موجودی کیف پول</h6>
+                <h2 class="fw-bold text-success mb-0">@balance.ToString("N0")</h2>
+                <small class="text-muted">تومان</small>
+                <hr class="my-3" />
+                <small class="text-muted">
+                    با کیف پول می‌توانید بدون نیاز به کارت بانکی بلیط خریداری کنید
+                </small>
+            </div>
+        </div>
+
+        <!-- Top-up form -->
+        <div class="col-md-4">
+            <div class="card rounded-4 p-4 h-100">
+                <h6 class="fw-bold mb-3">
+                    <i class="ti ti-plus-circle me-1 text-primary"></i>
+                    شارژ کیف پول
+                </h6>
+                <form asp-area="AgencyArea" asp-controller="Customer" asp-action="InitiateTopUp" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">مبلغ شارژ (تومان)</label>
+                        <input type="text" id="amountDisplay" inputmode="numeric"
+                               class="form-control form-control-lg text-center"
+                               placeholder="مثلاً ۵۰٬۰۰۰" autocomplete="off" required />
+                        <input type="hidden" name="amount" id="amountHidden" />
+                        <div class="form-text text-muted" id="amountHint">حداقل مبلغ شارژ: ۱٬۰۰۰ تومان</div>
+                    </div>
+
+                    <!-- Quick amount buttons -->
+                    <div class="amount-grid">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setAmount(50000)">۵۰ هزار</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setAmount(100000)">۱۰۰ هزار</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setAmount(200000)">۲۰۰ هزار</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setAmount(500000)">۵۰۰ هزار</button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="ti ti-credit-card me-1"></i>
+                        پرداخت از طریق درگاه
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Guide -->
+        <div class="col-md-4">
+            <div class="card rounded-4 p-4 h-100">
+                <h6 class="fw-bold mb-3">راهنما</h6>
+                <ul class="text-muted small" style="line-height:2rem;">
+                    <li>مبلغ دلخواه را وارد کنید و پرداخت کنید</li>
+                    <li>پس از پرداخت موفق، موجودی کیف پول شما به‌روزرسانی می‌شود</li>
+                    <li>در صفحه خرید بلیط، گزینه «پرداخت با اعتبار حساب» را انتخاب کنید</li>
+                    <li>کیف پول به حساب شما متصل است و قابل انتقال نمی‌باشد</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('amountDisplay');
+    const hidden = document.getElementById('amountHidden');
+    const hint = document.getElementById('amountHint');
+
+    function formatNum(n) {
+        return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    display.addEventListener('input', function () {
+        const raw = this.value.replace(/,/g, '');
+        this.value = formatNum(this.value);
+        hidden.value = raw;
+        const num = parseInt(raw, 10);
+        if (!isNaN(num)) {
+            hint.textContent = `مبلغ انتخابی: ${num.toLocaleString('en-US')} تومان`;
+        } else {
+            hint.textContent = 'حداقل مبلغ شارژ: ۱٬۰۰۰ تومان';
+        }
+    });
+
+    function setAmount(val) {
+        display.value = val.toLocaleString('en-US');
+        hidden.value = val;
+        hint.textContent = `مبلغ انتخابی: ${val.toLocaleString('en-US')} تومان`;
+    }
+
+    // Validate before submit
+    display.closest('form').addEventListener('submit', function (e) {
+        const val = parseInt(hidden.value, 10);
+        if (!val || val < 1000) {
+            e.preventDefault();
+            hint.textContent = '⚠️ حداقل مبلغ شارژ ۱٬۰۰۰ تومان است';
+            hint.classList.add('text-danger');
+            display.focus();
+        }
+    });
+</script>

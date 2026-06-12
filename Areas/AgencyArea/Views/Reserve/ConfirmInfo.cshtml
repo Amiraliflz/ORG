@@ -9,6 +9,10 @@
 
     var agancy = (Application.Models.Agency)ViewBag.agancy;
 
+    bool isCustomer = ViewBag.IsCustomer ?? false;
+    decimal customerBalance = ViewBag.CustomerBalance ?? 0m;
+    bool canPayWithBalance = isCustomer && customerBalance >= (decimal)(trip?.afterdiscticketprice ?? int.MaxValue);
+
     Dictionary<int, string> monthName = new Dictionary<int, string>()
     {
     {1,"فروردین" },
@@ -56,15 +60,17 @@
 <style>
 
     @@media only screen and (max-width: 600px) {
-
-        .px-14 {
-            padding-left: .2rem !important;
-            padding-right: .2rem !important;
-        }
-
-        .step-title {
-            font-size: .75rem !important;
-        }
+        .px-14 { padding-left: .2rem !important; padding-right: .2rem !important; }
+        .step-title { font-size: .75rem !important; }
+        /* Payment section */
+        .pm-option, .pm-disabled { padding: .8rem .9rem; border-radius: .875rem; }
+        .pm-icon { width: 38px; height: 38px; font-size: 1.1rem; border-radius: .65rem; }
+        .pm-option .fw-semibold { font-size: .88rem; }
+        .pm-radio { width: 18px; height: 18px; }
+        .pm-radio .dot { width: 7px; height: 7px; }
+        /* Confirm button full-width on mobile */
+        .confirm-btn-wrap { margin-top: .75rem !important; padding-top: 0 !important; }
+        .confirm-btn-wrap button { border-radius: 1rem !important; }
     }
 
 </style>
@@ -319,7 +325,7 @@
         </div>
 
 
-        <div class="col-md-6 col-12">
+        <div class="col-md-6 col-12 order-2 order-md-1">
 
             <div class="d-flex justify-content-start">
 
@@ -533,7 +539,7 @@
             </div>
         </div>
 
-        <div class="col-md-6 col-12 mt-4  mt-md-0">
+        <div class="col-md-6 col-12 mt-0 mt-md-0 order-1 order-md-2">
             <div class="d-flex justify-content-start">
                 <img src="/useravatar.png" height="35px" />
                 <h4 class="ms-2">اطلاعات خریدار</h4>
@@ -643,25 +649,80 @@
 
                 </div>
             </div>
-            <div class="row mt-2  ">
+            <div class="mt-3">
+                <h6 class="fw-semibold mb-3">
+                    <i class="ti ti-credit-card me-1"></i>
+                    روش پرداخت
+                </h6>
 
-                <div class="col-0 col-md-6">
-                    <p class="text-muted" style="line-height: 1.3rem !important; font-size: .8rem !important;">
-                        <img src="/location.png" height="22px;" />
-                        پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط
+                <style>
+                    .pm-option { border-radius: 1.1rem; border: 2px solid #e8e8f0; padding: .9rem; cursor: pointer; transition: border-color .18s, background .18s, box-shadow .18s; background: #fff; display:flex; flex-direction:column; align-items:center; text-align:center; gap:.55rem; }
+                    .pm-option:hover { border-color: #c5c3f5; box-shadow: 0 2px 12px rgba(105,108,255,.1); }
+                    .pm-option.pm-selected-purple { border-color: #696cff; background: #f3f3ff; box-shadow: 0 2px 14px rgba(105,108,255,.14); }
+                    .pm-option.pm-selected-green  { border-color: #28c76f; background: #f0fbf5;  box-shadow: 0 2px 14px rgba(40,199,111,.12); }
+                    .pm-icon { width: 44px; height: 44px; border-radius: .875rem; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; }
+                    .pm-icon.purple { background: #ebebff; color: #696cff; }
+                    .pm-icon.green  { background: #e3f9ec; color: #28c76f; }
+                    .pm-icon.grey   { background: #f5f5f9; color: #aaa; }
+                    .pm-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #d0d0e0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .18s; margin-top: auto; }
+                    .pm-radio.checked-purple { border-color: #696cff; background: #696cff; }
+                    .pm-radio.checked-green  { border-color: #28c76f; background: #28c76f; }
+                    .pm-radio .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; display: none; }
+                    .pm-radio.checked-purple .dot, .pm-radio.checked-green .dot { display: block; }
+                    .pm-disabled { border-radius: 1.1rem; border: 2px solid #f0f0f0; padding: .9rem; background: #fafafa; opacity: .55; cursor: not-allowed; display:flex; flex-direction:column; align-items:center; text-align:center; gap:.55rem; }
+                </style>
 
-                        <strong>
-                            مسترشوفر
-                        </strong>
+                <div class="d-flex flex-row gap-2" style="max-width:320px">
+                    <!-- Online payment -->
+                    <div id="pm-card-online" class="pm-option pm-selected-purple flex-fill" onclick="selectPaymentMethod('zarinpal')">
+                        <div class="pm-icon purple"><i class="ti ti-credit-card"></i></div>
+                        <div>
+                            <div class="fw-semibold" style="font-size:.88rem">درگاه پرداخت</div>
+                            <small class="text-muted" style="font-size:.75rem">کارت بانکی</small>
+                        </div>
+                        <div class="pm-radio checked-purple" id="chk-online"><div class="dot"></div></div>
+                    </div>
 
-                        با مسافر هماهنگ خواهد شد.
-                    </p>
+                    @if (isCustomer)
+                    {
+                        @if (canPayWithBalance)
+                        {
+                            <!-- Wallet payment (enabled) -->
+                            <div id="pm-card-balance" class="pm-option flex-fill" onclick="selectPaymentMethod('balance')">
+                                <div class="pm-icon green"><i class="ti ti-wallet"></i></div>
+                                <div>
+                                    <div class="fw-semibold" style="font-size:.88rem">کیف پول</div>
+                                    <small class="text-success fw-medium" style="font-size:.75rem">@customerBalance.ToString("N0") ت</small>
+                                </div>
+                                <div class="pm-radio" id="chk-balance"><div class="dot"></div></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Wallet payment (disabled – insufficient) -->
+                            <div class="pm-disabled flex-fill">
+                                <div class="pm-icon grey"><i class="ti ti-wallet"></i></div>
+                                <div>
+                                    <div class="fw-semibold text-muted" style="font-size:.88rem">کیف پول</div>
+                                    <small class="text-danger" style="font-size:.75rem">موجودی ناکافی</small>
+                                </div>
+                                <div style="width:20px;height:20px;border-radius:50%;border:2px solid #ddd;background:#f5f5f9;"></div>
+                            </div>
+                        }
+                    }
                 </div>
-                <div class="col-md-6 ps-0 mt-1 mt-md-3 col-12 pt-2 pt-md-0">
-                    
-                    <button data-bs-target="#paymentmodal" data-bs-toggle="modal" class="btn btn-lg btn-primary w-100 " style="height: 3.5rem !important;border-radius: 1.6rem !important;">تایید و ادامه</button>
+            </div>
 
-                </div>
+            <div class="mt-3 confirm-btn-wrap">
+                <button data-bs-target="#paymentmodal" data-bs-toggle="modal" class="btn btn-lg btn-primary w-100" style="height: 3.5rem !important;border-radius: 1.6rem !important;">تایید و ادامه</button>
+            </div>
+            <div class="mt-3">
+                <p class="text-muted mb-0" style="line-height: 1.3rem; font-size: .8rem;">
+                    <img src="/location.png" height="18px;" class="me-1" />
+                    پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط
+                    <strong>مسترشوفر</strong>
+                    با مسافر هماهنگ خواهد شد.
+                </p>
             </div>
         </div>
     </div>
@@ -718,11 +779,7 @@
                         <div class="d-flex justify-content-start align-items-center mt-2">
                             <img src="/cards.png" height="50px" />
                             <div class="ms-3">
-
-                                <h3 class="modal-title" id="modalCenterTitle">تایید پرداخت</h3>
-                                <small>
-                                    پرداخت از حساب آژانس و صدور بلیط
-                                </small>
+                                <h3 class="modal-title" id="modalCenterTitle">تایید و پرداخت</h3>
                             </div>
                             <button aria-label="بستن" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                         </div>
@@ -781,23 +838,23 @@
                     </div>
 
                     <div class="modal-footer d-flex justify-content-between mt-0">
-                        <button class="btn btn-label-secondary p-3 px-3" data-bs-dismiss="modal" type="button"> بستن</button>
+                        <button class="btn btn-label-secondary p-3 px-3" data-bs-dismiss="modal" type="button">بستن</button>
 
-
-
-                        <form method="post" action="/Reserve/ConfirmInfo">
+                        <form method="post" action="/Reserve/ConfirmInfo" id="payment-form">
                             <input name="Tripcode" id="tripcode" type="hidden" value="@reserve_viemodel.TripCode" />
                             <input name="Firstname" id="firstname" type="hidden" value="@reserve_viemodel.Firstname" />
                             <input name="Lastname" id="lastname" type="hidden" value="@reserve_viemodel.Lastname" />
                             <input name="Numberphone" id="numberphone" type="hidden" value="@reserve_viemodel.NumebrPhone" />
                             <input name="Nacode" id="nacode" type="hidden" value="@reserve_viemodel.NaCode" />
-                            <input name="Gender" id="nacode" type="hidden" value="@reserve_viemodel.Gender" />
+                            <input name="Gender" type="hidden" value="@reserve_viemodel.Gender" />
                             <input name="WebappToken" id="webapptoken" type="hidden" value="@webappToken" />
+                            <input name="PaymentMethod" id="payment-method" type="hidden" value="zarinpal" />
 
-                            <button class="btn btn-primary btn-lg" type="submit" >تایید و ادامه</button>
+                            <button class="btn btn-primary btn-lg" type="submit" id="confirm-btn">
+                                <i class="ti ti-credit-card me-1"></i> تایید و پرداخت
+                            </button>
                         </form>
 
-                        @* If client provided a WebappToken show a direct button to open the webapp using that token *@
                         @if (!string.IsNullOrWhiteSpace(webappUrl))
                         {
                             <a class="btn btn-outline-primary btn-lg ms-2" href="@webappUrl" role="button">رفتن به وب‌اپ</a>
@@ -814,13 +871,37 @@
 </div>
 
 <script>
+    var currentPaymentMethod = 'zarinpal';
+
+    function selectPaymentMethod(method) {
+        currentPaymentMethod = method;
+        document.getElementById('payment-method').value = method;
+
+        var cardOnline  = document.getElementById('pm-card-online');
+        var cardBalance = document.getElementById('pm-card-balance');
+        var chkOnline   = document.getElementById('chk-online');
+        var chkBalance  = document.getElementById('chk-balance');
+        var confirmBtn  = document.getElementById('confirm-btn');
+
+        if (method === 'balance') {
+            if (cardBalance) { cardBalance.className = 'pm-option pm-selected-green'; }
+            if (chkBalance)  { chkBalance.className  = 'pm-radio checked-green'; }
+            if (cardOnline)  { cardOnline.className  = 'pm-option'; }
+            if (chkOnline)   { chkOnline.className   = 'pm-radio'; }
+            if (confirmBtn)  { confirmBtn.innerHTML   = '<i class="ti ti-wallet me-1"></i> تایید و پرداخت از کیف پول'; }
+        } else {
+            if (cardOnline)  { cardOnline.className  = 'pm-option pm-selected-purple'; }
+            if (chkOnline)   { chkOnline.className   = 'pm-radio checked-purple'; }
+            if (cardBalance) { cardBalance.className  = 'pm-option'; }
+            if (chkBalance)  { chkBalance.className   = 'pm-radio'; }
+            if (confirmBtn)  { confirmBtn.innerHTML   = '<i class="ti ti-credit-card me-1"></i> تایید و پرداخت آنلاین'; }
+        }
+    }
+
     function ChangeNumber() {
         var newPhoneNumber = document.getElementById('newnumberphone').value;
-
         document.getElementById('numberphone').value = newPhoneNumber;
-
         document.getElementById('numberphone_display').innerText = newPhoneNumber;
-
         var modal = bootstrap.Modal.getInstance(document.getElementById('modalCenter'));
         modal.hide();
     }

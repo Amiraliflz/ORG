@@ -31,12 +31,13 @@ builder.Services.AddHttpClient<MrShooferAPIClient>((serviceProvider, client) =>
 });
 
 builder.Services.AddTransient<CustomerServiceSmsSender>();
+builder.Services.AddTransient<Application.Services.TicketIssuer>();
 
 // Register Payment Service with Dependency Inversion Principle
 // This allows easy swapping to other payment providers (IDPay, Sep, etc.)
 builder.Services.AddHttpClient<IPaymentService, ZarinpalService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromSeconds(12);
 });
 
 builder.Services
@@ -48,7 +49,7 @@ builder.Services
   });
 
 
-builder.Services.TryAddTransient<IOtpLogin, KavehNeagerOtp>();
+builder.Services.TryAddTransient<IOtpLogin, SmsIrOtp>();
 
 // Configure EF Core to use PostgreSQL via Npgsql and read the proper connection string per environment
 var connStringName = builder.Environment.IsDevelopment() ? "development" : "production";
@@ -78,6 +79,9 @@ builder.Services.AddAuthorization(options =>
 
   options.AddPolicy("Admin", policy =>
       policy.RequireClaim("Role", "Admin"));
+
+  options.AddPolicy("Customer", policy =>
+      policy.RequireClaim("Role", "Customer"));
 });
 
 builder.Services.ConfigureApplicationCookie(options =>

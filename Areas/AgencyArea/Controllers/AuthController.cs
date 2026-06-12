@@ -276,5 +276,119 @@ namespace Application.Areas.AgencyArea
 
       return RedirectToAction("Index", "Home");
     }
+
+    // ── Customer OTP Login (auto-creates account on first visit) ──
+
+    [HttpGet]
+    public IActionResult CustomerLogin(string? ReturnUrl)
+    {
+      if (_signInManager.IsSignedIn(User))
+        return string.IsNullOrEmpty(ReturnUrl) ? RedirectToAction("MyProfile", "Customer") : LocalRedirect(ReturnUrl);
+      ViewBag.ReturnUrl = ReturnUrl;
+      return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CustomerLogin(string numberphone, string? ReturnUrl)
+    {
+      if (_signInManager.IsSignedIn(User))
+        return string.IsNullOrEmpty(ReturnUrl) ? RedirectToAction("MyProfile", "Customer") : LocalRedirect(ReturnUrl);
+
+      if (string.IsNullOrWhiteSpace(numberphone))
+      {
+        ViewBag.errormessage = "شماره موبایل را وارد کنید";
+        ViewBag.ReturnUrl = ReturnUrl;
+        return View();
+      }
+
+      var user = await _usermanager.FindByNameAsync(numberphone);
+      if (user == null)
+      {
+        user = new IdentityUser { UserName = numberphone, PhoneNumber = numberphone };
+        var password = Guid.NewGuid().ToString("N")[..8] + "Aa1!";
+        var result = await _usermanager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+          ViewBag.errormessage = "خطا در ایجاد حساب. لطفاً دوباره تلاش کنید";
+          ViewBag.ReturnUrl = ReturnUrl;
+          return View();
+        }
+        await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", "Customer"));
+        await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("CustomerBalance", "0"));
+      }
+
+      var claims = await _usermanager.GetClaimsAsync(user);
+      if (!claims.Any(c => c.Type == "Role" && c.Value == "Customer"))
+      {
+        ViewBag.errormessage = "این شماره برای ورود مشتری معتبر نیست";
+        ViewBag.ReturnUrl = ReturnUrl;
+        return View();
+      }
+
+      string otpcode = await _otpLogin.SendCode(numberphone);
+      TempData["otp_code"] = otpcode;
+      TempData["otp_exptime"] = DateTime.Now.AddSeconds(90).ToString();
+      TempData["otp_returnurl"] = ReturnUrl;
+
+      return RedirectToAction("CustomerLoginOtp", new { numberphone, ReturnUrl });
+    }
+
+    [HttpGet]
+    public IActionResult CustomerLoginOtp(string numberphone, string? ReturnUrl)
+    {
+      if (string.IsNullOrWhiteSpace(numberphone))
+        return RedirectToAction("CustomerLogin");
+      ViewBag.numberphone = numberphone;
+      ViewBag.ReturnUrl = ReturnUrl;
+      return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CustomerLoginOtp(string code1, string code2, string code3, string code4, string code5, string numberphone, string? ReturnUrl)
+    {
+      string otpcode = code1 + code2 + code3 + code4 + code5;
+
+      if (TempData["otp_code"] == null || TempData["otp_exptime"] == null || string.IsNullOrWhiteSpace(numberphone))
+        return RedirectToAction("CustomerLogin");
+
+      string storedcode = TempData["otp_code"]!.ToString()!;
+      DateTime exptime = Convert.ToDateTime(TempData["otp_exptime"]!.ToString());
+
+      if (string.IsNullOrEmpty(ReturnUrl) && TempData["otp_returnurl"] != null)
+        ReturnUrl = TempData["otp_returnurl"]!.ToString();
+
+      if (DateTime.Now > exptime)
+      {
+        ViewBag.errormessage = "کد منقضی شده است. دوباره درخواست کنید";
+        ViewBag.numberphone = numberphone;
+        ViewBag.ReturnUrl = ReturnUrl;
+        return View();
+      }
+
+      if (otpcode != storedcode)
+      {
+        ViewBag.errormessage = "کد وارد شده نادرست است";
+        ViewBag.numberphone = numberphone;
+        ViewBag.ReturnUrl = ReturnUrl;
+        TempData.Keep();
+        return View();
+      }
+
+      var user = await _usermanager.FindByNameAsync(numberphone);
+      if (user == null)
+      {
+        ViewBag.errormessage = "حساب کاربری یافت نشد";
+        return View("CustomerLogin");
+      }
+
+      await _signInManager.SignInAsync(user, isPersistent: true, authenticationMethod: "OTP");
+
+      if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+        return LocalRedirect(ReturnUrl);
+
+      return RedirectToAction("MyProfile", "Customer", new { area = "AgencyArea" });
+    }
   }
 }

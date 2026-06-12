@@ -1,8 +1,10 @@
 using Application.Data;
 using Application.Services.Payment;
 using Application.Services.MrShooferORS;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text;
 using System.Security.Cryptography;
@@ -18,14 +20,18 @@ namespace Application.Controllers
         private readonly MrShooferAPIClient _mrShooferClient;
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
 
         public PaymentController(
-            IPaymentService paymentService, 
+            IPaymentService paymentService,
             AppDbContext context,
             ILogger<PaymentController> logger,
             MrShooferAPIClient mrShooferClient,
             IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager)
         {
             _paymentService = paymentService;
             _context = context;
@@ -33,6 +39,8 @@ namespace Application.Controllers
             _mrShooferClient = mrShooferClient;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         /// <summary>
@@ -255,6 +263,10 @@ namespace Application.Controllers
 
                 _logger.LogInformation("Ticket updated successfully. TicketCode: {TicketCode}, RefId: {RefId}", ticket.TicketCode, refId);
 
+                // Ensure customer account exists, then auto-login if not already authenticated
+                await EnsureCustomerAccountAsync(ticket.PhoneNumber);
+                await AutoLoginCustomerAsync(ticket.PhoneNumber);
+
                 // If ticket has a webapp token, POST JSON to webapp endpoint with retries and then redirect user to webapp URL
                 if (!string.IsNullOrWhiteSpace(ticket.WebappToken))
                 {
@@ -356,9 +368,97 @@ namespace Application.Controllers
             ticket.PaymentAuthority = authority;
             await _context.SaveChangesAsync();
 
-            var gatewayUrl = _paymentService.GetPaymentGatewayUrl(authority);
+            // Test authority generated when sandbox is unreachable — skip gateway, go straight to Verify
+            if (authority.StartsWith("TEST-", StringComparison.OrdinalIgnoreCase))
+            {
+                var verifyUrl = Url.Action("Verify", "Payment", new { Authority = authority, Status = "OK" });
+                return Content(RedirectHtml(verifyUrl!), "text/html");
+            }
 
+            var gatewayUrl = _paymentService.GetPaymentGatewayUrl(authority);
             return Content(RedirectHtml(gatewayUrl), "text/html");
+        }
+
+        /// <summary>
+        /// Verify wallet top-up payment callback from Zarinpal
+        /// </summary>
+        [HttpGet]
+        [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Customer")]
+        public async Task<IActionResult> TopUpVerify(string Authority, string Status)
+        {
+            try
+            {
+                if (Status != "OK")
+                {
+                    ViewBag.ErrorMessage = "پرداخت توسط کاربر لغو شد";
+                    return View("PaymentFailed");
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
+
+                var claims = await _userManager.GetClaimsAsync(user);
+                var pendingClaim = claims.FirstOrDefault(c => c.Type == "WalletTopUpPending");
+                if (pendingClaim == null)
+                {
+                    _logger.LogError("WalletTopUpPending claim not found for user {User}", user.UserName);
+                    ViewBag.ErrorMessage = "درخواست شارژ کیف پول یافت نشد. لطفاً با پشتیبانی تماس بگیرید";
+                    return View("PaymentFailed");
+                }
+
+                var parts = pendingClaim.Value.Split(':');
+                if (parts.Length < 2 || parts[0] != Authority)
+                {
+                    _logger.LogError("WalletTopUpPending authority mismatch. Expected={Expected}, Got={Got}", parts.ElementAtOrDefault(0), Authority);
+                    ViewBag.ErrorMessage = "اطلاعات تراکنش نامعتبر است";
+                    return View("PaymentFailed");
+                }
+
+                if (!decimal.TryParse(parts[1], out var topUpAmount) || topUpAmount < 1)
+                {
+                    ViewBag.ErrorMessage = "مبلغ تراکنش نامعتبر است";
+                    return View("PaymentFailed");
+                }
+
+                int amountInRials = (int)(topUpAmount * 10);
+                var (success, refId, cardPan, message) = await _paymentService.VerifyPaymentAsync(Authority, amountInRials);
+
+                if (!success)
+                {
+                    _logger.LogError("Wallet top-up verification failed. Authority={Authority}, Message={Message}", Authority, message);
+                    ViewBag.ErrorMessage = message;
+                    return View("PaymentFailed");
+                }
+
+                // Remove pending claim
+                await _userManager.RemoveClaimAsync(user, pendingClaim);
+
+                // Credit balance
+                var balanceClaim = claims.FirstOrDefault(c => c.Type == "CustomerBalance");
+                decimal currentBalance = 0;
+                if (balanceClaim != null)
+                {
+                    decimal.TryParse(balanceClaim.Value, out currentBalance);
+                    await _userManager.RemoveClaimAsync(user, balanceClaim);
+                }
+                var newBalance = currentBalance + topUpAmount;
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("CustomerBalance", newBalance.ToString()));
+
+                // Refresh sign-in so updated claims are reflected in the cookie
+                await _signInManager.RefreshSignInAsync(user);
+
+                _logger.LogInformation("Wallet top-up successful. User={User}, Amount={Amount}, NewBalance={Balance}, RefId={RefId}",
+                    user.UserName, topUpAmount, newBalance, refId);
+
+                TempData["Success"] = $"کیف پول شما با موفقیت {topUpAmount:N0} تومان شارژ شد. موجودی جدید: {newBalance:N0} تومان";
+                return RedirectToAction("MyWallet", "Customer", new { area = "AgencyArea" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception during wallet top-up verify. Authority={Authority}", Authority);
+                ViewBag.ErrorMessage = "خطا در پردازش شارژ کیف پول. لطفا با پشتیبانی تماس بگیرید";
+                return View("PaymentFailed");
+            }
         }
 
         /// <summary>
@@ -392,6 +492,58 @@ namespace Application.Controllers
                    "<p>در حال انتقال به درگاه پرداخت زرین‌پال...</p>" +
                    "<a href='" + safeUrl + "'>اگر منتقل نشدید اینجا کلیک کنید</a></div>" +
                    "<script>window.location.href='" + safeUrl + "';</script></body></html>";
+        }
+
+        private async Task AutoLoginCustomerAsync(string? phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber)) return;
+            if (_signInManager.IsSignedIn(User)) return;  // already logged in — don't displace an agency session
+
+            try
+            {
+                var user = await _userManager.FindByNameAsync(phoneNumber);
+                if (user == null) return;
+
+                var claims = await _userManager.GetClaimsAsync(user);
+                if (!claims.Any(c => c.Type == "Role" && c.Value == "Customer")) return;
+
+                await _signInManager.SignInAsync(user, isPersistent: true);
+                _logger.LogInformation("Customer auto-signed in after payment: {Phone}", phoneNumber);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to auto-sign in customer {Phone}", phoneNumber);
+            }
+        }
+
+        private async Task EnsureCustomerAccountAsync(string? phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber)) return;
+            try
+            {
+                var existing = await _userManager.FindByNameAsync(phoneNumber);
+                if (existing != null) return;
+
+                var user = new IdentityUser { UserName = phoneNumber, PhoneNumber = phoneNumber };
+                // Random password — customer logs in via OTP, not password
+                var password = Guid.NewGuid().ToString("N")[..8] + "Aa1!";
+                var result = await _userManager.CreateAsync(user, password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddClaimAsync(user, new Claim("Role", "Customer"));
+                    await _userManager.AddClaimAsync(user, new Claim("CustomerBalance", "0"));
+                    _logger.LogInformation("Customer account created for phone: {Phone}", phoneNumber);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to create customer account for {Phone}: {Errors}",
+                        phoneNumber, string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while creating customer account for {Phone}", phoneNumber);
+            }
         }
 
         private static string ErrorHtml(string msg)

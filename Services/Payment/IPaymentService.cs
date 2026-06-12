@@ -18,7 +18,8 @@ namespace Application.Services.Payment
             int amount,
             string description,
             string mobile,
-            string? email = null);
+            string? email = null,
+            string? callbackUrl = null);
 
         /// <summary>
         /// Verify payment after user returns from payment gateway

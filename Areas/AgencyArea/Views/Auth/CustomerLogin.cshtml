@@ -1,0 +1,57 @@
+@{
+    Layout = "_BlankLayout";
+    ViewData["Title"] = "ورود مشتریان";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-auth.css">
+}
+
+<div class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner py-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="app-brand justify-content-between mb-3 mt-2">
+                        <a href="/" class="app-brand-link gap-2">
+                            <img src="~/logo_full_b.png" style="width:200px;" />
+                        </a>
+                    </div>
+
+                    <h4 class="mb-1 pt-1">ورود / ثبت‌نام مشتریان</h4>
+                    <p class="mb-4 text-muted">شماره موبایل خود را وارد کنید. اگر حساب ندارید، خودکار ساخته می‌شود.</p>
+
+                    <form method="POST" asp-action="CustomerLogin">
+                        @Html.AntiForgeryToken()
+                        @if (!string.IsNullOrEmpty(ViewBag.ReturnUrl as string))
+                        {
+                            <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+                        }
+                        <div class="mb-3">
+                            <label class="form-label" for="numberphone">شماره موبایل</label>
+                            <input autofocus id="numberphone" name="numberphone" type="tel"
+                                   class="form-control form-control-lg text-center"
+                                   placeholder="09xxxxxxxxx" maxlength="11" dir="ltr" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ViewBag.errormessage as string))
+                        {
+                            <div class="alert alert-danger py-2 mb-3">@ViewBag.errormessage</div>
+                        }
+
+                        <button class="btn btn-primary d-grid w-100" type="submit">
+                            <i class="ti ti-send me-1"></i> ارسال کد تأیید
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            ورود به عنوان آژانس؟
+                            <a asp-action="Loginotp">ورود سازمانی</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

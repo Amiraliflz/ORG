@@ -62,6 +62,18 @@
                         <div>پیام‌ها</div>
                     </a>
                 </li>
+                <li class='menu-item@(currentPage.StartsWith("/Admin/Customers") ? " active" : "")'>
+                    <a asp-controller="Customers" asp-area="Admin" asp-action="Index" class="menu-link">
+                        <i class="ti ti-users menu-icon tf-icons"></i>
+                        <div>مشتریان</div>
+                    </a>
+                </li>
+                <li class='menu-item@(currentPage.StartsWith("/Admin/CustomerWallet") ? " active" : "")'>
+                    <a asp-controller="CustomerWallet" asp-area="Admin" asp-action="Index" class="menu-link">
+                        <i class="ti ti-wallet menu-icon tf-icons"></i>
+                        <div>کیف پول مشتریان</div>
+                    </a>
+                </li>
                
             </ul>
 

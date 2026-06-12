@@ -1,0 +1,241 @@
+@using Application.Areas.Admin.Controllers
+@model List<CustomerListItem>
+@{
+    ViewData["Title"] = "مدیریت مشتریان";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0"><i class="ti ti-users me-2 text-primary"></i>مشتریان</h4>
+            <small class="text-muted">@Model.Count نفر ثبت‌نامی</small>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createModal">
+            <i class="ti ti-user-plus me-1"></i> افزودن مشتری
+        </button>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible mb-4 d-flex align-items-center">
+            <i class="ti ti-circle-check me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible mb-4 d-flex align-items-center">
+            <i class="ti ti-alert-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Search -->
+    <div class="card rounded-4 mb-4">
+        <div class="card-body py-3">
+            <form method="get" class="d-flex gap-2 align-items-center">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="ti ti-search"></i></span>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="جستجو: نام، کد ملی یا شماره موبایل..."
+                           value="@ViewBag.Search" />
+                </div>
+                <button type="submit" class="btn btn-primary px-4">جستجو</button>
+                @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+                {
+                    <a href="/Admin/Customers" class="btn btn-outline-secondary">پاک</a>
+                }
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card rounded-4">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>شماره موبایل</th>
+                        <th>نام کامل</th>
+                        <th>کد ملی</th>
+                        <th>موجودی</th>
+                        <th>پروفایل</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="ti ti-users-off ti-2x d-block mb-2"></i>
+                                @(string.IsNullOrEmpty(ViewBag.Search as string) ? "هنوز مشتری ثبت‌نامی وجود ندارد" : $"نتیجه‌ای برای «{ViewBag.Search}» یافت نشد")
+                            </td>
+                        </tr>
+                    }
+                    @{ int row = 1; }
+                    @foreach (var item in Model)
+                    {
+                        var hasProfile = !string.IsNullOrWhiteSpace(item.Profile?.FirstName) || !string.IsNullOrWhiteSpace(item.Profile?.NationalId);
+                        <tr>
+                            <td class="text-muted small">@row++</td>
+                            <td class="fw-semibold" dir="ltr">@item.User.UserName</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.Profile?.FirstName) || !string.IsNullOrWhiteSpace(item.Profile?.LastName))
+                                {
+                                    <span>@item.Profile!.FirstName @item.Profile.LastName</span>
+                                }
+                                else { <span class="text-muted fst-italic">—</span> }
+                            </td>
+                            <td dir="ltr">
+                                @if (!string.IsNullOrWhiteSpace(item.Profile?.NationalId))
+                                { <span>@item.Profile!.NationalId</span> }
+                                else { <span class="text-muted fst-italic">—</span> }
+                            </td>
+                            <td>
+                                <span class="badge @(item.Balance > 0 ? "bg-label-success" : "bg-label-secondary") rounded-pill py-2 px-3">
+                                    @item.Balance.ToString("N0") ت
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge @(hasProfile ? "bg-label-success" : "bg-label-warning") rounded-pill">
+                                    @(hasProfile ? "تکمیل" : "ناقص")
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-icon btn-label-primary rounded-pill"
+                                        title="شارژ کیف پول"
+                                        onclick="openCharge('@item.User.UserName', @item.Balance)">
+                                    <i class="ti ti-wallet"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ── Create Customer Modal ── -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="ti ti-user-plus me-2 text-primary"></i>افزودن مشتری جدید
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body pt-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">شماره موبایل <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="ti ti-phone"></i></span>
+                            <input name="phone" type="tel" class="form-control" placeholder="09xxxxxxxxx" required maxlength="11" dir="ltr" />
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-medium">نام</label>
+                            <input name="firstName" type="text" class="form-control" placeholder="نام" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-medium">نام خانوادگی</label>
+                            <input name="lastName" type="text" class="form-control" placeholder="نام خانوادگی" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium">کد ملی</label>
+                            <input name="nationalId" type="text" class="form-control" placeholder="کد ملی ۱۰ رقمی" maxlength="10" dir="ltr" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="ti ti-user-check me-1"></i>ایجاد حساب
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ── Charge Balance Modal ── -->
+<div class="modal fade" id="chargeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="ti ti-wallet me-2 text-success"></i>شارژ کیف پول
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="ChargeBalance" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body pt-3">
+                    <p class="text-muted small mb-3">
+                        مشتری: <strong id="chargePhone" dir="ltr"></strong><br>
+                        موجودی فعلی: <strong id="chargeCurrent" class="text-success"></strong> تومان
+                    </p>
+                    <input type="hidden" name="phone" id="chargePhoneInput" />
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">مبلغ شارژ (تومان)</label>
+                        <input name="amount" id="chargeAmountInput" type="text" inputmode="numeric"
+                               class="form-control form-control-lg text-center"
+                               placeholder="مثلاً ۱۰۰٬۰۰۰" required autocomplete="off" />
+                    </div>
+                    <!-- Quick amounts -->
+                    <div class="d-grid gap-2" style="grid-template-columns:1fr 1fr;display:grid">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setCharge(50000)">۵۰ هزار</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setCharge(100000)">۱۰۰ هزار</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setCharge(200000)">۲۰۰ هزار</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="setCharge(500000)">۵۰۰ هزار</button>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="ti ti-plus me-1"></i>شارژ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openCharge(phone, balance) {
+    document.getElementById('chargePhone').textContent = phone;
+    document.getElementById('chargeCurrent').textContent = Number(balance).toLocaleString('en-US');
+    document.getElementById('chargePhoneInput').value = phone;
+    document.getElementById('chargeAmountInput').value = '';
+    new bootstrap.Modal(document.getElementById('chargeModal')).show();
+}
+
+function setCharge(val) {
+    document.getElementById('chargeAmountInput').value = val.toLocaleString('en-US');
+    // Store raw for submission
+    document.getElementById('chargeAmountInput').dataset.raw = val;
+}
+
+// Format as user types, store raw value
+const inp = document.getElementById('chargeAmountInput');
+if (inp) {
+    inp.addEventListener('input', function () {
+        const raw = this.value.replace(/,/g, '');
+        this.dataset.raw = raw;
+        if (/^\d*$/.test(raw)) {
+            this.value = raw === '' ? '' : Number(raw).toLocaleString('en-US');
+        }
+    });
+    inp.closest('form').addEventListener('submit', function () {
+        inp.value = inp.dataset.raw || inp.value.replace(/,/g, '');
+    });
+}
+</script>

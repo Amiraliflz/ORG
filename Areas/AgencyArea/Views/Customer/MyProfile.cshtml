@@ -1,0 +1,262 @@
+@using Application.Models
+@{
+    Layout = "_AgencySideLayout";
+    ViewData["title"] = "پروفایل من";
+    decimal balance    = ViewBag.Balance ?? 0m;
+    int ticketCount    = ViewBag.TicketCount ?? 0;
+    CustomerProfile? profile = ViewBag.Profile as CustomerProfile;
+
+    var firstName  = profile?.FirstName  ?? "";
+    var lastName   = profile?.LastName   ?? "";
+    var nationalId = profile?.NationalId ?? "";
+    var phone      = (string)(ViewBag.CustomerPhone ?? "");
+    var initials   = !string.IsNullOrWhiteSpace(firstName) ? firstName[0].ToString()
+                     : phone.Length >= 2 ? phone[..2] : "م";
+
+    string? serverSuccess = TempData["Success"] as string;
+}
+
+@section VendorScripts {
+    <script src="https://unpkg.com/vue@@3/dist/vue.global.prod.js"></script>
+}
+
+<style>
+#profileApp .form-control,#profileApp .input-group-text{border-radius:1.5rem!important}
+#profileApp .input-group .form-control{border-radius:0 1.5rem 1.5rem 0!important}
+#profileApp .input-group .input-group-text{border-radius:1.5rem 0 0 1.5rem!important}
+#profileApp .input-group{border-radius:1.5rem;overflow:hidden}
+.profile-hero{background:linear-gradient(135deg,#696cff 0%,#9155fd 100%);border-radius:1.25rem;padding:2rem;position:relative;overflow:hidden;color:#fff}
+.avatar-ring{width:88px;height:88px;border-radius:50%;background:#fff;border:3px solid #c5c3f5;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#696cff;flex-shrink:0}
+.stat-pill{background:#fff;border-radius:2rem;padding:.35rem .8rem;font-size:.8rem;color:#696cff;font-weight:500;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.pcard{border-radius:1rem;border:none;box-shadow:0 2px 16px rgba(105,108,255,.08)}
+.tile-sm{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.quick-tile{border-radius:.875rem;border:1.5px solid transparent;padding:1.2rem .75rem;text-align:center;text-decoration:none;display:block;transition:all .2s;background:#fff;color:inherit}
+.quick-tile:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);color:inherit}
+.tile-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .65rem;font-size:1.25rem}
+
+/* ── Mobile ── */
+@@media(max-width:575.98px){
+  .profile-hero{padding:1.25rem 1rem;border-radius:1rem}
+  .avatar-ring{width:60px;height:60px;font-size:1.4rem;flex-shrink:0}
+  .profile-hero h4{font-size:1.05rem}
+  .stat-pill{font-size:.73rem;padding:.28rem .65rem}
+  .hero-pills{flex-wrap:wrap;gap:.4rem!important}
+  .pcard{padding:1rem!important}
+  .quick-tile{padding:.9rem .4rem}
+  .tile-icon{width:40px;height:40px;font-size:1.1rem}
+  .quick-tile .fw-semibold{font-size:.72rem!important}
+  .quick-tile small{display:none}
+  #saveBtn{width:100%}
+}
+</style>
+
+<!-- ── Profile App ── -->
+<div id="profileApp">
+
+    <!-- Flash -->
+    <div id="flashMsg" class="alert alert-success alert-dismissible d-flex align-items-center mb-4 animate__animated animate__fadeInDown"
+         style="display:none!important">
+        <i class="ti ti-circle-check me-2 fs-5"></i>
+        <span id="flashText"></span>
+        <button type="button" class="btn-close ms-auto" onclick="this.closest('.alert').style.display='none'"></button>
+    </div>
+
+    <!-- Hero -->
+    <div class="profile-hero mb-4">
+        <div class="d-flex align-items-center gap-3 position-relative" style="z-index:1">
+            <div class="avatar-ring" id="avatarRing">@initials</div>
+            <div class="flex-grow-1 min-w-0">
+                <h4 class="mb-1 fw-bold text-white text-truncate" id="heroName">
+                    @(string.IsNullOrWhiteSpace(firstName) ? phone : $"{firstName} {lastName}")
+                </h4>
+                <div class="d-flex hero-pills gap-2 mt-2" style="overflow-x:auto;padding-bottom:2px">
+                    <span class="stat-pill"><i class="ti ti-phone me-1"></i>@phone</span>
+                    <span class="stat-pill"><i class="ti ti-wallet me-1"></i>@balance.ToString("N0") ت</span>
+                    <span class="stat-pill"><i class="ti ti-ticket me-1"></i>@ticketCount بلیط</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Edit form -->
+        <div class="col-lg-7">
+            <div class="card pcard p-4">
+                <h6 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                    <span class="tile-sm" style="background:#f0f0ff;color:#696cff"><i class="ti ti-edit"></i></span>
+                    اطلاعات شخصی
+                </h6>
+                <p class="text-muted small mb-4">اطلاعات زیر در بلیط‌های شما استفاده می‌شود</p>
+
+                <form id="profileForm" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">نام</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ti ti-user"></i></span>
+                                <input id="inpFirstName" name="firstName" type="text" class="form-control"
+                                       value="@firstName" placeholder="نام خود را وارد کنید" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">نام خانوادگی</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ti ti-user"></i></span>
+                                <input id="inpLastName" name="lastName" type="text" class="form-control"
+                                       value="@lastName" placeholder="نام خانوادگی" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">کد ملی</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ti ti-id"></i></span>
+                                <input id="inpNationalId" name="nationalId" type="text" class="form-control"
+                                       value="@nationalId" placeholder="کد ملی ۱۰ رقمی" maxlength="10" dir="ltr" />
+                            </div>
+                            <div id="nationalIdError" class="small text-danger mt-1" style="display:none">
+                                <i class="ti ti-alert-circle me-1"></i>کد ملی باید ۱۰ رقم باشد
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <button id="saveBtn" type="submit" class="btn btn-primary px-4">
+                                <i class="ti ti-device-floppy me-1"></i> ذخیره اطلاعات
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="col-lg-5 d-flex flex-column gap-4">
+            <!-- Quick tiles -->
+            <div class="card pcard p-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="tile-sm" style="background:#fff4e0;color:#ff9f43"><i class="ti ti-apps"></i></span>
+                    دسترسی سریع
+                </h6>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <a href="/Customer/MyTickets" class="quick-tile" style="border-color:#e7e7ff">
+                            <div class="tile-icon" style="background:#f0f0ff;color:#696cff"><i class="ti ti-ticket"></i></div>
+                            <div class="fw-semibold" style="font-size:.8rem">سفرهای من</div>
+                            <small class="text-muted">@ticketCount بلیط</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/Customer/MyWallet" class="quick-tile" style="border-color:#e1fbe4">
+                            <div class="tile-icon" style="background:#eafbea;color:#28c76f"><i class="ti ti-wallet"></i></div>
+                            <div class="fw-semibold" style="font-size:.8rem">کیف پول</div>
+                            <small class="text-muted">@balance.ToString("N0") ت</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="/" class="quick-tile" style="border-color:#fff0e0">
+                            <div class="tile-icon" style="background:#fff4e0;color:#ff9f43"><i class="ti ti-search"></i></div>
+                            <div class="fw-semibold" style="font-size:.8rem">سفر جدید</div>
+                            <small class="text-muted">رزرو بلیط</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account info -->
+            <div class="card pcard p-4">
+                <h6 class="fw-bold mb-3">اطلاعات حساب</h6>
+                <ul class="list-unstyled mb-3" style="border:1px solid #f0f0f0;border-radius:.75rem;overflow:hidden">
+                    <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                        <span class="text-muted small">شماره موبایل</span>
+                        <span class="fw-semibold" dir="ltr">@phone</span>
+                    </li>
+                    <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                        <span class="text-muted small">نوع حساب</span>
+                        <span class="badge bg-label-primary rounded-pill px-3">مشتری</span>
+                    </li>
+                    <li class="d-flex justify-content-between align-items-center px-3 py-2">
+                        <span class="text-muted small">وضعیت پروفایل</span>
+                        @if (!string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName) && nationalId.Length == 10)
+                        {
+                            <span class="badge bg-label-success rounded-pill px-3">تکمیل شده</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-label-warning rounded-pill px-3">ناقص</span>
+                        }
+                    </li>
+                </ul>
+                <form asp-area="" asp-controller="Auth" asp-action="Logout" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+                        <i class="ti ti-logout me-1"></i> خروج از حساب
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Inline script (after DOM, Vue already global from VendorScripts) ── -->
+<script>
+(function () {
+    // National ID live validation
+    const nid = document.getElementById('inpNationalId');
+    const nidErr = document.getElementById('nationalIdError');
+    const saveBtn = document.getElementById('saveBtn');
+    if (nid) {
+        nid.addEventListener('input', function () {
+            const bad = this.value.length > 0 && this.value.length !== 10;
+            nidErr.style.display = bad ? '' : 'none';
+            saveBtn.disabled = bad;
+        });
+    }
+
+    // Live hero name update
+    const fn = document.getElementById('inpFirstName');
+    const ln = document.getElementById('inpLastName');
+    const heroName = document.getElementById('heroName');
+    const avatarRing = document.getElementById('avatarRing');
+    function updateHero() {
+        const f = fn?.value.trim(), l = ln?.value.trim();
+        if (heroName) heroName.textContent = (f || l) ? [f, l].filter(Boolean).join(' ') : '@phone';
+        if (avatarRing && f) avatarRing.textContent = f[0];
+    }
+    fn?.addEventListener('input', updateHero);
+    ln?.addEventListener('input', updateHero);
+
+    // AJAX submit so page doesn't reload
+    const form = document.getElementById('profileForm');
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>در حال ذخیره...';
+            try {
+                await fetch(form.action, { method: 'POST', body: new FormData(form) });
+                showFlash('اطلاعات پروفایل با موفقیت ذخیره شد ✓', 'success');
+            } catch {
+                showFlash('خطا در ذخیره اطلاعات. دوباره تلاش کنید', 'danger');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="ti ti-device-floppy me-1"></i>ذخیره اطلاعات';
+            }
+        });
+    }
+
+    function showFlash(msg, type) {
+        const el = document.getElementById('flashMsg');
+        const txt = document.getElementById('flashText');
+        if (!el || !txt) return;
+        el.className = 'alert alert-' + type + ' alert-dismissible d-flex align-items-center mb-4';
+        el.querySelector('i').className = 'ti ti-' + (type === 'success' ? 'circle-check' : 'alert-circle') + ' me-2 fs-5';
+        txt.textContent = msg;
+        el.style.display = '';
+        setTimeout(() => { el.style.display = 'none'; }, 4500);
+    }
+
+    @if (!string.IsNullOrEmpty(serverSuccess))
+    {
+        <text>showFlash('@Html.Raw(serverSuccess!.Replace("'", "\\'"))', 'success');</text>
+    }
+})();
+</script>

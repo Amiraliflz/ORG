@@ -1,0 +1,242 @@
+@using Application.Models
+@model IEnumerable<Ticket>
+@{
+    Layout = "_AgencySideLayout";
+    ViewData["title"] = "سفرهای من";
+    var claims = User.Claims.ToList();
+    var balanceStr = claims.FirstOrDefault(c => c.Type == "CustomerBalance")?.Value ?? "0";
+    decimal.TryParse(balanceStr, out var balance);
+    var phone = (string)(ViewBag.CustomerPhone ?? "");
+
+    var ticketsJson = System.Text.Json.JsonSerializer.Serialize(Model.Select(t => new {
+        id           = t.Id,
+        origin       = t.TripOrigin      ?? "",
+        destination  = t.TripDestination ?? "",
+        firstName    = t.Firstname        ?? "",
+        lastName     = t.Lastname         ?? "",
+        registeredFa = t.RegisteredAt.ToString("yyyy/MM/dd"),
+        price        = t.TicketFinalPrice,
+        ticketCode   = t.TicketCode      ?? "",
+        paymentRef   = t.PaymentRefId    ?? "",
+        carName      = t.CarName         ?? "",
+        serviceName  = t.ServiceName     ?? "",
+        isCancelled  = t.IsCancelled,
+        isWallet     = t.PaymentRefId == "WALLET"
+    }));
+}
+
+@section VendorScripts {
+    <script src="https://unpkg.com/vue@@3/dist/vue.global.prod.js"></script>
+}
+
+<style>
+.tickets-hero{background:linear-gradient(135deg,#696cff 0%,#9155fd 100%);border-radius:1.25rem;padding:1.75rem 2rem;color:#fff;position:relative;overflow:hidden}
+.ghost-btn{background:#fff;color:#696cff;border:none;border-radius:2rem;padding:.3rem .9rem;font-size:.82rem;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem;font-weight:500;transition:opacity .18s;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.ghost-btn:hover{opacity:.88;color:#696cff}
+.search-wrap{background:#fff;border-radius:1rem;box-shadow:0 2px 12px rgba(105,108,255,.07);padding:1rem 1.25rem}
+.ftab{border-radius:2rem;padding:.32rem 1rem;font-size:.83rem;border:1.5px solid #e7e7ff;cursor:pointer;transition:all .18s;background:transparent;color:#6e6b7b;white-space:nowrap;flex-shrink:0}
+.ftab.active,.ftab:hover{background:#696cff;border-color:#696cff;color:#fff}
+.filter-scroll{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.filter-scroll::-webkit-scrollbar{display:none}
+.tcard{border-radius:1rem;border:none;box-shadow:0 2px 12px rgba(105,108,255,.07);overflow:hidden;background:#fff;transition:all .22s}
+.tcard:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(105,108,255,.14)}
+.troute{background:linear-gradient(135deg,#f3f3ff 0%,#f7f0ff 100%);padding:.9rem 1.1rem;border-bottom:1px solid #ebebff}
+.rdot{width:8px;height:8px;border-radius:50%;background:#696cff;flex-shrink:0}
+.rline{flex:1;height:1px;background:repeating-linear-gradient(90deg,#696cff 0,#696cff 4px,transparent 4px,transparent 10px);margin:0 6px;min-width:20px}
+.tbody{padding:.85rem 1.1rem 1rem}
+.mchip{background:#f5f5f9;border-radius:2rem;padding:.18rem .7rem;font-size:.77rem;color:#6e6b7b;display:inline-flex;align-items:center;gap:.25rem}
+.wbadge{background:#eafbf0;color:#28c76f;border-radius:2rem;padding:.18rem .7rem;font-size:.75rem}
+.rbadge{background:#f0f0ff;color:#696cff;border-radius:2rem;padding:.18rem .7rem;font-size:.75rem;direction:ltr;word-break:break-all}
+.empty-box{text-align:center;padding:3rem 1rem}
+.empty-icon{width:88px;height:88px;background:#f0f0ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.1rem;font-size:2.2rem;color:#696cff}
+
+/* ── Mobile ── */
+@@media(max-width:575.98px){
+  .tickets-hero{padding:1.1rem 1rem;border-radius:1rem}
+  .tickets-hero h4{font-size:1.05rem;margin-bottom:.2rem}
+  .hero-actions{flex-direction:column;gap:.4rem!important;align-items:flex-end}
+  .ghost-btn{padding:.25rem .7rem;font-size:.76rem}
+  .ghost-btn .btn-label{display:none}
+  .search-wrap{padding:.75rem 1rem}
+  .troute .fw-bold{font-size:.9rem}
+  .troute .rdot{width:7px;height:7px}
+  .mchip{font-size:.72rem}
+}
+</style>
+
+<!-- ── Tickets App ── -->
+<div id="ticketsApp">
+
+    <!-- Hero -->
+    <div class="tickets-hero mb-4">
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:1">
+            <div class="me-2 min-w-0">
+                <h4 class="fw-bold mb-1 text-white">سفرهای من</h4>
+                <p class="mb-0" style="color:rgba(255,255,255,.8);font-size:.88rem" id="heroCount">
+                    @Model.Count() سفر ثبت‌شده
+                </p>
+            </div>
+            <div class="d-flex gap-2 hero-actions flex-shrink-0">
+                <a href="/Customer/MyWallet" class="ghost-btn">
+                    <i class="ti ti-wallet"></i><span class="btn-label">@balance.ToString("N0") تومان</span>
+                </a>
+                <a href="/" class="ghost-btn">
+                    <i class="ti ti-plus"></i><span class="btn-label">سفر جدید</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search + filter bar -->
+    <div class="search-wrap mb-4">
+        <div class="input-group mb-3">
+            <span class="input-group-text bg-transparent border-0 pe-0">
+                <i class="ti ti-search text-muted"></i>
+            </span>
+            <input id="searchInput" type="text" class="form-control border-0 ps-1"
+                   placeholder="جستجو: مسیر، نام مسافر، کد بلیط..."
+                   style="box-shadow:none" oninput="applyFilters()" />
+        </div>
+        <div class="filter-scroll" id="filterTabs">
+            <button class="ftab active" onclick="setFilter('all',this)">
+                همه (<span id="cntAll">@Model.Count()</span>)
+            </button>
+            <button class="ftab" onclick="setFilter('active',this)">
+                <i class="ti ti-circle-check me-1"></i>فعال (<span id="cntActive">@Model.Count(t => !t.IsCancelled)</span>)
+            </button>
+            <button class="ftab" onclick="setFilter('cancelled',this)">
+                <i class="ti ti-circle-x me-1"></i>لغو شده (<span id="cntCancelled">@Model.Count(t => t.IsCancelled)</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- Ticket list -->
+    <div id="ticketList" class="row g-3"></div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="empty-box" style="display:none">
+        <div class="empty-icon"><i class="ti ti-ticket-off"></i></div>
+        <h5 class="text-muted fw-semibold mb-2" id="emptyTitle">نتیجه‌ای یافت نشد</h5>
+        <p class="text-muted" id="emptyText">فیلتر یا جستجو را تغییر دهید</p>
+        <a id="emptyAction" href="/" class="btn btn-primary mt-1 rounded-pill px-4" style="display:none">
+            <i class="ti ti-search me-1"></i> جستجوی سفر
+        </a>
+    </div>
+
+</div>
+
+<!-- Inline script — runs after DOM is rendered -->
+<script>
+(function () {
+    const ALL = @Html.Raw(ticketsJson);
+    let currentFilter = 'all';
+
+    function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+    function buildCard(t) {
+        const statusBadge = t.isCancelled
+            ? '<span class="badge bg-label-danger rounded-pill px-3 py-1">لغو شده</span>'
+            : '<span class="badge bg-label-success rounded-pill px-3 py-1">فعال</span>';
+
+        const carChip  = t.carName     ? `<span class="mchip"><i class="ti ti-car"></i>${t.carName}</span>` : '';
+        const svcChip  = t.serviceName ? `<span class="mchip"><i class="ti ti-building"></i>${t.serviceName}</span>` : '';
+
+        let payBadge = '';
+        if (t.isWallet) payBadge = '<span class="wbadge"><i class="ti ti-wallet me-1"></i>کیف پول</span>';
+        else if (t.paymentRef) payBadge = `<span class="rbadge">ref: ${t.paymentRef}</span>`;
+
+        return `
+        <div class="col-12 col-lg-6">
+          <div class="tcard">
+            <div class="troute">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center gap-2 fw-bold" style="font-size:1rem">
+                  <span>${t.origin}</span>
+                  <div class="d-flex align-items-center" style="flex:1;min-width:55px">
+                    <div class="rdot"></div>
+                    <div class="rline"></div>
+                    <i class="ti ti-plane-departure text-primary" style="font-size:.9rem"></i>
+                  </div>
+                  <span>${t.destination}</span>
+                </div>
+                ${statusBadge}
+              </div>
+              <div class="text-muted" style="font-size:.8rem">
+                <i class="ti ti-calendar-event me-1"></i>${t.registeredFa}
+              </div>
+            </div>
+            <div class="tbody">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <div class="fw-semibold mb-1">${t.firstName} ${t.lastName}</div>
+                  <div class="d-flex flex-wrap gap-1">${carChip}${svcChip}</div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold text-primary" style="font-size:1rem">${fmt(t.price)}</div>
+                  <small class="text-muted">تومان</small>
+                </div>
+              </div>
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="mchip"><i class="ti ti-hash"></i>${t.ticketCode}</span>
+                  ${payBadge}
+                </div>
+                <a href="/TripReceiptPdf?reference=${t.ticketCode}" target="_blank"
+                   class="btn btn-sm btn-icon btn-label-primary rounded-pill" title="چاپ بلیط">
+                  <i class="ti ti-printer"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function applyFilters() {
+        const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+        let list = ALL;
+
+        if (currentFilter === 'active')    list = list.filter(t => !t.isCancelled);
+        if (currentFilter === 'cancelled') list = list.filter(t =>  t.isCancelled);
+
+        if (q) {
+            list = list.filter(t =>
+                t.origin.toLowerCase().includes(q) ||
+                t.destination.toLowerCase().includes(q) ||
+                t.firstName.toLowerCase().includes(q) ||
+                t.lastName.toLowerCase().includes(q) ||
+                t.ticketCode.toLowerCase().includes(q)
+            );
+        }
+
+        const container = document.getElementById('ticketList');
+        const empty     = document.getElementById('emptyState');
+        const heroCount = document.getElementById('heroCount');
+
+        if (list.length === 0) {
+            container.innerHTML = '';
+            empty.style.display = '';
+            const noTicketsAtAll = ALL.length === 0;
+            document.getElementById('emptyTitle').textContent = noTicketsAtAll ? 'هنوز بلیطی خریداری نکرده‌اید' : 'نتیجه‌ای یافت نشد';
+            document.getElementById('emptyText').textContent  = noTicketsAtAll ? 'با کلیک روی سفر جدید اولین سفر خود را رزرو کنید' : 'فیلتر یا جستجو را تغییر دهید';
+            document.getElementById('emptyAction').style.display = noTicketsAtAll ? '' : 'none';
+        } else {
+            empty.style.display = 'none';
+            container.innerHTML = list.map(buildCard).join('');
+        }
+
+        if (heroCount) heroCount.textContent = list.length + ' سفر' + (q || currentFilter !== 'all' ? ' (فیلتر شده)' : ' ثبت‌شده');
+    }
+
+    window.setFilter = function (f, btn) {
+        currentFilter = f;
+        document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilters();
+    };
+
+    window.applyFilters = applyFilters;
+
+    // Initial render
+    applyFilters();
+})();
+</script>
