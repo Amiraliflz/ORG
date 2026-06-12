@@ -1,4 +1,5 @@
 using Application.Data;
+using Application.Services;
 using Application.Services.Payment;
 using Application.Services.MrShooferORS;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +23,7 @@ namespace Application.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly CustomerBalanceService _balanceSvc;
 
         public PaymentController(
             IPaymentService paymentService,
@@ -31,7 +33,8 @@ namespace Application.Controllers
             IConfiguration configuration,
             IHttpClientFactory httpClientFactory,
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            CustomerBalanceService balanceSvc)
         {
             _paymentService = paymentService;
             _context = context;
@@ -41,6 +44,7 @@ namespace Application.Controllers
             _httpClientFactory = httpClientFactory;
             _userManager = userManager;
             _signInManager = signInManager;
+            _balanceSvc = balanceSvc;
         }
 
         /// <summary>
@@ -433,19 +437,8 @@ namespace Application.Controllers
                 // Remove pending claim
                 await _userManager.RemoveClaimAsync(user, pendingClaim);
 
-                // Credit balance
-                var balanceClaim = claims.FirstOrDefault(c => c.Type == "CustomerBalance");
-                decimal currentBalance = 0;
-                if (balanceClaim != null)
-                {
-                    decimal.TryParse(balanceClaim.Value, out currentBalance);
-                    await _userManager.RemoveClaimAsync(user, balanceClaim);
-                }
-                var newBalance = currentBalance + topUpAmount;
-                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("CustomerBalance", newBalance.ToString()));
-
-                // Refresh sign-in so updated claims are reflected in the cookie
-                await _signInManager.RefreshSignInAsync(user);
+                // Credit balance in DB
+                var newBalance = await _balanceSvc.AddBalance(user.Id, topUpAmount);
 
                 _logger.LogInformation("Wallet top-up successful. User={User}, Amount={Amount}, NewBalance={Balance}, RefId={RefId}",
                     user.UserName, topUpAmount, newBalance, refId);
@@ -531,7 +524,7 @@ namespace Application.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddClaimAsync(user, new Claim("Role", "Customer"));
-                    await _userManager.AddClaimAsync(user, new Claim("CustomerBalance", "0"));
+                    // Balance is stored in CustomerProfile.Balance (DB), not claims
                     _logger.LogInformation("Customer account created for phone: {Phone}", phoneNumber);
                 }
                 else

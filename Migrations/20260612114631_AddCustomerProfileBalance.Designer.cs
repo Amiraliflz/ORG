@@ -3,6 +3,7 @@ using System;
 using Application.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Application.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260612114631_AddCustomerProfileBalance")]
+    partial class AddCustomerProfileBalance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,31 +253,6 @@ namespace Application.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DiscountCodes");
-                });
-
-            modelBuilder.Entity("Application.Models.DiscountCodeUsage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DiscountCodeId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UsedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("UserPhone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DiscountCodeId");
-
-                    b.ToTable("DiscountCodeUsages");
                 });
 
             modelBuilder.Entity("Application.Models.Ticket", b =>
@@ -611,17 +589,6 @@ namespace Application.Migrations
                     b.Navigation("Agency");
                 });
 
-            modelBuilder.Entity("Application.Models.DiscountCodeUsage", b =>
-                {
-                    b.HasOne("Application.Models.DiscountCode", "DiscountCode")
-                        .WithMany("Usages")
-                        .HasForeignKey("DiscountCodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DiscountCode");
-                });
-
             modelBuilder.Entity("Application.Models.Ticket", b =>
                 {
                     b.HasOne("Application.Models.Agency", "Agency")
@@ -687,11 +654,6 @@ namespace Application.Migrations
             modelBuilder.Entity("Application.Models.Agency", b =>
                 {
                     b.Navigation("SoldTickets");
-                });
-
-            modelBuilder.Entity("Application.Models.DiscountCode", b =>
-                {
-                    b.Navigation("Usages");
                 });
 #pragma warning restore 612, 618
         }

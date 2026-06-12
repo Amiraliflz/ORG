@@ -32,6 +32,7 @@ namespace Application.Areas.AgencyArea
     private readonly IPaymentService _paymentService;
     private readonly ILogger<ReserveController> _logger;
     private readonly TicketIssuer _ticketIssuer;
+    private readonly CustomerBalanceService _balanceSvc;
     private Agency agency;
 
 
@@ -43,7 +44,8 @@ namespace Application.Areas.AgencyArea
       IConfiguration configuration,
       IPaymentService paymentService,
       ILogger<ReserveController> logger,
-      TicketIssuer ticketIssuer)
+      TicketIssuer ticketIssuer,
+      CustomerBalanceService balanceSvc)
     {
       this.configuration = configuration;
       customerSmsSender = smssender;
@@ -53,6 +55,7 @@ namespace Application.Areas.AgencyArea
       _paymentService = paymentService;
       _logger = logger;
       _ticketIssuer = ticketIssuer;
+      _balanceSvc = balanceSvc;
 
       // Ensure guest agency exists when controller is initialized
       EnsureGuestAgencyExistsAsync().Wait();
@@ -227,8 +230,8 @@ namespace Application.Areas.AgencyArea
       bool isCustomer = User.HasClaim("Role", "Customer");
       if (isCustomer)
       {
-        var balanceClaim = User.FindFirst("CustomerBalance");
-        decimal.TryParse(balanceClaim?.Value, out customerBalance);
+        var cu = await _userManager.GetUserAsync(User);
+        if (cu != null) customerBalance = await _balanceSvc.GetBalance(cu.Id);
       }
 
       // Set ViewBag data once
@@ -347,10 +350,43 @@ namespace Application.Areas.AgencyArea
         }
       }
 
+      // Apply discount code if provided
+      if (!string.IsNullOrWhiteSpace(viewModel.DiscountCode))
+      {
+        var discountEntity = await context.DiscountCodes
+            .FirstOrDefaultAsync(d => d.Code == viewModel.DiscountCode.Trim().ToUpper() && d.IsActive);
+
+        if (discountEntity != null
+            && (!discountEntity.ExpiryDate.HasValue || discountEntity.ExpiryDate >= DateTime.Now)
+            && (!discountEntity.MaxUses.HasValue || discountEntity.UsedCount < discountEntity.MaxUses))
+        {
+          var userPhone = viewModel.Numberphone?.Trim();
+          var alreadyUsed = !string.IsNullOrWhiteSpace(userPhone)
+              && await context.DiscountCodeUsages.AnyAsync(u => u.DiscountCodeId == discountEntity.Id && u.UserPhone == userPhone);
+
+          if (!alreadyUsed)
+          {
+            var discounted = (int)Math.Round(newticket.TicketFinalPrice * (1 - discountEntity.DiscountPercent / 100m));
+            newticket.TicketFinalPrice = discounted;
+            discountEntity.UsedCount++;
+
+            if (!string.IsNullOrWhiteSpace(userPhone))
+            {
+              context.DiscountCodeUsages.Add(new Application.Models.DiscountCodeUsage
+              {
+                DiscountCodeId = discountEntity.Id,
+                UserPhone      = userPhone,
+                UsedAt         = DateTime.Now
+              });
+            }
+          }
+        }
+      }
+
       context.Tickets.Add(newticket);
       await context.SaveChangesAsync();
 
-      _logger.LogInformation("Preliminary ticket saved to database. TripCode: {TripCode}, TicketId: {TicketId}, Price: {Price}", 
+      _logger.LogInformation("Preliminary ticket saved to database. TripCode: {TripCode}, TicketId: {TicketId}, Price: {Price}",
         viewModel.TripCode, newticket.Id, newticket.TicketFinalPrice);
 
       // ✅ STEP 2: PROCESS PAYMENT
@@ -364,21 +400,13 @@ namespace Application.Areas.AgencyArea
         }
 
         var identityUser = await _userManager.GetUserAsync(User);
-        var balanceClaim = (await _userManager.GetClaimsAsync(identityUser))
-            .FirstOrDefault(c => c.Type == "CustomerBalance");
-        decimal.TryParse(balanceClaim?.Value, out var currentBalance);
 
-        if (currentBalance < newticket.TicketFinalPrice)
+        var (deducted, _) = await _balanceSvc.DeductBalance(identityUser!.Id, newticket.TicketFinalPrice);
+        if (!deducted)
         {
           TempData["ErrorMessage"] = "موجودی کیف پول کافی نیست";
           return RedirectToAction("Reservetrip", new { tripcode = viewModel.TripCode });
         }
-
-        // Deduct balance
-        var newBalance = currentBalance - newticket.TicketFinalPrice;
-        if (balanceClaim != null)
-          await _userManager.RemoveClaimAsync(identityUser, balanceClaim);
-        await _userManager.AddClaimAsync(identityUser, new Claim("CustomerBalance", newBalance.ToString()));
 
         // ORS reservation
         string orsTicketCode;
@@ -391,14 +419,8 @@ namespace Application.Areas.AgencyArea
         {
           _logger.LogError(ex, "ORS reservation failed after balance deduction. TicketId: {Id}", newticket.Id);
 
-          // Refund the balance — reverse the deduction
-          var refundClaim = (await _userManager.GetClaimsAsync(identityUser))
-              .FirstOrDefault(c => c.Type == "CustomerBalance");
-          decimal.TryParse(refundClaim?.Value, out var balanceAfterDeduction);
-          if (refundClaim != null)
-            await _userManager.RemoveClaimAsync(identityUser, refundClaim);
-          await _userManager.AddClaimAsync(identityUser,
-              new Claim("CustomerBalance", (balanceAfterDeduction + newticket.TicketFinalPrice).ToString()));
+          // Refund balance
+          await _balanceSvc.AddBalance(identityUser.Id, newticket.TicketFinalPrice);
 
           TempData["ErrorMessage"] = "خطا در رزرو سفر. مبلغ به کیف پول شما بازگشت داده شد.";
           return RedirectToAction("Reservetrip", new { tripcode = viewModel.TripCode });
@@ -428,6 +450,37 @@ namespace Application.Areas.AgencyArea
       _logger.LogInformation("Redirecting user to payment server. TicketId: {TicketId}, Url: {Url}", newticket.Id, paymentStartUrl);
 
       return Redirect(paymentStartUrl);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ValidateDiscount([FromBody] ValidateDiscountRequest req)
+    {
+      if (string.IsNullOrWhiteSpace(req?.Code))
+        return Json(new { valid = false, message = "کد تخفیف وارد نشده است." });
+
+      var code = await context.DiscountCodes
+          .FirstOrDefaultAsync(d => d.Code == req.Code.Trim().ToUpper() && d.IsActive);
+
+      if (code == null)
+        return Json(new { valid = false, message = "کد تخفیف معتبر نیست." });
+
+      if (code.ExpiryDate.HasValue && code.ExpiryDate < DateTime.Now)
+        return Json(new { valid = false, message = "کد تخفیف منقضی شده است." });
+
+      if (code.MaxUses.HasValue && code.UsedCount >= code.MaxUses)
+        return Json(new { valid = false, message = "کد تخفیف به حداکثر استفاده رسیده است." });
+
+      // Per-user one-time check (phone from request, if provided)
+      if (!string.IsNullOrWhiteSpace(req.UserPhone))
+      {
+        var alreadyUsed = await context.DiscountCodeUsages
+            .AnyAsync(u => u.DiscountCodeId == code.Id && u.UserPhone == req.UserPhone);
+        if (alreadyUsed)
+          return Json(new { valid = false, message = "این کد تخفیف قبلاً توسط شما استفاده شده است." });
+      }
+
+      var discountedPrice = (long)Math.Round(req.OriginalPrice * (1 - code.DiscountPercent / 100m));
+      return Json(new { valid = true, discountPercent = code.DiscountPercent, discountedPrice, message = "کد تخفیف اعمال شد." });
     }
 
     public async Task<IActionResult> ReserveConfirmed(string ticketcode)
@@ -577,5 +630,12 @@ namespace Application.Areas.AgencyArea
         await context.SaveChangesAsync();
       }
     }
+  }
+
+  public class ValidateDiscountRequest
+  {
+    public string? Code { get; set; }
+    public long OriginalPrice { get; set; }
+    public string? UserPhone { get; set; }
   }
 }

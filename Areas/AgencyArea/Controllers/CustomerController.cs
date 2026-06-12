@@ -1,5 +1,6 @@
 using Application.Data;
 using Application.Models;
+using Application.Services;
 using Application.Services.Payment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,14 +18,16 @@ namespace Application.Areas.AgencyArea
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IPaymentService _paymentService;
+        private readonly CustomerBalanceService _balanceSvc;
 
         public CustomerController(AppDbContext context, UserManager<IdentityUser> userManager,
-            IConfiguration configuration, IPaymentService paymentService)
+            IConfiguration configuration, IPaymentService paymentService, CustomerBalanceService balanceSvc)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
             _paymentService = paymentService;
+            _balanceSvc = balanceSvc;
         }
 
         public async Task<IActionResult> MyTickets()
@@ -38,6 +41,7 @@ namespace Application.Areas.AgencyArea
                 .ToListAsync();
 
             ViewBag.CustomerPhone = user.UserName;
+            ViewBag.Balance = await _balanceSvc.GetBalance(user.Id);
             return View(tickets);
         }
 
@@ -46,11 +50,7 @@ namespace Application.Areas.AgencyArea
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            var claims = await _userManager.GetClaimsAsync(user);
-            var balanceClaim = claims.FirstOrDefault(c => c.Type == "CustomerBalance");
-            decimal.TryParse(balanceClaim?.Value, out var balance);
-
-            ViewBag.Balance = balance;
+            ViewBag.Balance = await _balanceSvc.GetBalance(user.Id);
             ViewBag.CustomerPhone = user.UserName;
             return View();
         }
@@ -106,9 +106,7 @@ namespace Application.Areas.AgencyArea
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            var claims = await _userManager.GetClaimsAsync(user);
-            var balanceClaim = claims.FirstOrDefault(c => c.Type == "CustomerBalance");
-            decimal.TryParse(balanceClaim?.Value, out var balance);
+            var balance = await _balanceSvc.GetBalance(user.Id);
 
             var ticketCount = await _context.Tickets
                 .CountAsync(t => t.PhoneNumber == user.UserName && t.IsPaid);

@@ -74,7 +74,13 @@
                         <div>کیف پول مشتریان</div>
                     </a>
                 </li>
-               
+                <li class='menu-item@(currentPage.StartsWith("/Admin/DiscountCodes") ? " active" : "")'>
+                    <a asp-controller="DiscountCodes" asp-area="Admin" asp-action="Index" class="menu-link">
+                        <i class="ti ti-discount menu-icon tf-icons"></i>
+                        <div>کدهای تخفیف</div>
+                    </a>
+                </li>
+
             </ul>
 
 

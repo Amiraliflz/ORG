@@ -26,5 +26,8 @@ namespace Application.ViewModels.Reserve
 
     // "zarinpal" or "balance" — set by JS before form submit
     public string? PaymentMethod { get; set; }
+
+    // Optional discount code applied by customer
+    public string? DiscountCode { get; set; }
   }
 }

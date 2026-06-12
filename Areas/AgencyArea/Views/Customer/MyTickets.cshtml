@@ -3,9 +3,7 @@
 @{
     Layout = "_AgencySideLayout";
     ViewData["title"] = "سفرهای من";
-    var claims = User.Claims.ToList();
-    var balanceStr = claims.FirstOrDefault(c => c.Type == "CustomerBalance")?.Value ?? "0";
-    decimal.TryParse(balanceStr, out var balance);
+    decimal balance = ViewBag.Balance ?? 0m;
     var phone = (string)(ViewBag.CustomerPhone ?? "");
 
     var ticketsJson = System.Text.Json.JsonSerializer.Serialize(Model.Select(t => new {

@@ -1,5 +1,6 @@
 using Application.Data;
 using Application.Models;
+using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,14 @@ namespace Application.Areas.Admin.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly AppDbContext _context;
         private readonly ILogger<CustomersController> _logger;
+        private readonly CustomerBalanceService _balanceSvc;
 
-        public CustomersController(UserManager<IdentityUser> userManager, AppDbContext context, ILogger<CustomersController> logger)
+        public CustomersController(UserManager<IdentityUser> userManager, AppDbContext context, ILogger<CustomersController> logger, CustomerBalanceService balanceSvc)
         {
             _userManager = userManager;
             _context = context;
             _logger = logger;
+            _balanceSvc = balanceSvc;
         }
 
         public async Task<IActionResult> Index(string? search)
@@ -34,9 +37,8 @@ namespace Application.Areas.Admin.Controllers
                 var claims = await _userManager.GetClaimsAsync(user);
                 if (!claims.Any(c => c.Type == "Role" && c.Value == "Customer")) continue;
 
-                var balanceClaim = claims.FirstOrDefault(c => c.Type == "CustomerBalance");
-                decimal.TryParse(balanceClaim?.Value, out var balance);
                 profileMap.TryGetValue(user.Id, out var profile);
+                var balance = profile?.Balance ?? 0m;
 
                 result.Add(new CustomerListItem { User = user, Balance = balance, Profile = profile });
             }
@@ -85,7 +87,7 @@ namespace Application.Areas.Admin.Controllers
             }
 
             await _userManager.AddClaimAsync(user, new Claim("Role", "Customer"));
-            await _userManager.AddClaimAsync(user, new Claim("CustomerBalance", "0"));
+            // Balance starts at 0 in CustomerProfile.Balance (DB)
 
             if (!string.IsNullOrWhiteSpace(firstName) || !string.IsNullOrWhiteSpace(nationalId))
             {
@@ -129,11 +131,7 @@ namespace Application.Areas.Admin.Controllers
                 return RedirectToAction("Index");
             }
 
-            var balanceClaim = claims.FirstOrDefault(c => c.Type == "CustomerBalance");
-            decimal.TryParse(balanceClaim?.Value, out var current);
-
-            if (balanceClaim != null) await _userManager.RemoveClaimAsync(user, balanceClaim);
-            await _userManager.AddClaimAsync(user, new Claim("CustomerBalance", (current + amount).ToString()));
+            await _balanceSvc.AddBalance(user.Id, amount);
 
             _logger.LogInformation("Admin charged wallet {Phone} +{Amount}", phone, amount);
             TempData["Success"] = $"کیف پول {phone} به مبلغ {amount:N0} تومان شارژ شد";

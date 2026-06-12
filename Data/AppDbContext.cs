@@ -15,6 +15,8 @@ namespace Application.Data
 
     public DbSet<ContactUsMessage> ContactMessages { get; set; }
     public DbSet<CustomerProfile> CustomerProfiles { get; set; }
+    public DbSet<DiscountCode> DiscountCodes { get; set; }
+    public DbSet<DiscountCodeUsage> DiscountCodeUsages { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)

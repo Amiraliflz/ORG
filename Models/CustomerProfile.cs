@@ -12,6 +12,7 @@ namespace Application.Models
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? NationalId { get; set; }
+        public decimal Balance { get; set; } = 0m;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
     }

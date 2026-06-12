@@ -30,8 +30,12 @@ builder.Services.AddHttpClient<MrShooferAPIClient>((serviceProvider, client) =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-builder.Services.AddTransient<CustomerServiceSmsSender>();
+builder.Services.AddHttpClient<CustomerServiceSmsSender>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
 builder.Services.AddTransient<Application.Services.TicketIssuer>();
+builder.Services.AddScoped<Application.Services.CustomerBalanceService>();
 
 // Register Payment Service with Dependency Inversion Principle
 // This allows easy swapping to other payment providers (IDPay, Sep, etc.)
@@ -144,15 +148,15 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "agency",
-    pattern: "{controller=Home}/{action=Index}/{id?}",
-    defaults: new { area = "AgencyArea" });
-
-app.MapControllerRoute(
+app.MapAreaControllerRoute(
     name: "admin",
-    pattern: "Admin/{controller=Home}/{action=Index}/{id?}",
-    defaults: new { area = "Admin" });
+    areaName: "Admin",
+    pattern: "Admin/{controller=Home}/{action=Index}/{id?}");
+
+app.MapAreaControllerRoute(
+    name: "agency",
+    areaName: "AgencyArea",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

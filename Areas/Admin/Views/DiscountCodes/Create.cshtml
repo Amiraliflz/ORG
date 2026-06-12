@@ -1,0 +1,256 @@
+@{
+    ViewData["Title"] = "کد تخفیف جدید";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/jdate/jdate.min.js"></script>
+    <script src="~/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
+    <script src="~/vendor/libs/flatpickr/l10n/fa.js"></script>
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <a asp-area="Admin" asp-controller="DiscountCodes" asp-action="Index" class="btn btn-sm btn-icon btn-label-secondary rounded-pill">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <h4 class="fw-bold mb-0"><i class="ti ti-discount me-2 text-primary"></i>کد تخفیف جدید</h4>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible mb-4 d-flex align-items-center">
+            <i class="ti ti-alert-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Form card -->
+        <div class="col-lg-7">
+            <div class="card rounded-4 p-4">
+                <form method="post" asp-area="Admin" asp-controller="DiscountCodes" asp-action="Create" id="createForm">
+                    @Html.AntiForgeryToken()
+
+                    <div class="row g-3">
+                        <!-- Code -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">کد تخفیف <span class="text-danger">*</span></label>
+                            <input type="text" name="code" id="inpCode" class="form-control text-uppercase"
+                                   placeholder="مثلاً SUMMER20" dir="ltr" maxlength="30" required
+                                   oninput="this.value=this.value.toUpperCase();updateSms()" />
+                            <small class="text-muted">حروف بزرگ انگلیسی و عدد</small>
+                        </div>
+
+                        <!-- Percent -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">درصد تخفیف <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="text" name="discountPercent" id="inpPercent"
+                                       class="form-control" inputmode="numeric"
+                                       placeholder="مثلاً ۲۰" required
+                                       oninput="normalizeNumericInput(this);updateSms()" />
+                                <span class="input-group-text">٪</span>
+                            </div>
+                            <div class="invalid-feedback" id="percentError" style="display:none">عدد بین ۱ تا ۱۰۰ وارد کنید</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">توضیحات (اختیاری)</label>
+                            <input type="text" name="description" class="form-control" placeholder="مثلاً تخفیف تابستانی" />
+                        </div>
+
+                        <!-- Expiry — Jalali date picker -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">تاریخ انقضا (اختیاری)</label>
+                            <input type="text" id="expiryDateDisplay" class="form-control bdi"
+                                   placeholder="تاریخ انقضا را انتخاب کنید" autocomplete="off" />
+                            <input type="hidden" name="expiryDate" id="expiryDateHidden" />
+                        </div>
+
+                        <!-- Max uses -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">حداکثر استفاده (اختیاری)</label>
+                            <input type="text" name="maxUses" id="inpMaxUses"
+                                   class="form-control" inputmode="numeric"
+                                   placeholder="بدون محدودیت"
+                                   oninput="normalizeNumericInput(this)" />
+                        </div>
+
+                        <div class="col-12"><hr class="my-1" /></div>
+
+                        <!-- Send mode -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold"><i class="ti ti-send me-1"></i>ارسال پیامک</label>
+                            <div class="d-flex flex-column gap-2 mt-1">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sendMode" id="modeNone" value="none" checked
+                                           onchange="toggleSmsSection()" />
+                                    <label class="form-check-label" for="modeNone">بدون ارسال</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sendMode" id="modeSingle" value="single"
+                                           onchange="toggleSmsSection()" />
+                                    <label class="form-check-label" for="modeSingle">ارسال به یک مشتری خاص</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sendMode" id="modeAll" value="all"
+                                           onchange="toggleSmsSection()" />
+                                    <label class="form-check-label" for="modeAll">ارسال به همه مشتریان</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SMS section (shown when any send mode selected) -->
+                        <div id="smsSectionWrap" style="display:none" class="col-12">
+
+                            <!-- Target phone -->
+                            <div id="singlePhoneWrap" style="display:none" class="mb-3">
+                                <label class="form-label fw-semibold">شماره موبایل مشتری</label>
+                                <input type="text" name="targetPhone" class="form-control"
+                                       placeholder="09xxxxxxxxx" dir="ltr" />
+                            </div>
+
+                            <!-- SMS message preview + edit -->
+                            <label class="form-label fw-semibold"><i class="ti ti-message-2 me-1"></i>متن پیامک</label>
+                            <textarea name="smsMessage" id="smsMessageTextarea" class="form-control"
+                                      rows="6" dir="rtl"
+                                      style="font-size:.9rem;line-height:1.7;resize:vertical"></textarea>
+                            <small class="text-muted d-flex justify-content-between mt-1">
+                                <span>متن قابل ویرایش است</span>
+                                <span id="smsCharCount">0 کاراکتر</span>
+                            </small>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="ti ti-device-floppy me-1"></i> ذخیره
+                            </button>
+                            <a asp-area="Admin" asp-controller="DiscountCodes" asp-action="Index"
+                               class="btn btn-label-secondary ms-2">انصراف</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info card -->
+        <div class="col-lg-5">
+            <div class="card rounded-4 p-4 border-0" style="background:#f8f7ff">
+                <h6 class="fw-bold mb-3"><i class="ti ti-info-circle me-1 text-primary"></i>راهنما</h6>
+                <ul class="text-muted small mb-0" style="line-height:2rem">
+                    <li>کد تخفیف به‌طور خودکار به حروف بزرگ تبدیل می‌شود</li>
+                    <li>اعداد فارسی و انگلیسی هر دو پذیرفته می‌شوند</li>
+                    <li>اگر تاریخ انقضا خالی باشد، کد بدون محدودیت زمانی است</li>
+                    <li>اگر حداکثر استفاده خالی باشد، استفاده نامحدود است</li>
+                    <li>متن پیامک بر اساس اطلاعات وارد شده خودکار تولید می‌شود و قابل ویرایش است</li>
+                    <li>پس از ایجاد کد می‌توانید از صفحه لیست هم پیامک ارسال کنید</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function normalizeNumericInput(el) {
+        // Convert Persian/Arabic-Indic digits to ASCII
+        el.value = el.value
+            .replace(/[۰-۹]/g, function(d) { return d.charCodeAt(0) - 0x06F0; })
+            .replace(/[٠-٩]/g, function(d) { return d.charCodeAt(0) - 0x0660; })
+            .replace(/[^0-9]/g, '');
+    }
+
+    function toggleSmsSection() {
+        var mode = document.querySelector('input[name="sendMode"]:checked')?.value;
+        document.getElementById('smsSectionWrap').style.display  = (mode === 'none') ? 'none' : '';
+        document.getElementById('singlePhoneWrap').style.display = (mode === 'single') ? '' : 'none';
+        updateSms();
+    }
+
+    function updateSms() {
+        var code    = (document.getElementById('inpCode')?.value    || '').trim();
+        var percent = (document.getElementById('inpPercent')?.value || '').trim();
+        var expiry  = (document.getElementById('expiryDateDisplay')?.value || '').trim();
+
+        var lines = [];
+        lines.push('کد تخفیف اختصاصی شما از مستر‌شوفر:');
+        lines.push(code    ? code    : '[ کد تخفیف ]');
+        lines.push('');
+        lines.push('میزان تخفیف: ' + (percent ? percent + '٪' : '[ درصد ]'));
+        if (expiry) lines.push('تاریخ انقضا: ' + expiry);
+        lines.push('');
+        lines.push('برای رزرو سفر از این کد استفاده کنید.');
+        lines.push('mrshoofer.ir');
+
+        var msg = lines.join('\n');
+        var ta  = document.getElementById('smsMessageTextarea');
+        if (ta) {
+            ta.value = msg;
+            document.getElementById('smsCharCount').textContent = msg.length + ' کاراکتر';
+        }
+    }
+
+    // Init on load
+    toggleSmsSection();
+
+    // Update char count when admin manually edits
+    document.getElementById('smsMessageTextarea')?.addEventListener('input', function () {
+        document.getElementById('smsCharCount').textContent = this.value.length + ' کاراکتر';
+    });
+
+    // Form validation before submit
+    document.getElementById('createForm').addEventListener('submit', function (e) {
+        var pct = parseInt(document.getElementById('inpPercent').value, 10);
+        var pctErr = document.getElementById('percentError');
+        if (isNaN(pct) || pct < 1 || pct > 100) {
+            e.preventDefault();
+            document.getElementById('inpPercent').classList.add('is-invalid');
+            pctErr.style.display = '';
+        } else {
+            document.getElementById('inpPercent').classList.remove('is-invalid');
+            pctErr.style.display = 'none';
+        }
+    });
+</script>
+
+@section PageScripts {
+<script>
+    var _NativeDate = window.Date;
+    window.Date = window.JDate;
+
+    var expiryInput  = document.getElementById('expiryDateDisplay');
+    var expiryHidden = document.getElementById('expiryDateHidden');
+
+    if (expiryInput) {
+        expiryInput.flatpickr({
+            disableMobile: true,
+            locale: {
+                weekdays: {
+                    shorthand: ["شنبه", "یکشنبه", "د", "س", "چ", "پ", "ج"],
+                    longhand: ["شنبه", "یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه"]
+                }
+            },
+            monthSelectorType: 'static',
+            locale: 'fa',
+            altFormat: 'Y/m/d',
+            onChange: function (selectedDates) {
+                if (selectedDates.length > 0) {
+                    var greg = new _NativeDate(selectedDates[0].valueOf());
+                    var y = greg.getFullYear();
+                    var m = String(greg.getMonth() + 1).padStart(2, '0');
+                    var d = String(greg.getDate()).padStart(2, '0');
+                    expiryHidden.value = y + '-' + m + '-' + d;
+                } else {
+                    expiryHidden.value = '';
+                }
+                updateSms();
+            }
+        });
+    }
+</script>
+}

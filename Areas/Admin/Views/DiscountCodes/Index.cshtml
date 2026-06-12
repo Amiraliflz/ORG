@@ -1,0 +1,209 @@
+@model List<Application.Models.DiscountCode>
+@{
+    ViewData["Title"] = "کدهای تخفیف";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0"><i class="ti ti-discount me-2 text-primary"></i>کدهای تخفیف</h4>
+            <small class="text-muted">@Model.Count کد ثبت‌شده</small>
+        </div>
+        <a asp-area="Admin" asp-controller="DiscountCodes" asp-action="Create" class="btn btn-primary rounded-pill px-4">
+            <i class="ti ti-plus me-1"></i> کد جدید
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible mb-4 d-flex align-items-center">
+            <i class="ti ti-circle-check me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible mb-4 d-flex align-items-center">
+            <i class="ti ti-alert-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card rounded-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>کد تخفیف</th>
+                        <th>درصد</th>
+                        <th>توضیحات</th>
+                        <th>انقضا</th>
+                        <th>استفاده</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ ایجاد</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var code in Model)
+                    {
+                        <tr>
+                            <td><span class="badge bg-label-primary rounded-pill px-3 fs-6">@code.Code</span></td>
+                            <td><span class="fw-bold text-success">@code.DiscountPercent٪</span></td>
+                            <td><small class="text-muted">@(code.Description ?? "—")</small></td>
+                            <td>
+                                @if (code.ExpiryDate.HasValue)
+                                {
+                                    var expired = code.ExpiryDate < DateTime.Now;
+                                    <span class="@(expired ? "text-danger" : "text-muted")" style="font-size:.82rem">
+                                        @code.ExpiryDate.Value.ToString("yyyy/MM/dd")
+                                        @if (expired) { <i class="ti ti-clock-x ms-1"></i> }
+                                    </span>
+                                }
+                                else { <span class="text-muted">—</span> }
+                            </td>
+                            <td>
+                                <span class="text-muted" style="font-size:.85rem">
+                                    @code.UsedCount / @(code.MaxUses.HasValue ? code.MaxUses.ToString() : "∞")
+                                </span>
+                            </td>
+                            <td>
+                                @if (code.IsActive)
+                                {
+                                    <span class="badge bg-label-success rounded-pill">فعال</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-label-secondary rounded-pill">غیرفعال</span>
+                                }
+                            </td>
+                            <td><small class="text-muted">@code.CreatedAt.ToString("yyyy/MM/dd")</small></td>
+                            <td>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <!-- Toggle active -->
+                                    <form method="post" asp-area="Admin" asp-controller="DiscountCodes" asp-action="Toggle" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@code.Id" />
+                                        <button type="submit" class="btn btn-sm btn-icon @(code.IsActive ? "btn-label-warning" : "btn-label-success") rounded-pill"
+                                                title="@(code.IsActive ? "غیرفعال کردن" : "فعال کردن")">
+                                            <i class="ti @(code.IsActive ? "ti-eye-off" : "ti-eye")"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Send SMS -->
+                                    <button type="button" class="btn btn-sm btn-icon btn-label-primary rounded-pill"
+                                            title="ارسال پیامک"
+                                            data-bs-toggle="modal" data-bs-target="#smsModal"
+                                            data-id="@code.Id" data-code="@code.Code" data-percent="@code.DiscountPercent">
+                                        <i class="ti ti-send"></i>
+                                    </button>
+
+                                    <!-- Delete -->
+                                    <form method="post" asp-area="Admin" asp-controller="DiscountCodes" asp-action="Delete" class="d-inline"
+                                          onsubmit="return confirm('کد «@code.Code» حذف شود؟')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@code.Id" />
+                                        <button type="submit" class="btn btn-sm btn-icon btn-label-danger rounded-pill" title="حذف">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="ti ti-discount-off d-block mb-2" style="font-size:2rem"></i>
+                                هنوز کد تخفیفی ثبت نشده است
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Send SMS Modal -->
+<div class="modal fade" id="smsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ti ti-send me-2"></i>ارسال پیامک کد تخفیف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" asp-area="Admin" asp-controller="DiscountCodes" asp-action="SendSms" id="smsForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="smsCodeId" />
+                <div class="modal-body">
+                    <p class="mb-3">کد: <strong id="smsCodeLabel" class="text-primary"></strong></p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">نحوه ارسال</label>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="sendMode" id="modeSingle" value="single" checked />
+                                <label class="form-check-label" for="modeSingle">ارسال به یک شماره خاص</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="sendMode" id="modeAll" value="all" />
+                                <label class="form-check-label" for="modeAll">ارسال به همه مشتریان</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="singlePhoneWrap" class="mb-3">
+                        <label class="form-label">شماره موبایل</label>
+                        <input type="text" name="targetPhone" class="form-control" placeholder="09xxxxxxxxx" dir="ltr" />
+                    </div>
+
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold"><i class="ti ti-message-2 me-1"></i>متن پیامک</label>
+                        <textarea name="smsMessage" id="modalSmsMessage" class="form-control"
+                                  rows="6" dir="rtl" style="font-size:.88rem;line-height:1.7;resize:vertical"></textarea>
+                        <small class="text-muted d-flex justify-content-between mt-1">
+                            <span>قابل ویرایش</span>
+                            <span id="modalSmsCharCount">0 کاراکتر</span>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-send me-1"></i>ارسال</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function buildDefaultSms(code, percent) {
+        return 'کد تخفیف اختصاصی شما از مستر‌شوفر:\n' + code +
+               '\n\nمیزان تخفیف: ' + percent + '٪\n\nبرای رزرو سفر از این کد استفاده کنید.\nmrshoofer.ir';
+    }
+
+    document.getElementById('smsModal').addEventListener('show.bs.modal', function (e) {
+        var btn = e.relatedTarget;
+        var code    = btn.dataset.code;
+        var percent = btn.dataset.percent;
+        document.getElementById('smsCodeId').value = btn.dataset.id;
+        document.getElementById('smsCodeLabel').textContent = code;
+        var msg = buildDefaultSms(code, percent);
+        document.getElementById('modalSmsMessage').value = msg;
+        document.getElementById('modalSmsCharCount').textContent = msg.length + ' کاراکتر';
+    });
+
+    document.getElementById('modalSmsMessage').addEventListener('input', function () {
+        document.getElementById('modalSmsCharCount').textContent = this.value.length + ' کاراکتر';
+    });
+
+    document.querySelectorAll('input[name="sendMode"]').forEach(function (r) {
+        r.addEventListener('change', function () {
+            document.getElementById('singlePhoneWrap').style.display =
+                this.value === 'single' ? '' : 'none';
+        });
+    });
+</script>

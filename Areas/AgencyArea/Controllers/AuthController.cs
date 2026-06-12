@@ -302,29 +302,19 @@ namespace Application.Areas.AgencyArea
         return View();
       }
 
-      var user = await _usermanager.FindByNameAsync(numberphone);
-      if (user == null)
+      // If the number belongs to a non-customer account, block it
+      var existingUser = await _usermanager.FindByNameAsync(numberphone);
+      if (existingUser != null)
       {
-        user = new IdentityUser { UserName = numberphone, PhoneNumber = numberphone };
-        var password = Guid.NewGuid().ToString("N")[..8] + "Aa1!";
-        var result = await _usermanager.CreateAsync(user, password);
-        if (!result.Succeeded)
+        var existingClaims = await _usermanager.GetClaimsAsync(existingUser);
+        if (!existingClaims.Any(c => c.Type == "Role" && c.Value == "Customer"))
         {
-          ViewBag.errormessage = "خطا در ایجاد حساب. لطفاً دوباره تلاش کنید";
+          ViewBag.errormessage = "این شماره برای ورود مشتری معتبر نیست";
           ViewBag.ReturnUrl = ReturnUrl;
           return View();
         }
-        await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", "Customer"));
-        await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("CustomerBalance", "0"));
       }
-
-      var claims = await _usermanager.GetClaimsAsync(user);
-      if (!claims.Any(c => c.Type == "Role" && c.Value == "Customer"))
-      {
-        ViewBag.errormessage = "این شماره برای ورود مشتری معتبر نیست";
-        ViewBag.ReturnUrl = ReturnUrl;
-        return View();
-      }
+      // Account creation (if needed) happens AFTER OTP verification
 
       string otpcode = await _otpLogin.SendCode(numberphone);
       TempData["otp_code"] = otpcode;
@@ -377,13 +367,33 @@ namespace Application.Areas.AgencyArea
       }
 
       var user = await _usermanager.FindByNameAsync(numberphone);
+      bool isNewUser = false;
+
       if (user == null)
       {
-        ViewBag.errormessage = "حساب کاربری یافت نشد";
-        return View("CustomerLogin");
+        // Phone verified — create account now
+        user = new IdentityUser { UserName = numberphone, PhoneNumber = numberphone };
+        var password = Guid.NewGuid().ToString("N")[..8] + "Aa1!";
+        var result = await _usermanager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+          ViewBag.errormessage = "خطا در ایجاد حساب. لطفاً دوباره تلاش کنید";
+          ViewBag.numberphone = numberphone;
+          ViewBag.ReturnUrl = ReturnUrl;
+          TempData.Keep();
+          return View();
+        }
+        await _usermanager.AddClaimAsync(user, new System.Security.Claims.Claim("Role", "Customer"));
+        isNewUser = true;
       }
 
       await _signInManager.SignInAsync(user, isPersistent: true, authenticationMethod: "OTP");
+
+      if (isNewUser)
+      {
+        TempData["Success"] = "حساب شما با موفقیت ایجاد شد. لطفاً اطلاعات پروفایل خود را تکمیل کنید.";
+        return RedirectToAction("MyProfile", "Customer", new { area = "AgencyArea" });
+      }
 
       if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
         return LocalRedirect(ReturnUrl);
