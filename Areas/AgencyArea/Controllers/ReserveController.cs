@@ -321,13 +321,16 @@ namespace Application.Areas.AgencyArea
       }
 
       // ✅ STEP 1: CREATE PRELIMINARY TICKET (BEFORE PAYMENT, WITHOUT MRSHOOFER TICKETCODE)
-      // Store trip code temporarily - we'll create MrShoofer reservation after payment
+      // Normalize digits so ORS API never receives Persian/Arabic-Indic numerals
+      var safeNacode = NormalizePersianDigits(viewModel.Nacode);
+      var safePhone  = NormalizePersianDigits(viewModel.Numberphone);
+
       Ticket newticket = new Ticket()
       {
         Firstname = viewModel.Firstname,
         Lastname = viewModel.Lastname,
-        PhoneNumber = viewModel.Numberphone,
-        NaCode = viewModel.Nacode,
+        PhoneNumber = safePhone,
+        NaCode = safeNacode,
         TicketFinalPrice = trip.afterdiscticketprice,
         Gender = viewModel.Gender,
         TicketOriginalPrice = trip.originalTicketprice,
