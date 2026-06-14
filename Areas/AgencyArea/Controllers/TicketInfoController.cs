@@ -1,5 +1,6 @@
 using Application.Data;
 using Application.Services;
+using Application.Services.MrShooferORS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,37 @@ namespace Application.Areas.AgencyArea
   {
     private readonly AppDbContext context;
     private readonly UserManager<IdentityUser> userManager;
-    public TicketInfoController(AppDbContext context, UserManager<IdentityUser> userManager)
+    private readonly MrShooferAPIClient _apiClient;
+    private readonly IConfiguration _configuration;
+
+    public TicketInfoController(AppDbContext context, UserManager<IdentityUser> userManager, MrShooferAPIClient apiClient, IConfiguration configuration)
     {
       this.context = context;
       this.userManager = userManager;
+      _apiClient = apiClient;
+      _configuration = configuration;
+    }
+
+    private void SetupApiClient()
+    {
+      var token = _configuration["MrShoofer:SellerToken"];
+      if (!string.IsNullOrWhiteSpace(token))
+        _apiClient.SetSellerApiKey(token);
+    }
+
+    private async Task SyncCancellationStatusAsync(IEnumerable<Ticket> tickets)
+    {
+      SetupApiClient();
+      var active = tickets.Where(t => !t.IsCancelled && t.IsPaid).ToList();
+      if (!active.Any()) return;
+
+      var tasks = active.Select(async t =>
+      {
+        var isCancelled = await _apiClient.GetTicketIsCancelledAsync(t.TicketCode);
+        if (isCancelled == true) t.IsCancelled = true;
+      });
+      await Task.WhenAll(tasks);
+      await context.SaveChangesAsync();
     }
 
     public async Task<IActionResult> Index()
@@ -39,8 +67,11 @@ namespace Application.Areas.AgencyArea
       }
 
       var tickets = agency.SoldTickets ?? new List<Ticket>();
+
+      await SyncCancellationStatusAsync(tickets);
+
       ViewBag.tickets = tickets.OrderByDescending(t => t.RegisteredAt).ToList();
-      
+
       // Statistics
       ViewBag.totalTickets = tickets.Count;
       ViewBag.activeTickets = tickets.Count(t => !t.IsCancelled);

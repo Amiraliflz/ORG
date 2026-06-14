@@ -355,7 +355,7 @@ namespace Application.Areas.AgencyArea
       else
       {
         var guestAgency = context.Agencies
-          .FirstOrDefault(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+          .FirstOrDefault(a => a.IdentityUser != null && a.IdentityUser.UserName == "Sale.mrshoofer");
         if (guestAgency != null)
         {
           newticket.Agency = guestAgency;
@@ -591,9 +591,9 @@ namespace Application.Areas.AgencyArea
         }
         else
         {
-          // Get the guest agency (agency with no IdentityUser)
+          // Get the default OTA seller agency
           agencyToUse = this.context.Agencies
-            .FirstOrDefault(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+            .FirstOrDefault(a => a.IdentityUser != null && a.IdentityUser.UserName == "Sale.mrshoofer");
 
           if (agencyToUse != null && !string.IsNullOrWhiteSpace(agencyToUse.ORSAPI_token))
           {
@@ -619,26 +619,21 @@ namespace Application.Areas.AgencyArea
 
     private async Task EnsureGuestAgencyExistsAsync()
     {
-      // Check if guest agency already exists
-      var guestAgency = await context.Agencies
-        .FirstOrDefaultAsync(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+      var sellerToken = configuration["MrShoofer:SellerToken"];
+      if (string.IsNullOrWhiteSpace(sellerToken)) return;
 
-      if (guestAgency == null)
+      var saleAgency = await context.Agencies
+        .FirstOrDefaultAsync(a => a.IdentityUser != null && a.IdentityUser.UserName == "Sale.mrshoofer");
+
+      if (saleAgency == null)
       {
-        // Create guest agency
-        var newGuestAgency = new Agency
-        {
-          Name = "مستر شوفر - مهمان",
-          PhoneNumber = "02100000000",
-          Address = "تهران",
-          AdminMobile = "09900000000",
-          DateJoined = DateTime.Now,
-          ORSAPI_token = configuration["MrShoofer:SellerToken"] ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjU1NCIsImp0aSI6Ijk1ZTI1NjYzLTkzM2EtNGY1ZS04ZTdiLTMwNGQ0Yjg3M2Q3NiIsImV4cCI6MTkyMjc3ODkwOCwiaXNzIjoibXJzaG9vZmVyLmlyIiwiYXVkIjoibXJzaG9vZmVyLmlyIn0.2r5WoGmqb5Ra_6epV5jR3Y0RlHs5bcwE0li0wo1ricE",
-          Commission = 0,
-          IdentityUser = null
-        };
+        _logger.LogWarning("Sale.mrshoofer agency not found. Guest bookings will have no default seller agency.");
+        return;
+      }
 
-        context.Agencies.Add(newGuestAgency);
+      if (saleAgency.ORSAPI_token != sellerToken)
+      {
+        saleAgency.ORSAPI_token = sellerToken;
         await context.SaveChangesAsync();
       }
     }

@@ -650,8 +650,8 @@
                 }
             </div>
 
-            <!-- Discount code — desktop -->
-            <div class="mb-3 mt-1" id="discount-wrap-desktop">
+            <!-- Discount code — desktop inline (hidden on lg+, shown on md) -->
+            <div class="mb-3 mt-1 d-lg-none" id="discount-wrap-desktop">
                 <label class="form-label fw-semibold" style="font-size:.85rem"><i class="ti ti-discount me-1 text-primary"></i>کد تخفیف</label>
                 <div class="input-group">
                     <input type="text" id="discount-input-desktop" class="form-control" placeholder="کد تخفیف را وارد کنید" dir="ltr" style="border-radius:.75rem 0 0 .75rem!important;text-transform:uppercase" />
@@ -909,8 +909,10 @@
     var _appliedDiscount = 0;
 
     function applyDiscount(source) {
-        var inputId = source === 'desktop' ? 'discount-input-desktop' : 'discount-input-mobile';
-        var msgId   = source === 'desktop' ? 'discount-msg-desktop'   : 'discount-msg-mobile';
+        var inputId = source === 'float' ? 'discount-input-float' :
+                      source === 'desktop' ? 'discount-input-desktop' : 'discount-input-mobile';
+        var msgId   = source === 'float' ? 'discount-msg-float' :
+                      source === 'desktop' ? 'discount-msg-desktop' : 'discount-msg-mobile';
         var code    = document.getElementById(inputId).value.trim().toUpperCase();
         var msgEl   = document.getElementById(msgId);
 
@@ -928,9 +930,10 @@
                 _appliedDiscount = data.discountPercent;
                 document.getElementById('discount-code-hidden').value = code;
 
-                // Sync both inputs to the same code
-                document.getElementById('discount-input-desktop').value = code;
-                document.getElementById('discount-input-mobile').value  = code;
+                // Sync all inputs to the same code
+                ['discount-input-desktop','discount-input-mobile','discount-input-float'].forEach(function(id){
+                    var el = document.getElementById(id); if (el) el.value = code;
+                });
 
                 // Update modal price display
                 var formatted = Number(data.discountedPrice).toLocaleString('en-US');
@@ -940,10 +943,11 @@
                 var badge = document.getElementById('modal-discount-badge');
                 if (badge) { badge.textContent = data.discountPercent + '٪ تخفیف اعمال شد'; badge.style.display = ''; }
 
-                // Show success in both message areas
+                // Show success in all message areas
                 var msg = 'کد تخفیف ' + data.discountPercent + '٪ اعمال شد. قیمت نهایی: ' + formatted + ' تومان';
-                showDiscountMsg(document.getElementById('discount-msg-desktop'), msg, true);
-                showDiscountMsg(document.getElementById('discount-msg-mobile'),  msg, true);
+                ['discount-msg-desktop','discount-msg-mobile','discount-msg-float'].forEach(function(id){
+                    showDiscountMsg(document.getElementById(id), msg, true);
+                });
             } else {
                 showDiscountMsg(msgEl, data.message || 'کد تخفیف معتبر نیست.', false);
             }
@@ -960,5 +964,22 @@
         el.style.display = '';
     }
 </script>
+
+<!-- Discount code — floating bottom-right on PC (lg+) -->
+<div id="discount-float" class="d-none d-lg-block" style="position:fixed;bottom:1.75rem;right:1.75rem;z-index:1050;width:300px">
+    <div class="card shadow-lg rounded-4 p-3" style="border:1.5px solid #dcdcff;background:#fff">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-semibold" style="font-size:.88rem"><i class="ti ti-discount me-1 text-primary"></i>کد تخفیف</span>
+            <button type="button" class="btn-close" style="font-size:.7rem" onclick="document.getElementById('discount-float').style.display='none'" aria-label="بستن"></button>
+        </div>
+        <div class="input-group">
+            <input type="text" id="discount-input-float" class="form-control" placeholder="کد تخفیف را وارد کنید" dir="ltr" style="border-radius:.75rem 0 0 .75rem!important;text-transform:uppercase;font-size:.88rem" />
+            <button type="button" class="btn btn-primary" onclick="applyDiscount('float')" style="border-radius:0 .75rem .75rem 0!important;font-size:.88rem">اعمال</button>
+        </div>
+        <div id="discount-msg-float" class="mt-1" style="font-size:.8rem;display:none"></div>
+    </div>
+</div>
+
+@await Html.PartialAsync("../Shared/Sections/Footer/_ReserveFooter")
 
 

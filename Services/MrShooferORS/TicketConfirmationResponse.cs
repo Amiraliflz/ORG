@@ -8,8 +8,7 @@ namespace Application.Services.MrShooferORS
     // Optional webapp token returned by ORS when present
     public string? webappToken { get; set; }
 
-    public decimal remainAccountBalance { set { remainAccountBalance_int = (int)value; } }
-    public int remainAccountBalance_int { set; get; }
+    public decimal remainAccountBalance { set; get; }
 
     public int paid_total_fee_tomans { get; set; }
     public string seatnumber { get; set; }

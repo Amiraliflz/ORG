@@ -30,61 +30,31 @@
     @* ! Starter Kit menu-items *@
 
     <ul class="menu-inner py-1">
-        <!-- Dashboards -->
-        <li class='menu-item@(currentPage == "/Admin" || currentPage.StartsWith("/Admin/Agency") || currentPage.StartsWith("/Admin/Payments")? " active open" : "")'>
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-smart-home"></i>
-                <div>فروشندگان</div>
-                @* <div class="badge bg-primary rounded-pill ms-auto">5</div> *@
+
+        <li class='menu-item@(currentPage == "/Admin/Messages" ? " active" : "")'>
+            <a asp-controller="Messages" asp-area="Admin" asp-action="Index" class="menu-link">
+                <i class="ti ti-message menu-icon tf-icons"></i>
+                <div>پیام‌ها</div>
             </a>
-            <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Admin" || currentPage.StartsWith("/Admin/Agency") ? " active" : "")'>
-                    <a asp-controller="AgencyManagement" asp-area="Admin" asp-action="Index" class="menu-link">
-                        <div>مدیریت فروشندگان</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Admin/Payments/ChargeRequests" ? " active" : "")'>
-                    <a asp-controller="Payments" asp-area="Admin" asp-action="ChargeRequests" class="menu-link">
-                        <div>درخواست‌ها</div>
-                    </a>
-                </li>
-
-
-            </ul>
-
-
-
-
-            <ul class="menu-inner py-1">
-                <li class='menu-item@(currentPage == "/Admin/Messages" ? " active" : "")'>
-                    <a asp-controller="Messages"  asp-area="Admin" asp-action="Index" class="menu-link">
-                        <i class="ti ti-message menu-icon tf-icons"></i>
-                        <div>پیام‌ها</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage.StartsWith("/Admin/Customers") ? " active" : "")'>
-                    <a asp-controller="Customers" asp-area="Admin" asp-action="Index" class="menu-link">
-                        <i class="ti ti-users menu-icon tf-icons"></i>
-                        <div>مشتریان</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage.StartsWith("/Admin/CustomerWallet") ? " active" : "")'>
-                    <a asp-controller="CustomerWallet" asp-area="Admin" asp-action="Index" class="menu-link">
-                        <i class="ti ti-wallet menu-icon tf-icons"></i>
-                        <div>کیف پول مشتریان</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage.StartsWith("/Admin/DiscountCodes") ? " active" : "")'>
-                    <a asp-controller="DiscountCodes" asp-area="Admin" asp-action="Index" class="menu-link">
-                        <i class="ti ti-discount menu-icon tf-icons"></i>
-                        <div>کدهای تخفیف</div>
-                    </a>
-                </li>
-
-            </ul>
-
-
-
+        </li>
+        <li class='menu-item@(currentPage.StartsWith("/Admin/Customers") ? " active" : "")'>
+            <a asp-controller="Customers" asp-area="Admin" asp-action="Index" class="menu-link">
+                <i class="ti ti-users menu-icon tf-icons"></i>
+                <div>مشتریان</div>
+            </a>
+        </li>
+        <li class='menu-item@(currentPage.StartsWith("/Admin/CustomerWallet") ? " active" : "")'>
+            <a asp-controller="CustomerWallet" asp-area="Admin" asp-action="Index" class="menu-link">
+                <i class="ti ti-wallet menu-icon tf-icons"></i>
+                <div>کیف پول مشتریان</div>
+            </a>
+        </li>
+        <li class='menu-item@(currentPage.StartsWith("/Admin/DiscountCodes") ? " active" : "")'>
+            <a asp-controller="DiscountCodes" asp-area="Admin" asp-action="Index" class="menu-link">
+                <i class="ti ti-discount menu-icon tf-icons"></i>
+                <div>کدهای تخفیف</div>
+            </a>
+        </li>
 
     </ul>
 

@@ -1,0 +1,160 @@
+@{
+    Layout = "_AgencySideLayout";
+    ViewData["title"] = "ارتباط با ما";
+}
+
+<style>
+    .contact-hero {
+        background: linear-gradient(135deg, #28c76f 0%, #20a55a 100%);
+        border-radius: 1.5rem;
+        color: #fff;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
+    }
+    .contact-info-card {
+        border: 1.5px solid #e8e8f0;
+        border-radius: 1rem;
+        padding: 1.25rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: .75rem;
+        background: #fff;
+    }
+    .contact-info-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: .85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    .contact-form-card {
+        border: 1.5px solid #e8e8f0;
+        border-radius: 1.25rem;
+        padding: 1.75rem;
+        background: #fff;
+    }
+    #contact-success {
+        display: none;
+        background: #e8fbf1;
+        border: 1.5px solid #28c76f;
+        border-radius: .75rem;
+        padding: 1rem 1.25rem;
+        color: #1a7a4a;
+    }
+</style>
+
+<div class="container py-4" style="max-width:900px">
+
+    <div class="contact-hero text-center">
+        <i class="ti ti-messages" style="font-size:2.5rem;margin-bottom:.5rem;display:block"></i>
+        <h4 class="fw-bold mb-1">ارتباط با ما</h4>
+        <p class="mb-0 opacity-75" style="font-size:.9rem">در صورت هرگونه سوال یا مشکل، با تیم مسترشوفر در تماس باشید</p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-4">
+            <h6 class="fw-bold mb-3" style="color:#444">راه‌های ارتباطی</h6>
+
+            <div class="contact-info-card">
+                <div class="contact-info-icon" style="background:#e3f9ec;color:#28c76f">
+                    <i class="ti ti-phone"></i>
+                </div>
+                <div>
+                    <div class="fw-semibold" style="font-size:.88rem">تلفن پشتیبانی</div>
+                    <div class="text-muted" style="font-size:.85rem" dir="ltr">021-28422243</div>
+                </div>
+            </div>
+
+            <div class="contact-info-card">
+                <div class="contact-info-icon" style="background:#f0f4ff;color:#696cff">
+                    <i class="ti ti-mail"></i>
+                </div>
+                <div>
+                    <div class="fw-semibold" style="font-size:.88rem">ایمیل</div>
+                    <div class="text-muted" style="font-size:.85rem" dir="ltr">support@mrshoofer.ir</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="contact-form-card">
+                <h6 class="fw-bold mb-1">ارسال پیام</h6>
+                <p class="text-muted mb-4" style="font-size:.85rem">پیام خود را برای ما ارسال کنید، در اسرع وقت پاسخ می‌دهیم</p>
+
+                <div id="contact-success">
+                    <i class="ti ti-circle-check me-2"></i>
+                    پیام شما با موفقیت ارسال شد. به زودی با شما تماس می‌گیریم.
+                </div>
+
+                <form id="contact-form" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:.88rem">نام و نام خانوادگی</label>
+                        <input type="text" id="contact-name" class="form-control" placeholder="نام شما" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="font-size:.88rem">شماره موبایل</label>
+                        <input type="tel" id="contact-phone" class="form-control" placeholder="09xxxxxxxxx" dir="ltr" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" style="font-size:.88rem">پیام</label>
+                        <textarea id="contact-message" class="form-control" rows="5" placeholder="پیام خود را بنویسید..." required style="resize:none"></textarea>
+                    </div>
+                    <button type="submit" id="contact-submit" class="btn btn-primary w-100 rounded-pill" style="height:3rem">
+                        <span id="contact-submit-text">ارسال پیام</span>
+                        <span id="contact-submit-spinner" class="spinner-border spinner-border-sm ms-2" style="display:none"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@section PageScripts {
+<script>
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    var name = document.getElementById('contact-name').value.trim();
+    var phone = document.getElementById('contact-phone').value.trim();
+    var msg = document.getElementById('contact-message').value.trim();
+
+    if (!name || !phone || !msg) {
+        alert('لطفاً همه فیلدها را پر کنید');
+        return;
+    }
+
+    var btn = document.getElementById('contact-submit');
+    var spinner = document.getElementById('contact-submit-spinner');
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+
+    try {
+        var resp = await fetch('/Message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, number: phone, message: msg })
+        });
+
+        if (resp.ok) {
+            document.getElementById('contact-form').style.display = 'none';
+            document.getElementById('contact-success').style.display = 'block';
+        } else {
+            alert('خطا در ارسال پیام. لطفاً دوباره تلاش کنید.');
+            btn.disabled = false;
+            spinner.style.display = 'none';
+        }
+    } catch {
+        alert('خطا در اتصال. لطفاً دوباره تلاش کنید.');
+        btn.disabled = false;
+        spinner.style.display = 'none';
+    }
+});
+</script>
+}

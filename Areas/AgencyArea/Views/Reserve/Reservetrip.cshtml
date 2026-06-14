@@ -1095,33 +1095,21 @@
                 }
             </div>
 
-            <!-- Trip rules section -->
-            <div class="trip_info bg-white rounded-5 border-1 border-divider shadow-7.5__13__5__gray30 p-3 mt-3 ">
-                @*  <div class="headline d-flex justify-between">
-                <span class="badge bg-primary rounded-pill py-2" style="font-size: .875rem!important">
-                قوانین سفر
-                </span>
-
-                </div> *@
-
-                <div class="mt-1 col-12 mx-0 px-2" style="">
+            <!-- Trip rules section — desktop only (on mobile it renders after the form) -->
+            <div id="trip-rules-section" class="trip_info bg-white rounded-5 border-1 border-divider shadow-7.5__13__5__gray30 p-3 mt-3 d-none d-md-block">
+                <div class="mt-1 col-12 mx-0 px-2">
                     <span>
                         <h6 class="text-blck">قوانین سفر</h6>
                     </span>
-                    <p style="line-height:1.2rem !important; font-size: .8rem; ">
+                    <p style="line-height:1.2rem !important; font-size: .8rem;">
                         تغییرات مورد نظر شما مانند مبدا و مقصد اضافه یا اضافه مسیر خارج از شهر مبدا یا مقصد با هماهنگی راننده امکان پذیر می باشد و هزینه آن به صورت جداگانه محاسبه می شود. ظرفیت خودرو دربستی ۳ مسافر می باشد.
                         قوانین کنسلی به صورت زیر اعمال می گردد:
-
                     </p>
-
                     <div class="ms-1 text-muted">
-
                         <small class="d-flex">تا 1 ساعت بعد از خرید بدون جریمه  </small>
                         <small class="d-flex">تا 12 ساعت مانده به سفر  20 درصد</small>
                         <small class="d-flex">تا 3 ساعت قبل سفر 50 درصد</small>
                         <small class="d-flex">و بعد از آن امکان کنسلی وجود ندارد</small>
-
-
                     </div>
                 </div>
             </div>
@@ -1273,6 +1261,27 @@
             </div>
         </article>
 
+        <!-- Trip rules — mobile only (shown after reservation form) -->
+        <div class="col-12 d-block d-md-none mt-3">
+            <div id="trip-rules-section-mobile" class="trip_info bg-white rounded-5 border-1 border-divider shadow-7.5__13__5__gray30 p-3">
+                <div class="mt-1 col-12 mx-0 px-2">
+                    <span>
+                        <h6 class="text-blck">قوانین سفر</h6>
+                    </span>
+                    <p style="line-height:1.2rem !important; font-size: .8rem;">
+                        تغییرات مورد نظر شما مانند مبدا و مقصد اضافه یا اضافه مسیر خارج از شهر مبدا یا مقصد با هماهنگی راننده امکان پذیر می باشد و هزینه آن به صورت جداگانه محاسبه می شود. ظرفیت خودرو دربستی ۳ مسافر می باشد.
+                        قوانین کنسلی به صورت زیر اعمال می گردد:
+                    </p>
+                    <div class="ms-1 text-muted">
+                        <small class="d-flex">تا 1 ساعت بعد از خرید بدون جریمه  </small>
+                        <small class="d-flex">تا 12 ساعت مانده به سفر  20 درصد</small>
+                        <small class="d-flex">تا 3 ساعت قبل سفر 50 درصد</small>
+                        <small class="d-flex">و بعد از آن امکان کنسلی وجود ندارد</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div style="height: 10vh;"></div>
     </div>
 </div>
@@ -1290,3 +1299,5 @@
     }
 
 </style>
+
+@await Html.PartialAsync("../Shared/Sections/Footer/_ReserveFooter")

@@ -388,6 +388,40 @@ namespace Application.Services.MrShooferORS
       return map;
     }
 
+    public async Task<bool?> GetTicketIsCancelledAsync(string ticketCode)
+    {
+      try
+      {
+        var response = await _client.GetAsync($"/Tickets/getTicketInfo?ticketCode={Uri.EscapeDataString(ticketCode)}");
+        if (!response.IsSuccessStatusCode) return null;
+
+        var json = await response.Content.ReadAsStringAsync();
+        var node = JsonNode.Parse(json);
+        if (node == null) return null;
+
+        // Try common field names for cancellation status
+        var isCancelledNode = node["isCancelled"] ?? node["IsCancelled"] ?? node["cancelled"] ?? node["Cancelled"];
+        if (isCancelledNode != null)
+        {
+          if (isCancelledNode is JsonValue jv && jv.TryGetValue<bool>(out var b)) return b;
+        }
+
+        var statusNode = node["status"] ?? node["Status"] ?? node["ticketStatus"] ?? node["TicketStatus"];
+        if (statusNode != null)
+        {
+          var s = statusNode.ToString().ToLowerInvariant();
+          if (s == "cancelled" || s == "canceled" || s == "cancel" || s == "لغو" || s == "لغوشده") return true;
+          if (s == "active" || s == "confirmed" || s == "issued") return false;
+        }
+
+        return null;
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
     public async Task ChargeOTABalanceAsync(int amount)
     {
       var content = new StringContent($"charge_amount={amount}", Encoding.UTF8, "application/x-www-form-urlencoded");

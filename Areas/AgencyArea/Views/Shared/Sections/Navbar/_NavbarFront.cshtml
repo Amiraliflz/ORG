@@ -2,6 +2,16 @@
 	TempData.Keep();
 
 	string? currentPage = ViewContext.HttpContext.Request.Path;
+	string? partnerBrand = Context.Request.Cookies["partner_brand"];
+}
+
+@{
+	// Partner logo config — add new partners here
+	var partnerLogos = new Dictionary<string, (string Src, string Alt)>(StringComparer.OrdinalIgnoreCase)
+	{
+		["isic"] = ("~/img/partners/isic-logo.png", "ISIC")
+	};
+	partnerLogos.TryGetValue(partnerBrand ?? "", out var partner);
 }
 
 <style>
@@ -28,10 +38,13 @@
 					<i class="ti ti-menu-2 ti-sm align-middle"></i>
 				</button>
 				<!-- Mobile menu toggle: End-->
-				<a asp-controller="Home" asp-action="Index" class="app-brand-link">
-					<span class="app-brand-logo demo" style="width:unset; height: unset;">
-						<img src="~/logo_full_b.png" height="29px" alt="مسترشوفر" />
-					</span>
+				<a asp-controller="Home" asp-action="Index" class="app-brand-link d-flex align-items-center gap-2">
+					<img src="~/logo_full_b.png" height="34" alt="مسترشوفر" />
+					@if (partner.Src != null)
+					{
+						<span style="width:1px;height:28px;background:#ddd;display:inline-block;margin:0 4px"></span>
+						<img src="@Url.Content(partner.Src)" height="32" alt="@partner.Alt" style="object-fit:contain" />
+					}
 				</a>
 			</div>
 			<!-- Menu logo wrapper: End -->
@@ -88,18 +101,12 @@
 						}
 					</li>
 					<li class="nav-item">
-						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="FrontPages" asp-action="LandingPage" asp-fragment="landingFAQ">
-
+						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs">
 							<span>
 								<i class="ti ti-heart-handshake"></i>
 								پشتیبانی 24/7
-
 							</span>
-
 						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Home" asp-action="Index" asp-fragment="landingContact">ارتباط با ما</a>
 					</li>
 				</ul>
 			</div>
@@ -187,7 +194,7 @@
 								<li><div class="dropdown-divider"></div></li>
 
 								<li>
-									<a class="dropdown-item" asp-area="AgencyArea" asp-controller="FrontPages" asp-action="LandingPage" asp-fragment="landingFAQ">
+									<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs">
 										<i class="ti ti-heart-handshake me-2 ti-sm"></i>
 										<span class="align-middle">پشتیبانی 24/7</span>
 									</a>

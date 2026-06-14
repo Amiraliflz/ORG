@@ -32,7 +32,7 @@ namespace Application.Services
         public async Task<(string ticketCode, string? webappToken)> ReserveWithOrsAsync(Ticket ticket)
         {
             var guestAgency = await _context.Agencies
-                .FirstOrDefaultAsync(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+                .FirstOrDefaultAsync(a => a.IdentityUser != null && a.IdentityUser.UserName == "Sale.mrshoofer");
 
             if (guestAgency != null && !string.IsNullOrWhiteSpace(guestAgency.ORSAPI_token))
                 _apiClient.SetSellerApiKey(guestAgency.ORSAPI_token);

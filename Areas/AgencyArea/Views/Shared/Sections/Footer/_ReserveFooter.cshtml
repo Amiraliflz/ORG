@@ -1,0 +1,164 @@
+@{
+    string? footerPartner = Context.Request.Cookies["partner_brand"];
+    var footerPartnerLogos = new Dictionary<string, (string Src, string Alt)>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["isic"] = ("~/img/partners/isic-logo.png", "ISIC")
+    };
+    footerPartnerLogos.TryGetValue(footerPartner ?? "", out var footerPartnerLogo);
+}
+
+<style>
+    .rf-link {
+        color: #6f6b7d;
+        text-decoration: none;
+        font-size: .8rem;
+        transition: color .15s;
+    }
+
+    .rf-link:hover {
+        color: #696cff;
+        text-decoration: underline;
+    }
+
+    .rf-col-title {
+        font-size: .82rem;
+        font-weight: 700;
+        color: #3d3a4e;
+        margin-bottom: .85rem;
+    }
+</style>
+
+<footer class="px-2 px-md-4 pt-3 pb-5">
+    <div style="background:#fff;border-radius:1.25rem;padding:2rem 2rem 1.25rem;border:1.5px solid #e8e8f0">
+
+        <!-- Top grid -->
+        <div class="row g-4">
+
+            <!-- Brand -->
+            <div class="col-lg-3 col-md-6">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <img src="@Url.Content("~/logo_full_b.png")" height="30" alt="مسترشوفر" />
+                    @if (footerPartnerLogo.Src != null)
+                    {
+                        <span style="width:1px;height:24px;background:#e0e0e0;display:inline-block;margin:0 2px"></span>
+                        <img src="@Url.Content(footerPartnerLogo.Src)" height="28" alt="@footerPartnerLogo.Alt" style="object-fit:contain" />
+                    }
+                </div>
+                <p style="font-size:.8rem;color:#6f6b7d;line-height:1.8">
+                    رزرو آسان، سفر مطمئن. با مسترشوفر هر مسیری را با خیال راحت طی کنید.
+                </p>
+            </div>
+
+            <!-- Link columns -->
+            <div class="col-lg-6 col-md-6">
+                <div class="row g-3">
+
+                    <div class="col-4">
+                        <div class="rf-col-title">خدمات</div>
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                            <li><a asp-area="AgencyArea" asp-controller="Home" asp-action="Index" class="rf-link">خرید بلیط</a></li>
+                            <li><a asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets" class="rf-link">پیگیری بلیط</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="rf-col-title">پشتیبانی</div>
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                            <li><a asp-area="AgencyArea" asp-controller="Home" asp-action="FAQ" class="rf-link">سوالات
+                                    متداول</a></li>
+                            <li><a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs"
+                                    class="rf-link">ارتباط با ما</a></li>
+                            <li><a asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile" class="rf-link">حساب کاربری</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="rf-col-title">قوانین</div>
+                        <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                            <li><a href="javascript:void(0)" class="rf-link" onclick="openTravelPolicy()">قوانین سفر</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Support CTA -->
+            <div class="col-lg-3 col-md-6">
+                <div class="rf-col-title">پشتیبانی ۲۴ ساعته</div>
+                <p style="font-size:.78rem;color:#6f6b7d;line-height:1.8;margin-bottom:1rem">
+                    تیم ما آماده پاسخگویی در تمام ساعات شبانه‌روز است.
+                </p>
+                <a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs"
+                    style="display:inline-flex;align-items:center;gap:.5rem;background:#696cff;color:#fff;font-size:.8rem;font-weight:600;padding:.55rem 1.1rem;border-radius:.6rem;text-decoration:none;transition:background .15s"
+                    onmouseover="this.style.background='#5f5ce8'" onmouseout="this.style.background='#696cff'">
+                    <i class="ti ti-headset" style="font-size:1rem"></i>
+                    تماس با پشتیبانی
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Bottom bar -->
+        <div style="border-top:1.5px solid #e8e8f0;margin-top:1.75rem;padding-top:1.1rem"
+            class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <p style="font-size:.75rem;color:#a5a3ae;margin:0">
+                ©
+                <script>document.write(new Date().getFullYear())</script> مسترشوفر. تمامی حقوق محفوظ است.
+            </p>
+            <div class="d-flex align-items-center gap-4">
+                <a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs" class="rf-link"
+                    style="font-size:.75rem">ارتباط با ما</a>
+                <a asp-area="AgencyArea" asp-controller="Home" asp-action="FAQ" class="rf-link"
+                    style="font-size:.75rem">سوالات متداول</a>
+            </div>
+        </div>
+
+    </div>
+</footer>
+
+<script>
+function openTravelPolicy() {
+    var desktop = document.getElementById('trip-rules-section');
+    var mobile  = document.getElementById('trip-rules-section-mobile');
+    var section = (desktop && desktop.offsetParent !== null) ? desktop
+                : (mobile  && mobile.offsetParent  !== null) ? mobile
+                : null;
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        new bootstrap.Modal(document.getElementById('travelPolicyModal')).show();
+    }
+}
+</script>
+
+<!-- Travel Policy Modal -->
+<div class="modal fade" id="travelPolicyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:1.25rem;border:1.5px solid #e8e8f0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color:#3d3a4e">
+                    <i class="ti ti-file-text me-2 text-primary"></i>قوانین سفر
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3" style="font-size:.85rem;color:#5d596c;line-height:1.9">
+
+                <p>
+                    تغییرات مورد نظر شما مانند مبدا و مقصد اضافه یا اضافه مسیر خارج از شهر مبدا یا مقصد با هماهنگی راننده امکان پذیر می باشد و هزینه آن به صورت جداگانه محاسبه می شود. ظرفیت خودرو دربستی ۳ مسافر می باشد.
+                    قوانین کنسلی به صورت زیر اعمال می گردد:
+                </p>
+
+                <div class="text-muted ms-1">
+                    <div>تا ۱ ساعت بعد از خرید بدون جریمه</div>
+                    <div>تا ۱۲ ساعت مانده به سفر ۲۰ درصد</div>
+                    <div>تا ۳ ساعت قبل سفر ۵۰ درصد</div>
+                    <div>و بعد از آن امکان کنسلی وجود ندارد</div>
+                </div>
+
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">متوجه شدم</button>
+            </div>
+        </div>
+    </div>
+</div>

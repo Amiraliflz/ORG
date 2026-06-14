@@ -1,6 +1,7 @@
 using Application.Data;
 using Application.Models;
 using Application.Services;
+using Application.Services.MrShooferORS;
 using Application.Services.Payment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,15 +20,18 @@ namespace Application.Areas.AgencyArea
         private readonly IConfiguration _configuration;
         private readonly IPaymentService _paymentService;
         private readonly CustomerBalanceService _balanceSvc;
+        private readonly MrShooferAPIClient _apiClient;
 
         public CustomerController(AppDbContext context, UserManager<IdentityUser> userManager,
-            IConfiguration configuration, IPaymentService paymentService, CustomerBalanceService balanceSvc)
+            IConfiguration configuration, IPaymentService paymentService, CustomerBalanceService balanceSvc,
+            MrShooferAPIClient apiClient)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
             _paymentService = paymentService;
             _balanceSvc = balanceSvc;
+            _apiClient = apiClient;
         }
 
         public async Task<IActionResult> MyTickets()
@@ -39,6 +43,22 @@ namespace Application.Areas.AgencyArea
                 .Where(t => t.PhoneNumber == user.UserName && t.IsPaid)
                 .OrderByDescending(t => t.RegisteredAt)
                 .ToListAsync();
+
+            // Sync cancellation status from ORS for active tickets
+            var sellerToken = _configuration["MrShoofer:SellerToken"];
+            if (!string.IsNullOrWhiteSpace(sellerToken))
+            {
+                _apiClient.SetSellerApiKey(sellerToken);
+                var syncTasks = tickets
+                    .Where(t => !t.IsCancelled)
+                    .Select(async t =>
+                    {
+                        var isCancelled = await _apiClient.GetTicketIsCancelledAsync(t.TicketCode);
+                        if (isCancelled == true) t.IsCancelled = true;
+                    });
+                await Task.WhenAll(syncTasks);
+                await _context.SaveChangesAsync();
+            }
 
             ViewBag.CustomerPhone = user.UserName;
             ViewBag.Balance = await _balanceSvc.GetBalance(user.Id);

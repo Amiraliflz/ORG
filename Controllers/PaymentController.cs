@@ -175,8 +175,8 @@ namespace Application.Controllers
                 {
                     _logger.LogInformation("Creating MrShoofer reservation after payment verification. TripCode: {TripCode}", ticket.Tripcode);
 
-                    // Use default guest OTA seller when available (IdentityUser == null and Name contains "مهمان")
-                    var guestAgency = await _context.Agencies.FirstOrDefaultAsync(a => a.IdentityUser == null && a.Name.Contains("مهمان"));
+                    // Use Sale.mrshoofer as the default OTA seller for guest bookings
+                    var guestAgency = await _context.Agencies.FirstOrDefaultAsync(a => a.IdentityUser != null && a.IdentityUser.UserName == "Sale.mrshoofer");
 
                     if (guestAgency != null && !string.IsNullOrWhiteSpace(guestAgency.ORSAPI_token))
                     {
