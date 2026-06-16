@@ -202,7 +202,7 @@ namespace Application.Areas.AgencyArea
         return RedirectToAction("Index", "Home");
       }
 
-      string otpcode = code1 + code2 + code3 + code4 + code5;
+      string otpcode = NormalizePersianDigits(code1 + code2 + code3 + code4 + code5);
 
       // Checking for the data existance
       if (TempData["otp_code"] == null || TempData["otp_exptime"] == null || numberphone is null)
@@ -338,7 +338,7 @@ namespace Application.Areas.AgencyArea
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CustomerLoginOtp(string code1, string code2, string code3, string code4, string code5, string numberphone, string? ReturnUrl)
     {
-      string otpcode = code1 + code2 + code3 + code4 + code5;
+      string otpcode = NormalizePersianDigits(code1 + code2 + code3 + code4 + code5);
 
       if (TempData["otp_code"] == null || TempData["otp_exptime"] == null || string.IsNullOrWhiteSpace(numberphone))
         return RedirectToAction("CustomerLogin");
@@ -412,6 +412,16 @@ namespace Application.Areas.AgencyArea
         return LocalRedirect(ReturnUrl);
 
       return RedirectToAction("MyProfile", "Customer", new { area = "AgencyArea" });
+    }
+
+    private static string NormalizePersianDigits(string input)
+    {
+      if (string.IsNullOrEmpty(input)) return input;
+      return input
+        .Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3').Replace('۴', '4')
+        .Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9')
+        .Replace('٠', '0').Replace('١', '1').Replace('٢', '2').Replace('٣', '3').Replace('٤', '4')
+        .Replace('٥', '5').Replace('٦', '6').Replace('٧', '7').Replace('٨', '8').Replace('٩', '9');
     }
   }
 }

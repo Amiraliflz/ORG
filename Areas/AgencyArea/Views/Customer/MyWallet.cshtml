@@ -2,8 +2,9 @@
     Layout = "_AgencySideLayout";
     ViewData["title"] = "کیف پول من";
     decimal balance = ViewBag.Balance ?? 0m;
-    var successMsg = TempData["Success"] as string;
-    var errorMsg   = TempData["Error"]   as string;
+    var successMsg = TempData["Success"] as string
+                     ?? (Context.Request.Query["topup"] == "ok" ? Context.Request.Query["msg"].ToString() : null);
+    var errorMsg   = TempData["Error"] as string;
 }
 
 <style>
@@ -124,31 +125,39 @@
 </div>
 
 <script>
-    // Only show on fresh navigation (redirect after top-up), never on reload or back/forward
+    // Toast: only show on fresh navigation, never on reload or back/forward
     var navType = (performance.getEntriesByType('navigation')[0] || {}).type || 'navigate';
-    if (navType !== 'navigate') return;
-    ['wt-ok', 'wt-err'].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        setTimeout(function () { el.classList.add('show'); }, 80);
-        setTimeout(function () { el.classList.remove('show'); }, 5000);
-    });
+    if (navType === 'navigate') {
+        ['wt-ok', 'wt-err'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            setTimeout(function () { el.classList.add('show'); }, 80);
+            setTimeout(function () { el.classList.remove('show'); }, 5000);
+        });
+    }
 
     // Amount input
     const display = document.getElementById('amountDisplay');
     const hidden  = document.getElementById('amountHidden');
     const hint    = document.getElementById('amountHint');
 
+    function normalizePersian(s) {
+        return s
+            .replace(/[۰-۹]/g, function(d){ return d.charCodeAt(0) - 0x6F0; })
+            .replace(/[٠-٩]/g, function(d){ return d.charCodeAt(0) - 0x660; });
+    }
+
     function formatNum(n) {
         return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     display.addEventListener('input', function () {
-        const raw = this.value.replace(/,/g, '');
-        this.value = formatNum(this.value);
+        const normalized = normalizePersian(this.value);
+        const raw = normalized.replace(/[,،]/g, '').replace(/\D/g, '');
+        this.value = formatNum(raw);
         hidden.value = raw;
         const num = parseInt(raw, 10);
-        hint.textContent = !isNaN(num)
+        hint.textContent = !isNaN(num) && num > 0
             ? `مبلغ انتخابی: ${num.toLocaleString('en-US')} تومان`
             : 'حداقل مبلغ شارژ: ۱٬۰۰۰ تومان';
     });

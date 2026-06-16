@@ -387,7 +387,6 @@ namespace Application.Controllers
         /// Verify wallet top-up payment callback from Zarinpal
         /// </summary>
         [HttpGet]
-        [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Customer")]
         public async Task<IActionResult> TopUpVerify(string Authority, string Status)
         {
             try
@@ -398,22 +397,32 @@ namespace Application.Controllers
                     return View("PaymentFailed");
                 }
 
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null) return Challenge();
+                // Find the pending claim directly in DB by Authority
+                // (auth cookie may not be present — callback is on pay.mrshoofer.ir, user logged in on mrshoofer.ir)
+                var dbClaim = await _context.UserClaims
+                    .FirstOrDefaultAsync(c => c.ClaimType == "WalletTopUpPending"
+                                           && c.ClaimValue.StartsWith(Authority + ":"));
 
-                var claims = await _userManager.GetClaimsAsync(user);
-                var pendingClaim = claims.FirstOrDefault(c => c.Type == "WalletTopUpPending");
-                if (pendingClaim == null)
+                IdentityUser? user = null;
+                System.Security.Claims.Claim? pendingClaim = null;
+
+                if (dbClaim != null)
                 {
-                    _logger.LogError("WalletTopUpPending claim not found for user {User}", user.UserName);
+                    user = await _userManager.FindByIdAsync(dbClaim.UserId);
+                    pendingClaim = new System.Security.Claims.Claim(dbClaim.ClaimType, dbClaim.ClaimValue);
+                }
+
+                if (user == null || pendingClaim == null)
+                {
+                    _logger.LogError("WalletTopUpPending claim not found for Authority={Authority}", Authority);
                     ViewBag.ErrorMessage = "درخواست شارژ کیف پول یافت نشد. لطفاً با پشتیبانی تماس بگیرید";
                     return View("PaymentFailed");
                 }
 
                 var parts = pendingClaim.Value.Split(':');
-                if (parts.Length < 2 || parts[0] != Authority)
+                if (parts.Length < 2)
                 {
-                    _logger.LogError("WalletTopUpPending authority mismatch. Expected={Expected}, Got={Got}", parts.ElementAtOrDefault(0), Authority);
+                    _logger.LogError("WalletTopUpPending claim malformed. Value={Value}", pendingClaim.Value);
                     ViewBag.ErrorMessage = "اطلاعات تراکنش نامعتبر است";
                     return View("PaymentFailed");
                 }
@@ -443,7 +452,17 @@ namespace Application.Controllers
                 _logger.LogInformation("Wallet top-up successful. User={User}, Amount={Amount}, NewBalance={Balance}, RefId={RefId}",
                     user.UserName, topUpAmount, newBalance, refId);
 
-                TempData["Success"] = $"کیف پول شما با موفقیت {topUpAmount:N0} تومان شارژ شد. موجودی جدید: {newBalance:N0} تومان";
+                if (!_signInManager.IsSignedIn(User))
+                    await _signInManager.SignInAsync(user, isPersistent: true);
+
+                var mainAppUrl = _configuration["PaymentServer:MainAppUrl"];
+                if (!string.IsNullOrWhiteSpace(mainAppUrl))
+                {
+                    var msg = Uri.EscapeDataString($"کیف پول شما با موفقیت {topUpAmount:N0} تومان شارژ شد.");
+                    return Redirect($"{mainAppUrl}/Customer/MyWallet?topup=ok&msg={msg}");
+                }
+
+                TempData["Success"] = $"کیف پول شما با موفقیت {topUpAmount:N0} تومان شارژ شد.";
                 return RedirectToAction("MyWallet", "Customer", new { area = "AgencyArea" });
             }
             catch (Exception ex)

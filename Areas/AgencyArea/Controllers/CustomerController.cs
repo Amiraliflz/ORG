@@ -21,10 +21,11 @@ namespace Application.Areas.AgencyArea
         private readonly IPaymentService _paymentService;
         private readonly CustomerBalanceService _balanceSvc;
         private readonly MrShooferAPIClient _apiClient;
+        private readonly ILogger<CustomerController> _logger;
 
         public CustomerController(AppDbContext context, UserManager<IdentityUser> userManager,
             IConfiguration configuration, IPaymentService paymentService, CustomerBalanceService balanceSvc,
-            MrShooferAPIClient apiClient)
+            MrShooferAPIClient apiClient, ILogger<CustomerController> logger)
         {
             _context = context;
             _userManager = userManager;
@@ -32,6 +33,7 @@ namespace Application.Areas.AgencyArea
             _paymentService = paymentService;
             _balanceSvc = balanceSvc;
             _apiClient = apiClient;
+            _logger = logger;
         }
 
         public async Task<IActionResult> MyTickets()
@@ -77,9 +79,19 @@ namespace Application.Areas.AgencyArea
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> InitiateTopUp(int amount)
+        public async Task<IActionResult> InitiateTopUp(string? amount)
         {
-            if (amount < 1000)
+            // Normalize Persian/Arabic digits and parse
+            var normalized = (amount ?? "")
+                .Replace('۰','0').Replace('۱','1').Replace('۲','2').Replace('۳','3').Replace('۴','4')
+                .Replace('۵','5').Replace('۶','6').Replace('۷','7').Replace('۸','8').Replace('۹','9')
+                .Replace('٠','0').Replace('١','1').Replace('٢','2').Replace('٣','3').Replace('٤','4')
+                .Replace('٥','5').Replace('٦','6').Replace('٧','7').Replace('٨','8').Replace('٩','9')
+                .Replace(",", "").Trim();
+
+            _logger.LogInformation("InitiateTopUp: raw={Raw} normalized={Normalized}", amount, normalized);
+
+            if (!int.TryParse(normalized, out var amountInt) || amountInt < 1000)
             {
                 TempData["Error"] = "حداقل مبلغ شارژ ۱۰۰۰ تومان است";
                 return RedirectToAction("MyWallet");
@@ -93,7 +105,7 @@ namespace Application.Areas.AgencyArea
             var description = $"شارژ کیف پول مسترشوفر - {user.UserName}";
 
             var (success, authority, message) = await _paymentService.RequestPaymentAsync(
-                amount * 10,
+                amountInt * 10,
                 description,
                 user.UserName!,
                 null,
@@ -110,7 +122,7 @@ namespace Application.Areas.AgencyArea
             var existingPending = existingClaims.FirstOrDefault(c => c.Type == "WalletTopUpPending");
             if (existingPending != null)
                 await _userManager.RemoveClaimAsync(user, existingPending);
-            await _userManager.AddClaimAsync(user, new Claim("WalletTopUpPending", $"{authority}:{amount}"));
+            await _userManager.AddClaimAsync(user, new Claim("WalletTopUpPending", $"{authority}:{amountInt}"));
 
             // Sandbox bypass
             if (authority.StartsWith("TEST-", StringComparison.OrdinalIgnoreCase))
