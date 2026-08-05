@@ -100,36 +100,20 @@ namespace Application.Areas.AgencyArea
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            var baseUrl = _configuration["PaymentServer:BaseUrl"] ?? string.Empty;
-            var walletCallbackUrl = $"{baseUrl}/Payment/TopUpVerify";
-            var description = $"شارژ کیف پول مسترشوفر - {user.UserName}";
+            // Payment start/callback stay on the user-facing sale domain
+            var paymentServerBase = _configuration["PaymentServer:BaseUrl"] ?? "https://mrshoofer.ir";
+            var sharedKey = _configuration["PaymentServer:SharedKey"] ?? string.Empty;
+            var partnerBrand = Request.Cookies["partner_brand"] ?? string.Empty;
+            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var payload = $"{user.Id}:{amountInt}:{timestamp}:{partnerBrand}";
+            var sig = Application.Controllers.PaymentController.ComputeHmac(payload, sharedKey);
+            var startUrl =
+                $"{paymentServerBase}/Payment/StartTopUp?userId={Uri.EscapeDataString(user.Id)}" +
+                $"&amount={amountInt}&t={timestamp}&partner={Uri.EscapeDataString(partnerBrand)}" +
+                $"&sig={Uri.EscapeDataString(sig)}";
 
-            var (success, authority, message) = await _paymentService.RequestPaymentAsync(
-                amountInt * 10,
-                description,
-                user.UserName!,
-                null,
-                walletCallbackUrl);
-
-            if (!success)
-            {
-                TempData["Error"] = message;
-                return RedirectToAction("MyWallet");
-            }
-
-            // Store pending top-up claim (remove old one first)
-            var existingClaims = await _userManager.GetClaimsAsync(user);
-            var existingPending = existingClaims.FirstOrDefault(c => c.Type == "WalletTopUpPending");
-            if (existingPending != null)
-                await _userManager.RemoveClaimAsync(user, existingPending);
-            await _userManager.AddClaimAsync(user, new Claim("WalletTopUpPending", $"{authority}:{amountInt}"));
-
-            // Sandbox bypass
-            if (authority.StartsWith("TEST-", StringComparison.OrdinalIgnoreCase))
-                return Redirect($"/Payment/TopUpVerify?Authority={authority}&Status=OK");
-
-            var gatewayUrl = _paymentService.GetPaymentGatewayUrl(authority);
-            return Redirect(gatewayUrl);
+            _logger.LogInformation("Redirecting wallet top-up to payment server. User={User}, Amount={Amount}", user.UserName, amountInt);
+            return Redirect(startUrl);
         }
 
         [HttpGet]

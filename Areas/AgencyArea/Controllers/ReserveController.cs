@@ -373,7 +373,8 @@ namespace Application.Areas.AgencyArea
             && (!discountEntity.MaxUses.HasValue || discountEntity.UsedCount < discountEntity.MaxUses))
         {
           var userPhone = viewModel.Numberphone?.Trim();
-          var alreadyUsed = !string.IsNullOrWhiteSpace(userPhone)
+          var alreadyUsed = !discountEntity.AllowMultipleUsePerUser
+              && !string.IsNullOrWhiteSpace(userPhone)
               && await context.DiscountCodeUsages.AnyAsync(u => u.DiscountCodeId == discountEntity.Id && u.UserPhone == userPhone);
 
           if (!alreadyUsed)
@@ -482,8 +483,8 @@ namespace Application.Areas.AgencyArea
       if (code.MaxUses.HasValue && code.UsedCount >= code.MaxUses)
         return Json(new { valid = false, message = "کد تخفیف به حداکثر استفاده رسیده است." });
 
-      // Per-user one-time check (phone from request, if provided)
-      if (!string.IsNullOrWhiteSpace(req.UserPhone))
+      // Per-user one-time check (skipped if AllowMultipleUsePerUser is enabled)
+      if (!code.AllowMultipleUsePerUser && !string.IsNullOrWhiteSpace(req.UserPhone))
       {
         var alreadyUsed = await context.DiscountCodeUsages
             .AnyAsync(u => u.DiscountCodeId == code.Id && u.UserPhone == req.UserPhone);

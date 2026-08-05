@@ -450,6 +450,18 @@
                                 </small>
                             </div>
 
+                            <!-- Price row -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 pb-2" style="border-top:1px solid #e6e8ee;border-bottom:1px solid #e6e8ee">
+                                <span style="font-size:.9rem">مبلغ پرداختی</span>
+                                <div class="text-start">
+                                    @if (ticket.TicketOriginalPrice > 0 && ticket.TicketFinalPrice != ticket.TicketOriginalPrice)
+                                    {
+                                        <div style="font-size:.8rem;text-decoration:line-through;color:#999">@ticket.TicketOriginalPrice.ToString("N0") تومان</div>
+                                    }
+                                    <strong style="font-size:1.05rem;color:#696cff">@ticket.TicketFinalPrice.ToString("N0") <small style="font-size:.8rem;color:#888;font-weight:normal">تومان</small></strong>
+                                </div>
+                            </div>
+
                             <span>
                                 <label class="text-blck mt-2 mb-0 ">قوانین کنسلی</label>
                             </span>
@@ -488,7 +500,7 @@
 
                 <div class="col-12 mb-0 mt-2">
                     در صورت نیاز، می‌توانید برای هماهنگی و پشتیبانی با شماره تلفن
-                    <a class="d-inline" href="tel:+989338558294">09338558294</a>
+                    <a class="d-inline" href="tel:+989902063015">۰۹۹۰۲۰۶۳۰۱۵</a>
                     تماس حاصل فرمایید
                 </div>
 

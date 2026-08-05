@@ -82,6 +82,18 @@
                                    oninput="normalizeNumericInput(this)" />
                         </div>
 
+                        <!-- Allow multiple use per user -->
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-1">
+                                <input type="hidden" name="allowMultipleUsePerUser" value="false" />
+                                <input class="form-check-input" type="checkbox" name="allowMultipleUsePerUser" id="chkMultiUse" value="true" />
+                                <label class="form-check-label fw-semibold" for="chkMultiUse">
+                                    <i class="ti ti-repeat me-1 text-primary"></i>استفاده نامحدود توسط هر کاربر
+                                </label>
+                                <div class="form-text text-muted">در صورت فعال بودن، هر کاربر می‌تواند این کد را چندین بار استفاده کند.</div>
+                            </div>
+                        </div>
+
                         <div class="col-12"><hr class="my-1" /></div>
 
                         <!-- Send mode -->

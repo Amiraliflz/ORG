@@ -21,7 +21,7 @@ namespace Application.Services.MrShooferORS
     // Shared client for the static login method — avoids socket exhaustion from new HttpClient() per call
     private static readonly HttpClient _loginClient = new HttpClient
     {
-      BaseAddress = new Uri("https://mrbilit.mrshoofer.ir"),
+      BaseAddress = new Uri("https://ors.shoofer.taxi"),
       Timeout = TimeSpan.FromSeconds(30)
     };
 

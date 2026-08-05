@@ -9,6 +9,7 @@ namespace Application.Models
         public int? MaxUses { get; set; }
         public int UsedCount { get; set; } = 0;
         public bool IsActive { get; set; } = true;
+        public bool AllowMultipleUsePerUser { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string? Description { get; set; }
         public ICollection<DiscountCodeUsage> Usages { get; set; } = [];

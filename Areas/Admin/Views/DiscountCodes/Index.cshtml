@@ -91,6 +91,16 @@
                                         </button>
                                     </form>
 
+                                    <!-- Toggle multi-use -->
+                                    <form method="post" asp-area="Admin" asp-controller="DiscountCodes" asp-action="ToggleMultiUse" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@code.Id" />
+                                        <button type="submit" class="btn btn-sm btn-icon @(code.AllowMultipleUsePerUser ? "btn-label-success" : "btn-label-secondary") rounded-pill"
+                                                title="@(code.AllowMultipleUsePerUser ? "استفاده نامحدود: فعال" : "استفاده نامحدود: غیرفعال")">
+                                            <i class="ti ti-repeat"></i>
+                                        </button>
+                                    </form>
+
                                     <!-- Send SMS -->
                                     <button type="button" class="btn btn-sm btn-icon btn-label-primary rounded-pill"
                                             title="ارسال پیامک"

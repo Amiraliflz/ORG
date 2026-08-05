@@ -56,26 +56,12 @@
         <div id="landingHero" style="" class="section-py landing-hero position-relative">
             <div class="container">
                 <div class="hero-text-box text-center">
-                    <h1 class="text-primary text-center hero-title display-6 fw-bold d-inline ">
-                        اینجا همیشه راهیـ هست
-
+                    <h1 class="text-center hero-title">
+                        راهی مطمئن به همه مقاصد ایران
                     </h1>
-
-                    <h2 class="hero-sub-title h6 mb-4 mt-2 pb-1 lh-2">
-                        پنل سازمانی مسترشوفر
-                        <br class="d-none d-lg-block" />
-                        خرید بلیط تاکسی بین شهری
-
+                    <h2 class="hero-sub-title text-center">
+                        سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده و بهترین خودروها
                     </h2>
-
-
-                    @* <div class="landing-hero-btn d-inline-block position-relative">
-                    <span class="hero-btn-item position-absolute d-none d-md-flex text-heading">
-                    فرصت استثناییءء
-                    <img alt="پیکان انجمن" class="scaleX-n1-rtl" src="~/img/front-pages/icons/Join-community-arrow.png" />
-                    </span>
-                    <a class="btn btn-primary btn-lg" href="#landingPricing">خـرید از مارکئئت راسـتچین</a>
-                    </div> *@
                 </div>
                 @*  <div id="heroDashboardAnimation" class="hero-animation-img">
                 <a href="/Apps/Ecommerce/Dashboard" target="_blank">
@@ -92,27 +78,18 @@
                     <div class="row col-lg-8 col-12 m-0">
                         <div class="card mb-3">
                             <div class="card-body row pb-4">
-                                <div class="card-header d-flex justify-content-between p-0 mb-4" style="">
-                                    <div class="d-flex justify-content-between align-items-start" style="flex-direction: column;">
-
-                                        <h4 class="mb-0 ">
-                                            <img class="pe-1 image" src="/caronraod.png" width="80px" />
-                                            جستجوی ‌سواری
-                                        </h4>
-
-                                        <lable class="mt-2 ms-md-2 lh-base">
-                                            مسترشوفر، ارائه دهنده سفرهای بین شهری و ترانسفر فرودگاهی
-                                            <br />
-                                            <span class="fw-light mt-1">
-                                                با بالاترین کیفیت سرویس و بهترین خودروها
-                                                <i class="ti ti-circle-check" style="color: blue;"></i>
-                                                @* <img src="/vip_badge.png" style="height:29px;" class="ms-1" /> *@
-                                            </span>
-                                        </lable>
+                                <div class="card-header d-flex justify-content-between align-items-center p-0 mb-4">
+                                    <div>
+                                        <h5 class="mb-1 fw-semibold">
+                                            <i class="ti ti-route me-1 text-primary"></i>
+                                            جستجوی سواری
+                                        </h5>
+                                        <p class="mb-0 text-muted small">
+                                            مسترشوفر — سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده
+                                            <i class="ti ti-circle-check text-primary ms-1"></i>
+                                        </p>
                                     </div>
-
-                                    <img src="/mrshoofer_cars_banner.png" class="me-2" height="90px" />
-
+                                    <img src="/mrshoofer_cars_banner.png" class="d-none d-md-block" height="72px" alt="ناوگان مسترشوفر" />
                                 </div>
 
                                 <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row m-0" id="tripForm">
@@ -233,77 +210,90 @@
                     </div>
                     <div class="col-lg-2 col-0"></div>
                 </div>
+
+                <!-- Trust stats -->
+                <div class="hero-trust-stats">
+                    <div class="hero-trust-stat">
+                        <i class="ti ti-route"></i>
+                        <span><strong>۵۰۰+</strong> مسیر فعال</span>
+                    </div>
+                    <div class="hero-trust-stat">
+                        <i class="ti ti-steering-wheel"></i>
+                        <span><strong>۱۲۰۰+</strong> راننده تأییدشده</span>
+                    </div>
+                    <div class="hero-trust-stat">
+                        <i class="ti ti-headset"></i>
+                        <span>پشتیبانی <strong>۲۴/۷</strong></span>
+                    </div>
+                    <div class="hero-trust-stat">
+                        <i class="ti ti-shield-check"></i>
+                        <span>سفر <strong>مطمئن</strong> و بیمه‌شده</span>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        @* <div class="landing-hero-blank"></div> *@
     </section>
     <!-- Hero: End -->
     <!-- Useful features: Start -->
     <section id="landingFeatures" class="section-py landing-features">
         <div class="container">
             <div class="text-center mb-3 pb-1">
-                <span class="badge bg-label-primary">هیچ مسافری بدون بلیط نمی‌مونه! </span>
+                <span class="badge bg-label-primary">سواری بین شهری و ترانسفر فرودگاهی</span>
             </div>
             <h3 class="text-center mb-1 fw-medium">
-                <span class="section-title">مسترشوفر</span>
-                سفرهای سواری بین شهری و ترانسفر فرودگاهی
+                چرا <span class="section-title">مسترشوفر</span>؟
             </h3>
 
-            <p class="text-center">
-                سریعترین و راحت ترین راه حل نبود بلیط هواپیما. VIP، سریع، راحت
-            </p>
-
-            <p class="text-center mb-3 mb-md-5 pb-3 fw-lighter">
-                آماده خدمت رسانی به شما و مشتریان‌ارجمندتان
+            <p class="text-center mb-3 mb-md-5 pb-3 text-muted">
+                رانندگان تأییدشده، خودروهای باکیفیت و پشتیبانی ۲۴ ساعته — همه چیز برای یک سفر بدون دغدغه
             </p>
             <div class="features-icon-wrapper row gx-0 gy-4 g-sm-5">
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/laptop.png" alt="laptop charging" />
                     </div>
-                    <h5 class="mb-2">دسترسی آسان</h5>
-                    <p class="features-icon-description">دسترسی به ناوگان متنوع و همیشه آماده به کار مسترشوفر، با کیفیت بالا و رانندگان تایید شده، برای مشتریان شما</p>
+                    <h5 class="mb-2">رزرو آسان، هر جا هستید</h5>
+                    <p class="features-icon-description">از هر دستگاهی، در چند ثانیه سواری خود را رزرو کنید. بدون تماس تلفنی، بدون انتظار.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="/taxi.png" height="66px" alt="transition up" />
                     </div>
-                    <h5 class="mb-2">ناوگان وسیع و آماده</h5>
+                    <h5 class="mb-2">ناوگان گسترده در سراسر ایران</h5>
                     <p class="features-icon-description">
-                        خدمات گسترده مسترشوفر با موجودی کامل و ناوگان با ظرفیت بالا، همیشه آماده خدمت‌رسانی و تامین
+                        صدها مسیر بین‌شهری و ترانسفر فرودگاهی با ظرفیت بالا — همیشه یک صندلی برای شما آماده است.
                     </p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/paper.png" alt="edit" />
                     </div>
-                    <h5 class="mb-2">تامین سریع، ارتباط مستمر</h5>
-                    <p class="features-icon-description">مسترشوفر در سریعترین زمان، برای مسافران شما سرویس مناسب را تامین می‌کند</p>
+                    <h5 class="mb-2">بلیط فوری، تأیید آنی</h5>
+                    <p class="features-icon-description">به محض ثبت رزرو، بلیط تأییدشده دریافت می‌کنید. نه انتظار، نه ابهام.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/check.png" alt="3d select solid" />
                     </div>
-                    <h5 class="mb-2">رانندگان و خودرو‌های تایید شده</h5>
+                    <h5 class="mb-2">رانندگان و خودروهای تأییدشده</h5>
                     <p class="features-icon-description">
-                        ارائه با کیفیت ترین خدمات سفر بین‌شهری و ترانسفر اختصاصی با راننده‌ی در اختیار
-                        برای بهترین تجربه
+                        هر راننده پیش از فعالیت احراز هویت و ارزیابی می‌شود. شما با اطمینان سوار می‌شوید.
                     </p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/user.png" alt="lifebelt" />
                     </div>
-                    <h5 class="mb-2">پشتیبانی پاسخگو 24/7</h5>
-                    <p class="features-icon-description">پشتیبانی سریع و فعال، آماده پاسخگویی به سوالات شما و مشتریان شما ❤️🕒</p>
+                    <h5 class="mb-2">پشتیبانی ۲۴ ساعته</h5>
+                    <p class="features-icon-description">تیم پشتیبانی مسترشوفر شبانه‌روز آماده پاسخگویی است — حتی در میانه شب یا روز تعطیل.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/keyboard.png" alt="google docs" />
                     </div>
-                    <h5 class="mb-2">بلیط شخصی سازی شده برای مشتریان</h5>
-                    <p class="features-icon-description">قابلیت شخصی سازی بلیط توسط شما، برای مشتریان خود. قابلیت درج قیمت دلخواه</p>
+                    <h5 class="mb-2">سفر دربستی یا اشتراکی</h5>
+                    <p class="features-icon-description">انتخاب با شماست — صندلی اشتراکی با قیمت مناسب یا سرویس دربستی اختصاصی برای گروه شما.</p>
                 </div>
             </div>
         </div>

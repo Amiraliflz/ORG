@@ -48,9 +48,10 @@ $(function () {
   if (flatpickrDate) {
     flatpickrDate.flatpickr({
       disableMobile: true,
-      locale: {
+      monthSelectorType: 'static',
+      locale: Object.assign({}, (window.flatpickr && flatpickr.l10ns && flatpickr.l10ns.fa) || {}, {
         weekdays: {
-          shorthand: ["شنبه", "یکشنبه", "د", "س", "چ", "پ", "ج"], // Custom short weekdays
+          shorthand: ["شنبه", "یکشنبه", "د", "س", "چ", "پ", "ج"],
           longhand: [
             "شنبه",
             "یک‌شنبه",
@@ -60,11 +61,11 @@ $(function () {
             "پنج‌شنبه",
             "جمعه"
           ]
-        }
-      },
-
-      monthSelectorType: 'static',
-      locale: 'fa',
+        },
+        // Jalali month lengths: Farvardin–Shahrivar=31, Mehr–Bahman=30, Esfand=29/30
+        daysInMonth: [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29],
+        firstDayOfWeek: 6
+      }),
       altFormat: 'Y/m/d',
       minDate: "today"
     });

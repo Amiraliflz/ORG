@@ -26,7 +26,7 @@ builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();
 builder.Services.AddHttpClient<MrShooferAPIClient>((serviceProvider, client) =>
 {
     var config = serviceProvider.GetRequiredService<IConfiguration>();
-    client.BaseAddress = new Uri(config["MrShoofer:ApiBaseUrl"] ?? "https://mrbilit.mrshoofer.ir");
+    client.BaseAddress = new Uri(config["MrShoofer:ApiBaseUrl"] ?? "https://ors.shoofer.taxi");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
@@ -137,6 +137,23 @@ app.Use(async (context, next) =>
 {
   context.Response.Headers["Referrer-Policy"] = "strict-origin";
   await next();
+});
+
+// Auto-set partner_brand cookie when request comes through the ISIC-branded port (X-Partner header set by nginx)
+app.Use(async (context, next) =>
+{
+    var partner = context.Request.Headers["X-Partner"].FirstOrDefault();
+    if (!string.IsNullOrEmpty(partner) && !context.Request.Cookies.ContainsKey("partner_brand"))
+    {
+        context.Response.Cookies.Append("partner_brand", partner.ToLower(), new CookieOptions
+        {
+            HttpOnly = false,
+            Secure   = false,
+            SameSite = SameSiteMode.Lax,
+            Expires  = DateTimeOffset.UtcNow.AddDays(30)
+        });
+    }
+    await next();
 });
 
 

@@ -1,0 +1,28 @@
+version: "3.9"
+
+# Production-style compose for sale/ORG on the VPS.
+# Auto-starts after reboot via Docker's restart policy (docker.service must be enabled).
+#
+#   docker compose -f deploy/docker-compose.org.yml up -d --build
+#
+services:
+  org:
+    image: ${ORG_IMAGE:-mrshoofer-org:latest}
+    container_name: mrshoofer-org
+    restart: always
+    ports:
+      - "127.0.0.1:5055:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:5000
+      TZ: Asia/Tehran
+    volumes:
+      # Keep live config/data outside the image so restarts don't wipe settings
+      - ${ORG_CONFIG_DIR:-/var/www/org}/appsettings.json:/app/appsettings.json:ro
+      - ${ORG_CONFIG_DIR:-/var/www/org}/appsettings.Production.json:/app/appsettings.Production.json:ro
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:5000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s

@@ -427,3 +427,6 @@ ASALocalRun/
 
 # Docker image exports
 *.tar.gz
+
+# local deploy secrets
+.env.deploy

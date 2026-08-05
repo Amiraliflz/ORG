@@ -699,6 +699,16 @@
                 <div id="discount-msg-desktop" class="mt-1" style="font-size:.8rem;display:none"></div>
             </div>
 
+            <!-- Price summary before confirm -->
+            <div class="d-flex justify-content-between align-items-center px-1 py-3 mb-2" style="border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0">
+                <span class="text-muted" style="font-size:.875rem"><i class="ti ti-receipt me-1"></i>مبلغ قابل پرداخت</span>
+                <div class="text-start">
+                    <div class="text-muted text-decoration-line-through" style="font-size:.8rem;@(trip.afterdiscticketprice != trip.originalTicketprice ? "" : "display:none")" id="desktop-original-price">@trip.originalTicketprice.ToString("N0") تومان</div>
+                    <span class="fw-bold text-primary" style="font-size:1.1rem" id="desktop-final-price">@trip.afterdiscticketprice.ToString("N0")</span>
+                    <small class="text-muted"> تومان</small>
+                </div>
+            </div>
+
             <div class="confirm-btn-wrap">
                 <button data-bs-target="#paymentmodal" data-bs-toggle="modal" class="btn btn-lg btn-primary w-100" style="height:3.5rem !important;border-radius:1.6rem !important;">تایید و ادامه</button>
             </div>
@@ -777,6 +787,16 @@
                 </div>
             }
         </div>
+        <!-- Price summary before confirm (mobile) -->
+        <div class="d-flex justify-content-between align-items-center px-1 py-3 mb-2" style="border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0">
+            <span class="text-muted" style="font-size:.875rem"><i class="ti ti-receipt me-1"></i>مبلغ قابل پرداخت</span>
+            <div class="text-start">
+                <div class="text-muted text-decoration-line-through" style="font-size:.8rem;@(trip.afterdiscticketprice != trip.originalTicketprice ? "" : "display:none")" id="mobile-original-price">@trip.originalTicketprice.ToString("N0") تومان</div>
+                <span class="fw-bold text-primary" style="font-size:1.1rem" id="mobile-final-price">@trip.afterdiscticketprice.ToString("N0")</span>
+                <small class="text-muted"> تومان</small>
+            </div>
+        </div>
+
         <div class="confirm-btn-wrap">
             <button data-bs-target="#paymentmodal" data-bs-toggle="modal" class="btn btn-lg btn-primary w-100" style="height:3.5rem !important;border-radius:1.6rem !important;">تایید و ادامه</button>
         </div>
@@ -979,6 +999,18 @@
 
                 var badge = document.getElementById('modal-discount-badge');
                 if (badge) { badge.textContent = data.discountPercent + '٪ تخفیف اعمال شد'; badge.style.display = ''; }
+
+                // Update inline price summaries in payment cards
+                var dp = document.getElementById('desktop-final-price');
+                if (dp) dp.textContent = formatted;
+                var mp = document.getElementById('mobile-final-price');
+                if (mp) mp.textContent = formatted;
+
+                // Show crossed-out original price now that a discount is active
+                var dop = document.getElementById('desktop-original-price');
+                if (dop) dop.style.display = '';
+                var mop = document.getElementById('mobile-original-price');
+                if (mop) mop.style.display = '';
 
                 // Show success in both message areas
                 var msg = 'کد تخفیف ' + data.discountPercent + '٪ اعمال شد. قیمت نهایی: ' + formatted + ' تومان';

@@ -295,6 +295,8 @@ namespace Application.Areas.AgencyArea
       if (_signInManager.IsSignedIn(User))
         return string.IsNullOrEmpty(ReturnUrl) ? RedirectToAction("MyProfile", "Customer") : LocalRedirect(ReturnUrl);
 
+      numberphone = NormalizePersianDigits(numberphone?.Trim() ?? string.Empty);
+
       if (string.IsNullOrWhiteSpace(numberphone))
       {
         ViewBag.errormessage = "شماره موبایل را وارد کنید";
@@ -338,6 +340,7 @@ namespace Application.Areas.AgencyArea
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CustomerLoginOtp(string code1, string code2, string code3, string code4, string code5, string numberphone, string? ReturnUrl)
     {
+      numberphone = NormalizePersianDigits(numberphone?.Trim() ?? string.Empty);
       string otpcode = NormalizePersianDigits(code1 + code2 + code3 + code4 + code5);
 
       if (TempData["otp_code"] == null || TempData["otp_exptime"] == null || string.IsNullOrWhiteSpace(numberphone))

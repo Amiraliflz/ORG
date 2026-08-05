@@ -24,7 +24,7 @@ namespace Application.Controllers
                 HttpOnly = false,          // JS can read it if needed
                 Secure   = false,          // set true in production with HTTPS
                 SameSite = SameSiteMode.Lax,
-                Expires  = DateTimeOffset.UtcNow.AddHours(24)
+                Expires  = DateTimeOffset.UtcNow.AddYears(1)
             });
 
             return RedirectToAction("Index", "Home", new { area = "AgencyArea" });

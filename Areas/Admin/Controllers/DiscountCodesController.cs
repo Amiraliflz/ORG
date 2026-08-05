@@ -37,6 +37,7 @@ namespace Application.Areas.Admin.Controllers
         public async Task<IActionResult> Create(
             string code, string discountPercent, string? description,
             DateTime? expiryDate, string? maxUses,
+            bool allowMultipleUsePerUser,
             string sendMode,
             string? targetPhone,
             string? smsMessage)
@@ -69,9 +70,10 @@ namespace Application.Areas.Admin.Controllers
                 DiscountPercent = percent.Value,
                 Description     = description,
                 ExpiryDate      = expiryDate,
-                MaxUses         = maxUsesVal,
-                IsActive        = true,
-                CreatedAt       = DateTime.Now
+                MaxUses                  = maxUsesVal,
+                IsActive                 = true,
+                AllowMultipleUsePerUser  = allowMultipleUsePerUser,
+                CreatedAt                = DateTime.Now
             };
 
             _context.DiscountCodes.Add(entity);
@@ -81,17 +83,20 @@ namespace Application.Areas.Admin.Controllers
                 ? _sms.BuildDiscountMessage(entity.Code, entity.DiscountPercent)
                 : smsMessage.Trim();
 
-            // Send SMS and auto-set MaxUses = recipient count (one use per recipient)
+            // Send SMS and auto-set MaxUses = recipient count (skipped when AllowMultipleUsePerUser is on)
             if (sendMode == "single" && !string.IsNullOrWhiteSpace(targetPhone))
             {
                 var recipients = new List<string> { targetPhone.Trim() };
                 await _sms.SendBulk(finalMsg, recipients);
 
-                // One code = one use for this recipient
-                entity.MaxUses = recipients.Count;
-                await _context.SaveChangesAsync();
+                if (!allowMultipleUsePerUser)
+                {
+                    entity.MaxUses = recipients.Count;
+                    await _context.SaveChangesAsync();
+                }
 
-                TempData["Success"] = $"کد تخفیف «{entity.Code}» ایجاد شد و به {targetPhone} ارسال گردید (یک بار قابل استفاده).";
+                var usageNote = allowMultipleUsePerUser ? "استفاده نامحدود" : "یک بار قابل استفاده";
+                TempData["Success"] = $"کد تخفیف «{entity.Code}» ایجاد شد و به {targetPhone} ارسال گردید ({usageNote}).";
             }
             else if (sendMode == "all")
             {
@@ -99,11 +104,14 @@ namespace Application.Areas.Admin.Controllers
                 if (phones.Count > 0)
                 {
                     await _sms.SendBulk(finalMsg, phones);
-                    // Each recipient gets exactly one use
-                    entity.MaxUses = phones.Count;
-                    await _context.SaveChangesAsync();
+                    if (!allowMultipleUsePerUser)
+                    {
+                        entity.MaxUses = phones.Count;
+                        await _context.SaveChangesAsync();
+                    }
                 }
-                TempData["Success"] = $"کد تخفیف «{entity.Code}» ایجاد شد و برای {phones.Count} مشتری ارسال گردید (هر مشتری یک بار قابل استفاده).";
+                var usageNote = allowMultipleUsePerUser ? "استفاده نامحدود" : "هر مشتری یک بار قابل استفاده";
+                TempData["Success"] = $"کد تخفیف «{entity.Code}» ایجاد شد و برای {phones.Count} مشتری ارسال گردید ({usageNote}).";
             }
             else
             {
@@ -123,6 +131,19 @@ namespace Application.Areas.Admin.Controllers
             code.IsActive = !code.IsActive;
             await _context.SaveChangesAsync();
             TempData["Success"] = $"کد «{code.Code}» {(code.IsActive ? "فعال" : "غیرفعال")} شد.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleMultiUse(int id)
+        {
+            var code = await _context.DiscountCodes.FindAsync(id);
+            if (code == null) return NotFound();
+
+            code.AllowMultipleUsePerUser = !code.AllowMultipleUsePerUser;
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"کد «{code.Code}» — استفاده نامحدود {(code.AllowMultipleUsePerUser ? "فعال" : "غیرفعال")} شد.";
             return RedirectToAction(nameof(Index));
         }
 
