@@ -846,8 +846,8 @@
 /* Pin to vertical center of the input row (not the helper text below) */
 .landing-hero #tripForm .od-swap-btn {
   top: 0.55rem;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .landing-hero .od-swap-btn:hover,
