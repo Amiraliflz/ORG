@@ -1,11 +1,52 @@
 @model List<Application.Services.MrShooferORS.SearchedTrip>
+@using Application.Services.Seo
 
 @{
 
     Layout = "_FrontLayout";
 
-    ViewData["title"] = "جستجوی سواری";
+    var isSeoLanding = ViewBag.IsSeoRouteLanding is bool seoFlag && seoFlag;
+    var hasSeoContent = ViewBag.RouteSeo is RouteContent.Bundle;
+    var routePage = ViewBag.RoutePage as RouteCatalog.RoutePage;
+    var routeContent = ViewBag.RouteSeo as RouteContent.Bundle;
+
+    if (isSeoLanding && routePage is not null && routeContent is not null)
+    {
+        ViewData["Title"] = ViewData["Title"] as string ?? RouteCatalog.Title(routePage);
+        ViewData["MetaDescription"] = ViewData["MetaDescription"] as string ?? routeContent.MetaDescription;
+        ViewData["OgTitle"] = ViewData["OgTitle"] as string
+            ?? SeoDefaults.BuildOgTitle(ViewData["Title"] as string);
+        ViewData["OgDescription"] = ViewData["OgDescription"] as string
+            ?? ViewData["MetaDescription"] as string;
+        ViewData["OgImage"] = ViewData["OgImage"] as string ?? SeoDefaults.DefaultOgImageUrl;
+        ViewData["OgImageAlt"] = ViewData["OgImageAlt"] as string
+            ?? SeoDefaults.BuildRouteOgAlt(routePage.OriginFa, routePage.DestinationFa);
+        ViewData["CanonicalUrl"] = ViewData["CanonicalUrl"] as string
+            ?? SeoDefaults.BuildCanonical($"/routes/{routePage.Slug}");
+        ViewData["Robots"] = ViewData["Robots"] as string
+            ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+    }
+    else
+    {
+        // Ephemeral search results (querystring dates change daily) — keep out of the index.
+        ViewData["Title"] = ViewData["Title"] as string
+            ?? (routePage is not null ? RouteCatalog.Title(routePage) : "جستجوی سواری");
+        ViewData["MetaDescription"] = ViewData["MetaDescription"] as string
+            ?? routeContent?.MetaDescription
+            ?? "نتایج جستجوی سواری بین‌شهری مسترشوفر بر اساس مبدأ، مقصد و تاریخ انتخابی شما.";
+        ViewData["Robots"] = "noindex, follow";
+        if (routePage is not null)
+        {
+            ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical($"/routes/{routePage.Slug}");
+            // Still set share tags so messengers get the right title/description when a link is copied.
+            ViewData["OgTitle"] = SeoDefaults.BuildOgTitle(RouteCatalog.Title(routePage));
+            ViewData["OgDescription"] = routeContent?.MetaDescription ?? (string)ViewData["MetaDescription"]!;
+            ViewData["OgImage"] = SeoDefaults.DefaultOgImageUrl;
+            ViewData["OgImageAlt"] = SeoDefaults.BuildRouteOgAlt(routePage.OriginFa, routePage.DestinationFa);
+        }
+    }
 }
+
 
 
 
@@ -21,9 +62,12 @@
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
 
-	<link href="~/css/TaxiTripsIndex.css" rel="stylesheet" />
+	<link href="~/css/TaxiTripsIndex.css?v=25" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/spinkit/spinkit.css">
-    
+    @if (ViewBag.RouteSeo is not null)
+    {
+        <link href="~/css/RoutePages.css?v=11" rel="stylesheet" />
+    }
 }
 @section VendorScripts {
     <script src="~/libs/jquery.js"></script>
@@ -36,19 +80,35 @@
 }
 @section PageScripts {
     <script src="~/js/cards-actions.js"></script>
-
     <script src="~/js/front-page-landing.js"></script>
-    <script src="~/js/forms-pickers-jalali.js"></script>
-
-
-    <script src="~/js/searchpage.js"></script>
-
-	<script src="~/js/IndexPage.js"> </script>
-    <script src="~/js/Trips.js"> </script>
-
-
-
+    @* Do not load IndexPage.js here — it remaps window.Date and reinits #starttime without preserving value. *@
+    <script>
+      (function () {
+        var el = document.querySelector('#starttime');
+        if (!el || typeof flatpickr !== 'function') return;
+        var existing = (el.value || '').trim();
+        flatpickr(el, {
+          disableMobile: true,
+          monthSelectorType: 'static',
+          defaultDate: existing || 'today',
+          minDate: 'today',
+          altFormat: 'Y/m/d',
+          dateFormat: 'Y/m/d',
+          locale: Object.assign({}, (window.flatpickr && flatpickr.l10ns && flatpickr.l10ns.fa) || {}, {
+            weekdays: {
+              shorthand: ["شنبه", "یکشنبه", "د", "س", "چ", "پ", "ج"],
+              longhand: ["شنبه", "یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه"]
+            },
+            daysInMonth: [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29],
+            firstDayOfWeek: 6
+          })
+        });
+      })();
+    </script>
+    <script src="~/js/searchpage.js?v=5"></script>
+    <script src="~/js/Trips.js?v=7"></script>
 }
+
 
 <style>
     .daytext {
@@ -178,6 +238,8 @@
 
     .fa-taxiSide {
         height: 1.2em;
+        margin-left: 10px;
+        margin-right: 10px;
     }
 
     .price {
@@ -251,84 +313,78 @@
         justify-content: start;
     }
 
-	.landing-hero {
-		background-color: hsla(213.08823529411762, 0%, 93%, 1) !important;
-		background-image: radial-gradient(circle at 83% 22%, hsla(35.735294117647136, 82%, 87%, 1) 0%, transparent 50%), radial-gradient(circle at 0% 50%, hsla(194.5588235294118, 37%, 91%, 1) 0%, transparent 50%), radial-gradient(circle at 21% 21%, hsla(27.999999999999577, 0%, 86%, 1) 0%, transparent 50%), radial-gradient(circle at 54% 77%, hsla(193.2352941176474, 100%, 95%, 1) 0%, transparent 50%), radial-gradient(circle at 30% 75%, hsla(197.87234042553195, 25%, 35%, 1) 0%, transparent 20%) !important;
-		background-blend-mode: normal, normal, normal, normal, normal !important;
+	/* Single shared page gradient — children stay transparent */
+	.trips-page-shell {
+		background-color: hsla(213.08823529411762, 0%, 93%, 1);
+		background-image:
+			radial-gradient(circle at 83% 22%, hsla(35.735294117647136, 82%, 87%, 1) 0%, transparent 50%),
+			radial-gradient(circle at 0% 50%, hsla(194.5588235294118, 37%, 91%, 1) 0%, transparent 50%),
+			radial-gradient(circle at 21% 21%, hsla(27.999999999999577, 0%, 86%, 1) 0%, transparent 50%),
+			radial-gradient(circle at 54% 77%, hsla(193.2352941176474, 100%, 95%, 1) 0%, transparent 50%),
+			radial-gradient(circle at 30% 75%, hsla(197.87234042553195, 25%, 35%, 1) 0%, transparent 20%);
+		background-blend-mode: normal, normal, normal, normal, normal;
+		background-attachment: scroll;
+		min-height: 100vh;
+	}
+
+	.trips-page-shell .landing-hero,
+	.trips-page-shell .trips-results,
+	.trips-page-shell .page-bottom-shell {
+		background: transparent !important;
+		background-image: none !important;
+		border-radius: 0 !important;
+		margin-inline: 0 !important;
+	}
+
+	.trips-page-shell .landing-hero::before,
+	.trips-page-shell .landing-hero::after {
+		display: none !important;
+		content: none !important;
 	}
 </style>
 
 
-<div class="landing-hero px-lg-5 px-0 px-lg-5 mx-lg-4 pb-md-3" style="padding-top: 7.5rem !important;">
+<div class="trips-page-shell">
+
+<div class="landing-hero px-lg-5 px-0 pb-md-3" style="padding-top: 7.5rem !important;">
 	<div class="container px-lg-6 px-0">
 
 	<div class="searchbar card shadow" style="">
 
 		<div class="row">
-			<div class="col-lg-2 col-0"></div>
-			<div class="row col-12 col-lg-8 p-0">
-				<div class="px-4 px-md-0 pe-0">
-                        <form asp-controller="TaxiTrips" method="get" asp-action="Index" id="tripForm">
+			<div class="col-lg-1 col-0"></div>
+			<div class="row col-12 col-lg-10 p-0">
+				<div class="px-4 px-md-0">
+                        <form asp-controller="TaxiTrips" method="get" asp-action="Index" id="tripForm"
+                              data-initial-origin="@(ViewBag.origin_city_text as string ?? "")"
+                              data-initial-dest="@(ViewBag.dest_city_text as string ?? "")">
 						<div class="card-body row mx-0  p-4 pt-md-2">
-							<div class="col-md-3 col-12 inputcel">
-
-								<small class="ms-3">مبدا</small>
-								<div class="input-container">
-                                        <input required id="origin_input" name="originstring" autocomplete="off" aria-describedby="defaultFormControlHelp" value="@ViewBag.origin_city_text" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" placeholder="مبدا" type="text" role="button" style="font-weight:bold;" />
-									<i class="ti ti-location mb-2 icon"></i>
-									<span class="dropdown-menu dropdown-menu-end origin_location" style="inset:unset !important; min-width:230px;">
-
-										@*  <div class="city">
-										<a class="dropdown-item" href="javascript:void(0);">
-										تهران
-										<small class="" >
-										(همه پایانه‌ها)
-										</small>
-
-										</a>
-
-										<div class="terminals ms-3">
-										<a class="dropdown-item" href="javascript:void(0);">پایانه بیهقی</a>
-										<a class="dropdown-item" href="javascript:void(0);">پایانه آزادی</a>
-										<a class="dropdown-item" href="javascript:void(0);">پایانه شرق</a>
-										<a class="dropdown-item" href="javascript:void(0);">پایانه غرب</a>
-
+							<div class="col-md-6 col-12 od-pair-col">
+								<div class="row g-0 od-pair">
+									<div class="col-6 inputcel">
+										<small class="ms-3">مبدا</small>
+										<div class="input-container">
+											<input required id="origin_input" name="originstring" autocomplete="off" aria-describedby="defaultFormControlHelp" value="@ViewBag.origin_city_text" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" placeholder="مبدا" type="text" role="button" style="font-weight:bold;" />
+											<i class="ti ti-location mb-2 icon"></i>
+											<span class="dropdown-menu dropdown-menu-end origin_location" style="inset:unset !important; min-width:230px;">
+											</span>
 										</div>
-										</div> *@
-									</span>
-								</div>
-								@* <div class="form-text" id="defaultFormControlHelp">شهر مبدا سفر</div> *@
-							</div>
+									</div>
 
-							<div class="col-md-3 col-12 inputcel">
-								<small class="ms-3">مقصد</small>
+									<button type="button" class="od-swap-btn" id="od-swap-btn" title="جابه‌جایی مبدأ و مقصد" aria-label="جابه‌جایی مبدأ و مقصد">
+										<i class="ti ti-arrows-left-right" aria-hidden="true"></i>
+									</button>
 
-								<div class="input-container">
-                                        <input required id="destination_input" name="destinationstring" value="@ViewBag.dest_city_text" data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle" placeholder="مقصد" type="text" role="button" style="font-weight:bold;" />
-									<i class="ti ti-map-pin mb-2 icon"></i>
-										<span class="dropdown-menu dropdown-menu-end destination_location" style="inset:unset !important; min-width:230px;">
-
-										@*  <div class="city">
-										<a class="dropdown-item" href="javascript:void(0);">
-										تهران
-										<small class="" >
-										(همه پایانه‌ها)
-										</small>
-
-										</a>
-
-										<div class="terminals ms-3">
-										<a class="dropdown-item" href="javascript:void(0);">پایانه بیهقی</a>
-										<a class="dropdown-item" href="javascript:void(0);">پایانه آزادی</a>
-										<a class="dropdown-item" href="javascript:void(0);">پایانه شرق</a>
-										<a class="dropdown-item" href="javascript:void(0);">پایانه غرب</a>
-
+									<div class="col-6 inputcel">
+										<small class="ms-3">مقصد</small>
+										<div class="input-container">
+											<input required id="destination_input" name="destinationstring" value="@ViewBag.dest_city_text" data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle" placeholder="مقصد" type="text" role="button" style="font-weight:bold;" />
+											<i class="ti ti-map-pin mb-2 icon"></i>
+											<span class="dropdown-menu dropdown-menu-end destination_location" style="inset:unset !important; min-width:230px;">
+											</span>
 										</div>
-										</div> *@
-									</span>
-
+									</div>
 								</div>
-								@* <div class="form-text" id="defaultFormControlHelp">شهر مقصد سفر</div> *@
 							</div>
 
 							<div class="col-md-3 col-sm-12 inputcel mt-2 mt-md-0">
@@ -360,7 +416,7 @@
 					</form>
 				</div>
 			</div>
-			<div class="col-lg-2 col-0"></div>
+			<div class="col-lg-1 col-0"></div>
 
 		</div>
 
@@ -371,14 +427,28 @@
 
 
 
-<div id="" style="padding-top: 1.7rem; background-color: none !important;" class="position-relative">
-	<div class="px-lg-5 mx-lg-2">
+<div class="position-relative trips-results" style="padding-top: 1.7rem;">
+	<div class="page-safezone">
 
-		<div class="container-lg">
-			<div class="px-lg-6 px-0">
-			
+		@if (ViewBag.RouteSeo is not null)
+		{
+			<div class="trips-sticky-bridge">
+				<a href="#route-seo" class="trips-sticky-bridge-inner">
+					<span class="trips-sticky-bridge-text">
+						<span class="trips-sticky-bridge-label">راهنمای مسیر</span>
+						<span class="trips-sticky-bridge-route">@ViewBag.origin_city_text ← @ViewBag.dest_city_text</span>
+					</span>
+					<span class="trips-sticky-bridge-cta">
+						نکته‌ها و سوالات متداول
+						<i class="ti ti-arrow-down"></i>
+					</span>
+				</a>
+			</div>
+		}
+
 				<div class="row ">
-					<div class="col-3 d-none d-md-block" style="padding-left:0.5rem !important;">
+					<div class="col-3 d-none d-md-block trips-sidebar" style="padding-left:0.5rem !important;">
+						<div class="trips-sidebar-sticky">
 						<div class="card">
 							<div class=" py-3 pe-4 ps-3" style="">
 								<lable class="direction-text mt-2 fw-normal" style="font-weight: normal !important;">
@@ -464,14 +534,12 @@
 							</div>
 
 						</div>
+						</div><!-- /.trips-sidebar-sticky -->
 					</div>
-
-						
-							
 
                             <div class="col-12 col-md-9 px-1">
 
-                                @await Html.PartialAsync("TimelinePartial", DateTime.Now)
+                                @await Html.PartialAsync("~/Areas/AgencyArea/Views/TaxiTrips/TimelinePartial.cshtml", DateTime.Now)
 
 							  
 								<div class="trips-container">
@@ -498,12 +566,17 @@
 							</div>
 
 				</div>
-			</div>
+	</div>
+</div>
+
+<div class="page-bottom-shell">
+	<div class="page-safezone">
+		@await Html.PartialAsync("~/Areas/AgencyArea/Views/TaxiTrips/_RouteSeoBottom.cshtml")
+		<div class="page-footer-in-safezone">
+			@await Html.PartialAsync("~/Areas/AgencyArea/Views/Shared/Sections/Footer/_ReserveFooter.cshtml")
 		</div>
 	</div>
 </div>
 
-
-
-
+</div><!-- /.trips-page-shell -->
 

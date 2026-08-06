@@ -188,26 +188,134 @@ function intersectDirectionsWithSupported() {
   // Filtering would remove valid cities that the API supports but aren't in the hardcoded list
 }
 
+/** Page was server-rendered for this OD; AJAX only updates trip cards, not SEO. */
+function pageInitialOd() {
+  const form = document.getElementById('tripForm');
+  return {
+    origin: normalize(toPersianGuess((form?.dataset.initialOrigin || '').trim())),
+    dest: normalize(toPersianGuess((form?.dataset.initialDest || '').trim()))
+  };
+}
+
+function searchOdChangedFromPage() {
+  if (!$('.trips-container').length) return false;
+  const initial = pageInitialOd();
+  if (!initial.origin || !initial.dest) return false;
+  const origin = normalize(toPersianGuess(($('#origin_input').val() || '').trim()));
+  const dest = normalize(toPersianGuess(($('#destination_input').val() || '').trim()));
+  return origin !== initial.origin || dest !== initial.dest;
+}
+
+function readSearchCities() {
+  // Prefer live .val(); fall back to attribute (DestSelected used to set value="0")
+  const read = (sel) => {
+    const $el = $(sel);
+    let v = ($el.val() || '').toString().trim();
+    if (!v || v === '0') {
+      const attr = ($el.attr('value') || '').toString().trim();
+      if (attr && attr !== '0') v = attr;
+    }
+    return v;
+  };
+  return {
+    origin: read('#origin_input'),
+    destination: read('#destination_input'),
+    searchdate: ($('#starttime').val() || '').trim()
+  };
+}
+
+/** Keep sticky bridge + sidebar labels in sync with the search inputs. */
+function updateRouteChromeLabels(origin, destination) {
+  const o = (origin || '').trim();
+  const d = (destination || '').trim();
+  if (!o || !d) return;
+  $('.trips-sticky-bridge-route').text(o + ' ← ' + d);
+  const $strongs = $('.direction-text strong');
+  if ($strongs.length >= 2) {
+    $strongs.eq(0).text(o);
+    $strongs.eq(1).text(d);
+  }
+}
+
+/**
+ * Swap #route-seo (+ bridge) for the current OD after an AJAX search.
+ */
+async function refreshRouteSeoUi(origin, destination) {
+  const o = (origin || '').trim();
+  const d = (destination || '').trim();
+  if (!o || !d || o === '0' || d === '0') return;
+
+  updateRouteChromeLabels(o, d);
+
+  const form = document.getElementById('tripForm');
+  if (form) {
+    form.dataset.initialOrigin = o;
+    form.dataset.initialDest = d;
+  }
+
+  try {
+    const html = await $.ajax({
+      url: '/TaxiTrips/RouteSeoPartial',
+      method: 'GET',
+      dataType: 'html',
+      data: { originstring: o, destinationstring: d }
+    });
+
+    let $bridge = $('.trips-sticky-bridge');
+    if (!$bridge.length && $('.trips-results .page-safezone').length) {
+      $('.trips-results .page-safezone').prepend(
+        `<div class="trips-sticky-bridge">
+          <a href="#route-seo" class="trips-sticky-bridge-inner">
+            <span class="trips-sticky-bridge-text">
+              <span class="trips-sticky-bridge-label">راهنمای مسیر</span>
+              <span class="trips-sticky-bridge-route"></span>
+            </span>
+            <span class="trips-sticky-bridge-cta">
+              نکته‌ها و سوالات متداول
+              <i class="ti ti-arrow-down"></i>
+            </span>
+          </a>
+        </div>`
+      );
+      $bridge = $('.trips-sticky-bridge');
+    }
+    updateRouteChromeLabels(o, d);
+    $bridge.show();
+
+    const $existing = $('#route-seo');
+    if ($existing.length) $existing.replaceWith(html);
+    else $('.trips-results .page-safezone').append(html);
+
+    if (!document.querySelector('link[href*="RoutePages.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/css/RoutePages.css?v=11';
+      document.head.appendChild(link);
+    }
+  } catch (err) {
+    $('#route-seo').remove();
+    $('.trips-sticky-bridge').remove();
+  }
+}
+
 async function FetchTrips() {
-  const origin = ($('#origin_input').val() || '').trim();
-  const destination = ($('#destination_input').val() || '').trim();
-  const searchdate = ($('#starttime').val() || '').trim();
+  const { origin, destination, searchdate } = readSearchCities();
 
   if (!origin || !destination || !searchdate) {
     trips = [];
-    // If renderTrips exists (Trips.js), clear cards
     if (typeof renderTrips === 'function') renderTrips(trips);
     return;
   }
 
+  // Update labels immediately so the bridge never lags behind the trip cards
+  updateRouteChromeLabels(origin, destination);
+
   const oKey = normalize(toPersianGuess(origin));
   const dKey = normalize(toPersianGuess(destination));
-  // Validate only against originKeys (from API), not the restrictive supportedKeys
-  const isOriginValid = originKeys.includes(oKey);
-  const isDestValid = originKeys.includes(dKey);
+  const isOriginValid = originKeys.length === 0 || originKeys.includes(oKey);
+  const isDestValid = originKeys.length === 0 || originKeys.includes(dKey);
   if (!isOriginValid || !isDestValid) {
     const msg = !isOriginValid ? `شهر مبدا نامعتبر است: ${origin}` : `شهر مقصد نامعتبر است: ${destination}`;
-    // Show error in trips-container instead of dropdown list
     const $container = $('.trips-container');
     if ($container.length) {
       $container.empty().append(`<div class="d-flex col-12 mt-3" style="flex-direction: column; align-items: center; justify-content: start;">
@@ -222,15 +330,15 @@ async function FetchTrips() {
     const url = `/TaxiTrips/SearchJson?originstring=${encodeURIComponent(origin)}&destinationstring=${encodeURIComponent(destination)}&searchdate=${encodeURIComponent(searchdate)}`;
     const data = await $.getJSON(url);
     trips = data || [];
-    // Use existing rendering pipeline if available
     if (typeof renderTrips === 'function') {
       renderTrips(trips);
       if (typeof GetCarModels === 'function' && typeof GenerateCarModelsFilter === 'function') {
-        $('#carmodelsfilter').find('.form-check').not(':first').remove(); // remove previous dynamic filters (keep "همه")
+        $('#carmodelsfilter').find('.form-check').not(':first').remove();
         const carModels = GetCarModels(trips);
         GenerateCarModelsFilter(carModels);
       }
     }
+    await refreshRouteSeoUi(origin, destination);
   } catch (e) {
     console.error('Failed to fetch trips', e);
     let msg = 'خطا در جستجوی سفر';
@@ -308,13 +416,77 @@ function AddResultLocations_destination(result_locations) {
 
 function OriginSelected(id, name) {
   const city = (name || '').trim();
-  $('#origin_input').val(city).attr("value", id);
+  // Always store the city name in both property and attribute (never the numeric id)
+  $('#origin_input').val(city).attr('value', city);
   $('#destination_input').val('').attr('value', '');
   EnableDestination();
   SetDestinations(city);
 }
 
-function DestSelected(id, name) { $('#destination_input').val(name).attr("value", id); }
+function DestSelected(id, name) {
+  const city = (name || '').trim();
+  $('#destination_input').val(city).attr('value', city);
+}
+
+/**
+ * Swap origin ↔ destination without wiping dest via OriginSelected.
+ * Rebuilds destination list for the new origin; keeps dest if still valid.
+ */
+async function SwapOriginDestination() {
+  const $o = $('#origin_input');
+  const $d = $('#destination_input');
+  if (!$o.length || !$d.length) return;
+
+  const prevOrigin = ($o.val() || '').trim();
+  const prevDest = ($d.val() || '').trim();
+  if (!prevOrigin && !prevDest) return;
+
+  const newOriginRaw = prevDest;
+  const newDestRaw = prevOrigin;
+
+  $o.val(newOriginRaw).attr('value', newOriginRaw);
+  $d.val(newDestRaw).attr('value', newDestRaw);
+
+  const originKey = normalize(toPersianGuess(newOriginRaw));
+
+  if (!originKey) {
+    LoadMostUsedOrigins();
+    _destinations = [];
+    AddResultLocations_destination([]);
+    DisableDestination();
+    return;
+  }
+
+  if (!originKeys.includes(originKey)) {
+    _destinations = [];
+    AddResultLocations_destination([]);
+    DisableDestination();
+    return;
+  }
+
+  const originDisplay = keyToDisplay(originKey);
+  $o.val(originDisplay).attr('value', originDisplay);
+  SetDestinations(originDisplay);
+  EnableDestination();
+
+  const destKey = normalize(toPersianGuess(newDestRaw));
+  const destMatch = _destinations.find(city => normalize(city) === destKey);
+  if (destMatch) {
+    $d.val(destMatch).attr('value', destMatch);
+  } else if (newDestRaw) {
+    // Keep typed value visible but destinations list already refreshed
+    $d.val(newDestRaw).attr('value', newDestRaw);
+  } else {
+    $d.val('').attr('value', '');
+  }
+
+  updateRouteChromeLabels(($o.val() || '').trim(), ($d.val() || '').trim());
+
+  const inTaxiTripsPage = $('.trips-container').length > 0;
+  if (inTaxiTripsPage && ($o.val() || '').trim() && ($d.val() || '').trim() && ($('#starttime').val() || '').trim()) {
+    await FetchTrips();
+  }
+}
 
 function DisableDestination() { $("#destination_input").removeAttr("data-bs-toggle").prop("disabled", true); }
 function EnableDestination() { $("#destination_input").attr("data-bs-toggle", "dropdown").prop("disabled", false); }
@@ -387,12 +559,21 @@ $(document).ready(async function () {
     }
   });
 
-  // Submit behavior: if on TaxiTrips page, do AJAX search & render cards, else allow navigation
+  $(document).on('click', '#od-swap-btn', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const $btn = $(this);
+    $btn.addClass('is-swapping');
+    window.setTimeout(() => $btn.removeClass('is-swapping'), 380);
+    SwapOriginDestination();
+  });
+
+  // Submit: AJAX trips + refresh SEO block for the selected OD
   $('#tripForm').on('submit', async function (e) {
     const inTaxiTripsPage = $('.trips-container').length > 0;
     if (!inTaxiTripsPage) return true;
     e.preventDefault();
-    // show loading spinner if exists
+
     const $c = $('.trips-container');
     if ($c.length) {
       $c.empty().append(`<div class="d-flex justify-content-center align-items-center mt-5 pt-3">

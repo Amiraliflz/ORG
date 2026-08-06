@@ -2,33 +2,35 @@
     Layout = "_FrontLayout";
 
     ViewData["Title"] = "سواری بین شهری";
+    ViewData["MetaDescription"] = "مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری — بلیط در کمتر از چند دقیقه و پشتیبانی ۲۴/۷";
+    ViewData["OgTitle"] = "مسترشوفر | سواری بین‌شهری و ترانسفر فرودگاهی";
+    ViewData["OgDescription"] = (string)ViewData["MetaDescription"]!;
+    ViewData["OgImage"] = Application.Services.Seo.SeoDefaults.DefaultOgImageUrl;
+    ViewData["OgImageAlt"] = "مسترشوفر — رزرو آنلاین سواری بین‌شهری";
+    ViewData["CanonicalUrl"] = "https://sale.shoofer.taxi/";
+    ViewData["IncludeHomeFaqs"] = true;
+    ViewData["DateModified"] = "2026-08-05";
+    ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
+    {
+      ("صفحه اصلی", "https://sale.shoofer.taxi/")
+    };
 }
 
 @section VendorStyles {
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
-
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
     <link rel="stylesheet" href="~/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
-
-    <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
-    <link href="~/css/IndexPage.css" rel="stylesheet" />
-
-
+    <link href="~/css/IndexPage.css?v=25" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
-
 }
 
 @section VendorScripts {
     <script src="~/libs/jquery.js"></script>
-
     <script src="~/vendor/js/dropdown-hover.js"></script>
-    <script src="~/vendor/js/dropdown-hover.js"></script>
-
-    <script src="~/libs/jquery.js"> </script>
     <script src="~/vendor/libs/moment/moment.js"></script>
     <script src="~/vendor/libs/jdate/jdate.min.js"></script>
     <script src="~/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
@@ -37,9 +39,8 @@
     <script src="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js"></script>
     <script src="~/vendor/libs/jquery-timepicker/jquery-timepicker.js"></script>
     <script src="~/vendor/libs/pickr/pickr.js"></script>
-    <script src="~/js/IndexPage.js"> </script>
-    <script src="~/js/searchpage.js"></script>
-
+    <script src="~/js/IndexPage.js"></script>
+    <script src="~/js/searchpage.js?v=5"></script>
     <script src="~/vendor/libs/sweetalert2/sweetalert2.js"></script>
     <script src="~/js/extended-ui-sweetalert2.js"></script>
 }
@@ -73,12 +74,10 @@
                 </div> *@
 
 
-                <div class="row">
-                    <div class="col-lg-2 col-0"></div>
-                    <div class="row col-lg-8 col-12 m-0">
-                        <div class="card mb-3">
-                            <div class="card-body row pb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center p-0 mb-4">
+                <div class="hero-safezone hero-safezone--form">
+                    <div class="card mb-3 search-card hero-zone-card">
+                            <div class="card-body pb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center p-0 mb-4 border-0 bg-transparent">
                                     <div>
                                         <h5 class="mb-1 fw-semibold">
                                             <i class="ti ti-route me-1 text-primary"></i>
@@ -89,145 +88,109 @@
                                             <i class="ti ti-circle-check text-primary ms-1"></i>
                                         </p>
                                     </div>
-                                    <img src="/mrshoofer_cars_banner.png" class="d-none d-md-block" height="72px" alt="ناوگان مسترشوفر" />
+                                    <img src="/mrshoofer_cars_banner.png" class="d-none d-md-block" height="72" alt="ناوگان سواری رسمی مسترشوفر" />
                                 </div>
 
-                                <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row m-0" id="tripForm">
-                                    <div class="col-12 col-md-3 inputcel">
-                                        <div class="form-text d-md-none d-block" id="defaultFormControlHelp">شهر مبدا سفر</div>
-
-                                        <div class="input-container">
-                                            <input autocomplete="off" aria-describedby="defaultFormControlHelp" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" id="origin_input" placeholder="مبدا" type="text" role="button" name="originstring" />
-                                            <i class="ti ti-location mb-2 icon"></i>
-
-                                            <span class="dropdown-menu dropdown-menu-end origin_location" style="inset:unset !important; min-width:230px;">
-
-
-
-                                                @*  <div class="city">
-                                                <a class="dropdown-item" href="javascript:void(0);">
-                                                تهران
-                                                <small class="" >
-                                                (همه پایانه‌ها)
-                                                </small>
-
-                                                </a>
-
-                                                <div class="terminals ms-3">
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه بیهقی</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه آزادی</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه شرق</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه غرب</a>
-
+                                <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row g-3 m-0" id="tripForm">
+                                    <div class="col-12 col-md-6 od-pair-col">
+                                        <div class="row g-2 g-md-3 od-pair">
+                                            <div class="col-6 inputcel">
+                                                <label class="form-text d-md-none d-block" for="origin_input" id="originHelpMobile">شهر مبدا سفر</label>
+                                                <div class="input-container">
+                                                    <input autocomplete="off" aria-describedby="originHelpDesktop originHelpMobile" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" id="origin_input" placeholder="مبدا" type="text" role="button" name="originstring" />
+                                                    <i class="ti ti-location mb-2 icon" aria-hidden="true"></i>
+                                                    <span class="dropdown-menu dropdown-menu-end origin_location" style="inset:unset !important; min-width:230px;"></span>
                                                 </div>
-                                                </div> *@
-                                            </span>
-                                        </div>
-                                        <div class="form-text d-md-block d-none" id="defaultFormControlHelp">شهر مبدا سفر</div>
-                                    </div>
+                                                <div class="form-text d-md-block d-none" id="originHelpDesktop">شهر مبدا سفر</div>
+                                            </div>
 
-                                    <div class="col-12 col-md-3 inputcel">
-                                        <div class="form-text d-block d-md-none" id="defaultFormControlHelp">شهر مقصد سفر</div>
+                                            <button type="button" class="od-swap-btn" id="od-swap-btn" title="جابه‌جایی مبدأ و مقصد" aria-label="جابه‌جایی مبدأ و مقصد">
+                                                <i class="ti ti-arrows-left-right" aria-hidden="true"></i>
+                                            </button>
 
-                                        <div class="input-container">
-                                            <input data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle" id="destination_input" placeholder="مقصد" type="text" role="button" name="destinationstring" />
-                                            <i class="ti ti-map-pin mb-2 icon"></i>
-                                            <span class="dropdown-menu dropdown-menu-end destination_location" style="inset:unset !important;  min-width:230px;">
-
-                                                @*  <div class="city">
-                                                <a class="dropdown-item" href="javascript:void(0);">
-                                                تهران
-                                                <small class="" >
-                                                (همه پایانه‌ها)
-                                                </small>
-
-                                                </a>
-
-                                                <div class="terminals ms-3">
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه بیهقی</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه آزادی</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه شرق</a>
-                                                <a class="dropdown-item" href="javascript:void(0);">پایانه غرب</a>
-
+                                            <div class="col-6 inputcel">
+                                                <label class="form-text d-block d-md-none" for="destination_input" id="destinationHelpMobile">شهر مقصد سفر</label>
+                                                <div class="input-container">
+                                                    <input data-bs-toggle="dropdown" autocomplete="off" aria-describedby="destinationHelpDesktop destinationHelpMobile" class="form-control destination input-field dropdown-toggle" id="destination_input" placeholder="مقصد" type="text" role="button" name="destinationstring" />
+                                                    <i class="ti ti-map-pin mb-2 icon" aria-hidden="true"></i>
+                                                    <span class="dropdown-menu dropdown-menu-end destination_location" style="inset:unset !important; min-width:230px;"></span>
                                                 </div>
-                                                </div> *@
-                                            </span>
-
+                                                <div class="form-text d-none d-md-block" id="destinationHelpDesktop">شهر مقصد سفر</div>
+                                            </div>
                                         </div>
-                                        <div class="form-text d-none d-md-block" id="defaultFormControlHelp">شهر مقصد سفر</div>
                                     </div>
 
-
                                     <div class="col-12 col-md-3 inputcel">
-                                        <div class="form-text d-block d-md-none" id="defaultFormControlHelp">انتخاب تاریخ</div>
-
-                                        <!-- /Human Friendly Date Picker-->
-                                        <!-- Disabled Range-->
-
+                                        <label class="form-text d-block d-md-none" for="starttime" id="dateHelpMobile">انتخاب تاریخ</label>
                                         <div class="input-container">
-                                            <input autocomplete="off" class="form-control bdi starttimeselector searchdate" id="starttime" placeholder="تاریخ سفر" type="text" name="searchdate" />
-                                            <i class="ti ti-calendar-stats mb-2 icon pe-0"></i>
+                                            <input autocomplete="off" aria-describedby="dateHelpDesktop dateHelpMobile" class="form-control bdi starttimeselector searchdate" id="starttime" placeholder="تاریخ سفر" type="text" name="searchdate" />
+                                            <i class="ti ti-calendar-stats mb-2 icon pe-0" aria-hidden="true"></i>
                                         </div>
-                                        <div class="form-text d-none d-md-block" id="defaultFormControlHelp">انتخاب تاریخ</div>
-
-
+                                        <div class="form-text d-none d-md-block" id="dateHelpDesktop">انتخاب تاریخ</div>
                                     </div>
-
-                                    @*  <div class="col-1 inputcel ">
-
-                                    <div class="input_con">
-                                    <label class="switch switch-square switch-lg" onclick="JustPrivateSelected()">
-                                    <input class="switch-input isprivate" type="checkbox">
-                                    <span class="switch-toggle-slider text-center">
-                                    <span class="switch-on">
-                                    <i class="ti ti-armchair-2"></i>
-                                    </span>
-                                    <span class="switch-off">
-                                    <i class="ti ti-sofa"></i>
-                                    </span>
-                                    </span>
-                                    </label>
-                                    </div>
-                                    <div class="form-text" id="defaultFormControlHelp">
-                                    <span class="justprivate_title">دربستی</span>
-                                    </div>
-
-
-                                    </div> *@
 
                                     <div class="col-12 col-md-3 inputcel">
-                                        <div class="ps-0 mt-4 mt-md-0 ">
-                                            <button style="width:100%; border-radius: 1.2rem;" class="btn btn-primary waves-effect waves-light btn-lg" type="submit">
+                                        <div class="ps-0 mt-1 mt-md-0">
+                                            <button class="btn btn-primary waves-effect waves-light btn-lg search-submit-btn" type="submit">
                                                 بزن بریم
-                                                <i class="ti ti-search"></i>
+                                                <i class="ti ti-search" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </div>
-
                                 </form>
                             </div>
                         </div>
+
+                    <!-- Trust stats -->
+                    <div class="hero-trust-stats">
+                        <div class="hero-trust-stat">
+                            <i class="ti ti-route" aria-hidden="true"></i>
+                            <span><strong>۵۰۰+</strong> مسیر فعال</span>
+                        </div>
+                        <div class="hero-trust-stat">
+                            <i class="ti ti-steering-wheel" aria-hidden="true"></i>
+                            <span><strong>۱۲۰۰+</strong> راننده تأییدشده</span>
+                        </div>
+                        <div class="hero-trust-stat">
+                            <i class="ti ti-headset" aria-hidden="true"></i>
+                            <span>پشتیبانی <strong>۲۴/۷</strong></span>
+                        </div>
+                        <div class="hero-trust-stat">
+                            <i class="ti ti-shield-check" aria-hidden="true"></i>
+                            <span>سفر <strong>مطمئن</strong> و بیمه‌شده</span>
+                        </div>
                     </div>
-                    <div class="col-lg-2 col-0"></div>
                 </div>
 
-                <!-- Trust stats -->
-                <div class="hero-trust-stats">
-                    <div class="hero-trust-stat">
-                        <i class="ti ti-route"></i>
-                        <span><strong>۵۰۰+</strong> مسیر فعال</span>
-                    </div>
-                    <div class="hero-trust-stat">
-                        <i class="ti ti-steering-wheel"></i>
-                        <span><strong>۱۲۰۰+</strong> راننده تأییدشده</span>
-                    </div>
-                    <div class="hero-trust-stat">
-                        <i class="ti ti-headset"></i>
-                        <span>پشتیبانی <strong>۲۴/۷</strong></span>
-                    </div>
-                    <div class="hero-trust-stat">
-                        <i class="ti ti-shield-check"></i>
-                        <span>سفر <strong>مطمئن</strong> و بیمه‌شده</span>
+                <!-- Definition CTA — wide (matches page shell), not constrained like the form -->
+                <div class="hero-safezone hero-safezone--wide">
+                    <div class="hero-definition-cta" id="aboutMrShoofer">
+                        <div class="card hero-definition-card hero-zone-card">
+                            <div class="card-body hero-definition-body-wrap">
+                                <div class="hero-definition-content">
+                                    <h3 class="hero-definition-title">مسترشوفر چیست؟</h3>
+                                    <p class="hero-definition-body">
+                                        مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری است. سفر خود را از بین کلاس‌های متنوع ما انتخاب کنید و بلیط خود را در کمتر از چند دقیقه دریافت کنید. همکاران ما در سریع‌ترین زمان ممکن برای هماهنگی سفر با شما تماس می‌گیرند و تا آخرین لحظه سفر در کنار شما هستند تا تجربه‌ای با آرامش خاطر و امنیت رقم بخورد.
+                                    </p>
+                                    <div class="hero-definition-mid">
+                                        <div class="hero-definition-media">
+                                            <img src="/cta-taxi.jpg?v=3" alt="ناوگان سواری مسترشوفر" width="1024" height="576" loading="eager" decoding="async" class="hero-definition-img" />
+                                        </div>
+                                        <div class="hero-definition-aside">
+                                            <ul class="hero-definition-bullets">
+                                                <li>رزرو سفر دلخواه در کمتر از چند دقیقه</li>
+                                                <li>ناوگان سواری با رانندگان مجرب و تأییدشده</li>
+                                                <li>پشتیبانی ۲۴/۷ تا آخرین لحظه سفر</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <a href="#tripForm" class="btn btn-primary btn-lg hero-definition-btn">
+                                        همین حالا جستجو کنید
+                                        <i class="ti ti-search" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -251,54 +214,105 @@
             <div class="features-icon-wrapper row gx-0 gy-4 g-sm-5">
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/laptop.png" alt="laptop charging" />
+                        <img src="~/img/front-pages/icons/laptop.png" alt="رزرو آنلاین سواری از موبایل و لپ‌تاپ" width="64" height="64" />
                     </div>
                     <h5 class="mb-2">رزرو آسان، هر جا هستید</h5>
-                    <p class="features-icon-description">از هر دستگاهی، در چند ثانیه سواری خود را رزرو کنید. بدون تماس تلفنی، بدون انتظار.</p>
+                    <p class="features-icon-description">از هر دستگاهی در چند ثانیه سواری رزرو کنید — بدون تماس تلفنی و بدون انتظار در صف.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="/taxi.png" height="66px" alt="transition up" />
+                        <img src="/taxi.png" height="66" width="66" alt="ناوگان سواری بین‌شهری مسترشوفر" />
                     </div>
                     <h5 class="mb-2">ناوگان گسترده در سراسر ایران</h5>
-                    <p class="features-icon-description">
-                        صدها مسیر بین‌شهری و ترانسفر فرودگاهی با ظرفیت بالا — همیشه یک صندلی برای شما آماده است.
-                    </p>
+                    <p class="features-icon-description">صدها مسیر بین‌شهری و ترانسفر فرودگاهی با ظرفیت بالا؛ همیشه گزینه‌ای برای سفر شما هست.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/paper.png" alt="edit" />
+                        <img src="~/img/front-pages/icons/paper.png" alt="صدور سریع بلیط سفر" width="64" height="64" />
                     </div>
                     <h5 class="mb-2">بلیط فوری، تأیید آنی</h5>
-                    <p class="features-icon-description">به محض ثبت رزرو، بلیط تأییدشده دریافت می‌کنید. نه انتظار، نه ابهام.</p>
+                    <p class="features-icon-description">پس از رزرو، بلیط تأییدشده را سریع دریافت می‌کنید؛ بدون ابهام و بدون انتظار طولانی.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/check.png" alt="3d select solid" />
+                        <img src="~/img/front-pages/icons/check.png" alt="راننده و خودرو تأییدشده" width="64" height="64" />
                     </div>
                     <h5 class="mb-2">رانندگان و خودروهای تأییدشده</h5>
-                    <p class="features-icon-description">
-                        هر راننده پیش از فعالیت احراز هویت و ارزیابی می‌شود. شما با اطمینان سوار می‌شوید.
-                    </p>
+                    <p class="features-icon-description">هر راننده پیش از فعالیت احراز هویت می‌شود تا با اطمینان و آرامش سوار شوید.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/user.png" alt="lifebelt" />
+                        <img src="~/img/front-pages/icons/user.png" alt="پشتیبانی مشتریان مسترشوفر" width="64" height="64" />
                     </div>
                     <h5 class="mb-2">پشتیبانی ۲۴ ساعته</h5>
-                    <p class="features-icon-description">تیم پشتیبانی مسترشوفر شبانه‌روز آماده پاسخگویی است — حتی در میانه شب یا روز تعطیل.</p>
+                    <p class="features-icon-description">تیم پشتیبانی تا آخرین لحظه سفر همراه شماست — حتی در میانه شب یا روز تعطیل.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/keyboard.png" alt="google docs" />
+                        <img src="~/img/front-pages/icons/keyboard.png" alt="انتخاب کلاس سفر اشتراکی یا دربستی" width="64" height="64" />
                     </div>
                     <h5 class="mb-2">سفر دربستی یا اشتراکی</h5>
-                    <p class="features-icon-description">انتخاب با شماست — صندلی اشتراکی با قیمت مناسب یا سرویس دربستی اختصاصی برای گروه شما.</p>
+                    <p class="features-icon-description">صندلی اشتراکی با قیمت مناسب یا سرویس دربستی اختصاصی — انتخاب کلاس سفر با شماست.</p>
                 </div>
             </div>
         </div>
     </section>
     <!-- Useful features: End -->
+
+    <!-- Popular routes (SEO internal links) -->
+    <section id="landingRoutes" class="section-py landing-routes">
+        <div class="container landing-routes-inner">
+            <div class="text-center mb-3 pb-1">
+                <span class="badge bg-label-primary">مسیرهای پرتردد</span>
+            </div>
+            <h3 class="text-center mb-1 fw-medium">
+                رزرو سواری در <span class="section-title">مسیرهای محبوب</span>
+            </h3>
+            <p class="text-center mb-4 mb-md-5 text-muted landing-routes-lead">
+                صفحه اختصاصی هر مسیر را ببینید و همان‌جا جستجو را شروع کنید
+            </p>
+            @{
+                var popularRoutes = Application.Services.Seo.SeoDefaults.HomepagePopularRoutes();
+                var popularCities = Application.Services.Seo.SeoDefaults.HomepagePopularCities();
+            }
+            <ul class="landing-routes-grid">
+                @foreach (var r in popularRoutes)
+                {
+                    <li>
+                        <a class="landing-route-link" href="/routes/@r.Slug">
+                            <span class="landing-route-od">
+                                <span class="landing-route-city">@r.OriginFa</span>
+                                <span class="landing-route-arrow" aria-hidden="true">←</span>
+                                <span class="landing-route-city">@r.DestinationFa</span>
+                            </span>
+                            <span class="landing-route-hint">مشاهده و رزرو</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            @if (popularCities.Count > 0)
+            {
+                <div class="landing-routes-cities-wrap">
+                    <p class="landing-routes-cities-label">کاوش بر اساس شهر</p>
+                    <ul class="landing-routes-cities">
+                        @foreach (var c in popularCities)
+                        {
+                            <li>
+                                <a href="/cities/@c.Slug">@c.NameFa</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="landing-routes-actions">
+                <a href="/routes" class="btn btn-outline-primary">مشاهده همه مسیرها</a>
+                <a href="/cities" class="btn btn-outline-secondary">همه شهرها</a>
+            </div>
+        </div>
+    </section>
+    <!-- Popular routes: End -->
     <!-- Real customers reviews: Start -->
     <!-- Real customers reviews: End -->
     <!-- Our great team: Start -->
@@ -366,95 +380,63 @@
     </section> *@
     <!-- Fun facts: End -->
     <!-- FAQ: Start -->
-    @* <section id="landingFAQ" class="section-py bg-body landing-faq">
+    <section id="landingFAQ" class="section-py bg-body landing-faq">
         <div class="container">
             <div class="text-center mb-3 pb-1">
                 <span class="badge bg-label-primary">سوالات</span>
             </div>
             <h3 class="text-center mb-1">
                 <span class="section-title">سوالات پرتکرار</span>
-                <span class="position-relative fw-bold z-1">
-                    کاربران ما
-                </span>
             </h3>
-            <p class="text-center mb-5 pb-3">برای یافتن پاسخ سوالات خود، آیتم های زیر را بررسی کنید.</p>
-            <div class="row gy-5">
-                <div class="col-lg-5">
-                    <div class="text-center">
-                        <img src="~/img/front-pages/landing-page/faq-boy-with-logos.png" alt="faq boy with logos" class="faq-image" />
+            <p class="text-center mb-5 pb-3">پاسخ‌های کوتاه درباره رزرو سواری بین‌شهری و ترانسفر فرودگاهی با مسترشوفر</p>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="accordion" id="accordionHomeFaq">
+                        @{
+                            var faqs = Application.Services.Seo.SeoDefaults.HomeFaqs;
+                            for (var i = 0; i < faqs.Length; i++)
+                            {
+                                var item = faqs[i];
+                                var headingId = $"faqHeading{i}";
+                                var collapseId = $"faqCollapse{i}";
+                                var isFirst = i == 0;
+                                <div class="card accordion-item @(isFirst ? "active" : "")">
+                                    <h2 class="accordion-header" id="@headingId">
+                                        <button type="button"
+                                                class="accordion-button @(isFirst ? "" : "collapsed")"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#@collapseId"
+                                                aria-expanded="@(isFirst ? "true" : "false")"
+                                                aria-controls="@collapseId">
+                                            @item.Question
+                                        </button>
+                                    </h2>
+                                    <div id="@collapseId"
+                                         class="accordion-collapse collapse @(isFirst ? "show" : "")"
+                                         aria-labelledby="@headingId"
+                                         data-bs-parent="#accordionHomeFaq">
+                                        <div class="accordion-body">@item.Answer</div>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
-                <div class="col-lg-7">
-                    <div class="accordion" id="accordionExample">
-                        <div class="card accordion-item active">
-                            <h2 class="accordion-header" id="headingOne">
-                                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionOne" aria-expanded="true" aria-controls="accordionOne">
-                                    آیا لورم ایپسوم یک متن ساختگی نامفهوم است ؟
-                                </button>
-                            </h2>
-
-                            <div id="accordionOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                                <div class="accordion-body"> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.</div>
-                            </div>
-                        </div>
-                        <div class="card accordion-item">
-                            <h2 class="accordion-header" id="headingTwo">
-                                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#accordionTwo" aria-expanded="false" aria-controls="accordionTwo">
-                                    آیا لورم ایپسوم یک متن ساختگی نامفهوم است ؟
-                                </button>
-                            </h2>
-                            <div id="accordionTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                                <div class="accordion-body"> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.</div>
-                            </div>
-                        </div>
-                        <div class="card accordion-item">
-                            <h2 class="accordion-header" id="headingThree">
-                                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#accordionThree" aria-expanded="false" aria-controls="accordionThree">
-                                    آیا لورم ایپسوم یک متن ساختگی نامفهوم است ؟
-                                </button>
-                            </h2>
-                            <div id="accordionThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-                                <div class="accordion-body"> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.</div>
-                            </div>
-                        </div>
-                        <div class="card accordion-item">
-                            <h2 class="accordion-header" id="headingFour">
-                                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#accordionFour" aria-expanded="false" aria-controls="accordionFour">
-                                    آیا لورم ایپسوم یک متن ساختگی نامفهوم است ؟
-                                </button>
-                            </h2>
-                            <div id="accordionFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
-                                <div class="accordion-body"> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.</div>
-                            </div>
-                        </div>
-                        <div class="card accordion-item">
-                            <h2 class="accordion-header" id="headingFive">
-                                <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#accordionFive" aria-expanded="false" aria-controls="accordionFive">
-                                    آیا لورم ایپسوم یک متن ساختگی نامفهوم است ؟
-                                </button>
-                            </h2>
-                            <div id="accordionFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#accordionExample">
-                                <div class="accordion-body"> لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div
-
+            </div>
         </div>
-    </section> *@
+    </section>
     <!-- FAQ: End -->
     <!-- CTA: Start -->
-    <section id="landingCTA" class="section-py landing-cta position-relative p-lg-0 pb-0" style="width:80% ; margin:auto; border:none; border-radius:15px">
-        <div class="container" style="width:100%">
+    <section id="landingCTA" class="section-py landing-cta position-relative p-lg-0 pb-0 landing-cta-band">
+        <div class="container">
             <div class="row align-items-center gy-5 gy-lg-0">
                 <div class="col-lg-6 text-center text-lg-start">
-                    <h6 class="h2 text-primary fw-bold mb-3">برای شروع آماده اید؟</h6>
-                    <p class="fw-medium mb-4 fs-5">همین الان از ناوگان گسترده مسترشوفر بهره مند شوید!</p>
-                    <a href="#" class="btn btn-lg btn-primary">شروع کنید</a>
+                    <h6 class="h2 text-primary fw-bold mb-3">برای شروع آماده‌اید؟</h6>
+                    <p class="fw-medium mb-4 fs-5">مبدأ و مقصد را جستجو کنید و بلیط خود را در کمتر از چند دقیقه بگیرید.</p>
+                    <a href="#landingHero" class="btn btn-lg btn-primary">جستجوی سواری</a>
                 </div>
                 <div class="col-lg-6 pt-lg-5 text-center text-lg-end">
-                    <img src="/mrshooferserachdemo.png" alt="cta dashboard" class="img-fluid" style="max-height:250px;" />
+                    <img src="/mrshooferserachdemo.png" alt="نمایش جستجوی سواری در مسترشوفر" class="img-fluid landing-cta-img" />
                 </div>
             </div>
         </div>
