@@ -62,10 +62,17 @@
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
 
-	<link href="~/css/TaxiTripsIndex.css?v=27" rel="stylesheet" />
+	<link href="~/css/TaxiTripsIndex.css?v=28" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/spinkit/spinkit.css">
     <style>
       .searchbar .od-pair-col { position: relative; }
+      .searchbar .od-pair { --od-swap-gutter: 2.75rem; }
+      .searchbar .od-pair > .inputcel:first-child {
+        padding-inline-end: calc(var(--od-swap-gutter) / 2) !important;
+      }
+      .searchbar .od-pair > .inputcel:last-of-type {
+        padding-inline-start: calc(var(--od-swap-gutter) / 2) !important;
+      }
       .searchbar .od-swap-btn {
         --od-swap-size: 2rem;
         position: absolute !important;
@@ -90,6 +97,9 @@
         cursor: pointer;
       }
       .searchbar .od-swap-btn .ti { font-size: 1rem; margin: 0; line-height: 1; }
+      @@media (max-width: 767.98px) {
+        .searchbar .od-pair { --od-swap-gutter: 2.35rem; }
+      }
     </style>
     @if (ViewBag.RouteSeo is not null)
     {

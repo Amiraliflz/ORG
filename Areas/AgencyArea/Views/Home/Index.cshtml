@@ -23,12 +23,19 @@
     <link rel="stylesheet" href="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
-    <link href="~/css/IndexPage.css?v=27" rel="stylesheet" />
+    <link href="~/css/IndexPage.css?v=28" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
-    @* Critical: keep swap control compact even if IndexPage.css is stale/CDN-cached *@
+    @* Critical: swap control + field gutters (survive stale/CDN-cached IndexPage.css) *@
     <style>
       .landing-hero .od-pair-col { position: relative; }
+      .landing-hero #tripForm .od-pair { --od-swap-gutter: 2.75rem; }
+      .landing-hero #tripForm .od-pair > .inputcel:first-child {
+        padding-inline-end: calc(var(--od-swap-gutter) / 2) !important;
+      }
+      .landing-hero #tripForm .od-pair > .inputcel:last-of-type {
+        padding-inline-start: calc(var(--od-swap-gutter) / 2) !important;
+      }
       .landing-hero .od-swap-btn {
         --od-swap-size: 2rem;
         position: absolute !important;
@@ -54,6 +61,7 @@
       }
       .landing-hero .od-swap-btn .ti { font-size: 1rem; margin: 0; line-height: 1; }
       @@media (max-width: 767.98px) {
+        .landing-hero #tripForm .od-pair { --od-swap-gutter: 2.35rem; }
         .landing-hero .od-swap-btn { top: 1.85rem; --od-swap-size: 1.85rem; }
       }
     </style>
