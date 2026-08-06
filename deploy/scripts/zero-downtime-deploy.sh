@@ -89,6 +89,11 @@ ensure_autostart_docker() {
   "
 }
 
+# --full ships all commits not on origin/main (app + wwwroot), not only HEAD~1
+if [[ "$FORCE_FULL" == "1" ]] && git rev-parse --verify origin/main >/dev/null 2>&1; then
+  FROM_REF="origin/main"
+fi
+
 echo "==> Change set: ${FROM_REF}..${TO_REF}"
 CHANGED=()
 while IFS= read -r line; do
@@ -445,6 +450,7 @@ EOF
       systemctl reload nginx
       echo \"stable proxy :${STABLE_PORT} → backend ${NEW_PORT}\"
 
+      # Stop old backend only — keep the healthy standby serving NEW_PORT.
       systemctl stop ${SERVICE} 2>/dev/null || true
       fuser -k ${ACTIVE_PORT}/tcp 2>/dev/null || true
 
@@ -453,16 +459,50 @@ EOF
 [Service]
 Environment=ASPNETCORE_URLS=http://127.0.0.1:${NEW_PORT}
 EOF
-      # Hand port from standby → systemd
-      kill \$(cat /tmp/org-standby.pid) 2>/dev/null || true
-      fuser -k ${NEW_PORT}/tcp 2>/dev/null || true
-      sleep 1
       systemctl daemon-reload
-      systemctl start ${SERVICE}
-      sleep 2
-      systemctl is-active ${SERVICE}
-      curl -sf -m 8 -o /dev/null -w 'backend health %{http_code}\\n' http://127.0.0.1:${NEW_PORT}${HEALTH_PATH} || true
-      curl -sf -m 8 -o /dev/null -w 'stable health %{http_code}\\n' http://127.0.0.1:${STABLE_PORT}${HEALTH_PATH} || true
+
+      # Prefer keeping the already-warm standby. Only hand off to systemd if standby dies.
+      live_ok=0
+      for i in \$(seq 1 10); do
+        code=\$(curl -s -m 2 -o /dev/null -w '%{http_code}' http://127.0.0.1:${NEW_PORT}${HEALTH_PATH} || true)
+        if [ \"\$code\" = \"200\" ] || [ \"\$code\" = \"302\" ] || [ \"\$code\" = \"301\" ]; then
+          live_ok=1; break
+        fi
+        sleep 1
+      done
+
+      if [ \"\$live_ok\" != \"1\" ]; then
+        echo 'Standby lost after cutover — starting systemd on ${NEW_PORT}' >&2
+        kill \$(cat /tmp/org-standby.pid) 2>/dev/null || true
+        fuser -k ${NEW_PORT}/tcp 2>/dev/null || true
+        sleep 1
+        systemctl start ${SERVICE}
+        live_ok=0
+        for i in \$(seq 1 30); do
+          code=\$(curl -s -m 2 -o /dev/null -w '%{http_code}' http://127.0.0.1:${NEW_PORT}${HEALTH_PATH} || true)
+          if [ \"\$code\" = \"200\" ] || [ \"\$code\" = \"302\" ] || [ \"\$code\" = \"301\" ]; then
+            live_ok=1; break
+          fi
+          sleep 1
+        done
+      else
+        echo \"keeping warm standby pid=\$(cat /tmp/org-standby.pid) on ${NEW_PORT}\"
+        # Align systemd unit state for reboot; do not steal the live port now.
+        systemctl reset-failed ${SERVICE} 2>/dev/null || true
+      fi
+
+      stab=\$(curl -s -m 8 -o /dev/null -w '%{http_code}' http://127.0.0.1:${STABLE_PORT}${HEALTH_PATH} || true)
+      back=\$(curl -s -m 8 -o /dev/null -w '%{http_code}' http://127.0.0.1:${NEW_PORT}${HEALTH_PATH} || true)
+      echo \"backend health \$back\"
+      echo \"stable health \$stab\"
+
+      if [ \"\$live_ok\" != \"1\" ] || { [ \"\$stab\" != \"200\" ] && [ \"\$stab\" != \"302\" ] && [ \"\$stab\" != \"301\" ]; }; then
+        echo 'Post-cutover health check FAILED' >&2
+        tail -40 /tmp/org-standby.log >&2 || true
+        journalctl -u ${SERVICE} -n 40 --no-pager >&2 || true
+        exit 1
+      fi
+
       echo ${NEW_PORT} > ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT
       echo ${STABLE_PORT} > ${DEPLOY_DIR}/STABLE_PORT
       echo cutover done
