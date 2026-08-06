@@ -23,9 +23,40 @@
     <link rel="stylesheet" href="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
-    <link href="~/css/IndexPage.css?v=26" rel="stylesheet" />
+    <link href="~/css/IndexPage.css?v=27" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
+    @* Critical: keep swap control compact even if IndexPage.css is stale/CDN-cached *@
+    <style>
+      .landing-hero .od-pair-col { position: relative; }
+      .landing-hero .od-swap-btn {
+        --od-swap-size: 2rem;
+        position: absolute !important;
+        left: 50%;
+        top: 0.55rem;
+        transform: translateX(-50%);
+        z-index: 4;
+        width: var(--od-swap-size) !important;
+        max-width: var(--od-swap-size) !important;
+        height: var(--od-swap-size) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.85rem;
+        border: 1px solid #d9dee3;
+        background: #fff;
+        color: #8592a3;
+        line-height: 1;
+        box-shadow: 0 0 0 4px #fff, 0 1px 2px rgba(47, 43, 61, 0.06);
+        cursor: pointer;
+      }
+      .landing-hero .od-swap-btn .ti { font-size: 1rem; margin: 0; line-height: 1; }
+      @media (max-width: 767.98px) {
+        .landing-hero .od-swap-btn { top: 1.85rem; --od-swap-size: 1.85rem; }
+      }
+    </style>
 }
 
 @section VendorScripts {
@@ -104,10 +135,6 @@
                                                 <div class="form-text d-md-block d-none" id="originHelpDesktop">شهر مبدا سفر</div>
                                             </div>
 
-                                            <button type="button" class="od-swap-btn" id="od-swap-btn" title="جابه‌جایی مبدأ و مقصد" aria-label="جابه‌جایی مبدأ و مقصد">
-                                                <i class="ti ti-arrows-left-right" aria-hidden="true"></i>
-                                            </button>
-
                                             <div class="col-6 inputcel">
                                                 <label class="form-text d-block d-md-none" for="destination_input" id="destinationHelpMobile">شهر مقصد سفر</label>
                                                 <div class="input-container">
@@ -118,6 +145,10 @@
                                                 <div class="form-text d-none d-md-block" id="destinationHelpDesktop">شهر مقصد سفر</div>
                                             </div>
                                         </div>
+                                        @* Outside .row so Bootstrap .row > * { width:100% } cannot stretch it *@
+                                        <button type="button" class="od-swap-btn" id="od-swap-btn" title="جابه‌جایی مبدأ و مقصد" aria-label="جابه‌جایی مبدأ و مقصد">
+                                            <i class="ti ti-arrows-left-right" aria-hidden="true"></i>
+                                        </button>
                                     </div>
 
                                     <div class="col-12 col-md-3 inputcel">

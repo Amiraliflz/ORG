@@ -812,8 +812,8 @@
 }
 
 /* Quiet field-chrome control — matches hero form radius/border, not a CTA.
-   Beat Bootstrap .row > * { width:100% } so the control cannot stretch. */
-.landing-hero .od-pair > .od-swap-btn,
+   Positioned against .od-pair-col (button is a sibling of .od-pair, not inside .row). */
+.landing-hero .od-pair-col > .od-swap-btn,
 .landing-hero .od-swap-btn,
 .od-swap-btn {
   --od-swap-size: 2rem;

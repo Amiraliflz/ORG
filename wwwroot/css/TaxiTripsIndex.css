@@ -226,8 +226,8 @@
 }
 
 /* Quiet field-chrome control — matches form-control border/radius, not a CTA.
-   Beat Bootstrap .row > * { width:100% } so the control cannot stretch. */
-.searchbar .od-pair > .od-swap-btn,
+   Positioned against .od-pair-col (button is a sibling of .od-pair, not inside .row). */
+.searchbar .od-pair-col > .od-swap-btn,
 .searchbar .od-swap-btn,
 .od-swap-btn {
   --od-swap-size: 2rem;
