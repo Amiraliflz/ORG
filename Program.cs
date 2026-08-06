@@ -63,10 +63,12 @@ var mvcBuilder = builder.Services
     opts.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
   });
 
+#if DEBUG
 if (builder.Environment.IsDevelopment())
 {
   mvcBuilder.AddRazorRuntimeCompilation();
 }
+#endif
 
 
 builder.Services.TryAddTransient<IOtpLogin, SmsIrOtp>();
