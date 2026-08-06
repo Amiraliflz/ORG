@@ -811,19 +811,24 @@
   padding-inline-start: calc(var(--od-swap-gutter) / 2) !important;
 }
 
-/* Quiet field-chrome control — matches hero form radius/border, not a CTA */
+/* Quiet field-chrome control — matches hero form radius/border, not a CTA.
+   Beat Bootstrap .row > * { width:100% } so the control cannot stretch. */
+.landing-hero .od-pair > .od-swap-btn,
 .landing-hero .od-swap-btn,
 .od-swap-btn {
   --od-swap-size: 2rem;
-  position: absolute;
+  position: absolute !important;
   left: 50%;
   top: 1.15rem;
   transform: translateX(-50%);
   z-index: 4;
-  width: var(--od-swap-size);
-  height: var(--od-swap-size);
-  padding: 0;
-  display: inline-flex;
+  width: var(--od-swap-size) !important;
+  max-width: var(--od-swap-size) !important;
+  height: var(--od-swap-size) !important;
+  flex: 0 0 var(--od-swap-size) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
   border-radius: 0.85rem;
