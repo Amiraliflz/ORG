@@ -94,5 +94,41 @@
         "Citytwo" : "سنندج",
         "TravelTime_mins"  : 360,
         "IsAvailable" : true
+    },
+    {
+        "Cityone" : "تهران",
+        "Citytwo" : "شیراز",
+        "TravelTime_mins"  : 540,
+        "IsAvailable" : true
+    },
+    {
+        "Cityone" : "تهران",
+        "Citytwo" : "گرگان",
+        "TravelTime_mins"  : 300,
+        "IsAvailable" : true
+    },
+    {
+        "Cityone" : "تهران",
+        "Citytwo" : "مشهد",
+        "TravelTime_mins"  : 600,
+        "IsAvailable" : true
+    },
+    {
+        "Cityone" : "تهران",
+        "Citytwo" : "یزد",
+        "TravelTime_mins"  : 420,
+        "IsAvailable" : true
+    },
+    {
+        "Cityone" : "تهران",
+        "Citytwo" : "قزوین",
+        "TravelTime_mins"  : 110,
+        "IsAvailable" : true
+    },
+    {
+        "Cityone" : "تهران",
+        "Citytwo" : "کرج",
+        "TravelTime_mins"  : 50,
+        "IsAvailable" : true
     }
 ]

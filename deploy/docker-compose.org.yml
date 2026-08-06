@@ -3,6 +3,10 @@ version: "3.9"
 # Production-style compose for sale/ORG on the VPS.
 # Auto-starts after reboot via Docker's restart policy (docker.service must be enabled).
 #
+# Peer apps must call http://127.0.0.1:5055/ (stable).
+# With stable proxy installed, map container to a backend (15055/15056) instead:
+#   ORG_HOST_PORT=15055 docker compose -f deploy/docker-compose.org.yml up -d
+#
 #   docker compose -f deploy/docker-compose.org.yml up -d --build
 #
 services:
@@ -11,7 +15,7 @@ services:
     container_name: mrshoofer-org
     restart: always
     ports:
-      - "127.0.0.1:5055:5000"
+      - "127.0.0.1:${ORG_HOST_PORT:-5055}:5000"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://0.0.0.0:5000

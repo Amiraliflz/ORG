@@ -14,9 +14,13 @@
 #   DRY_RUN=1                     # print plan only
 #   FORCE_FULL=1                  # always rebuild + deploy
 #   SKIP_BLUE_GREEN=1             # copy/restart (short blip) — systemd mode only
+#   STABLE_PROXY=auto             # auto|1|0 — blue/green only if stable :5055 proxy installed
 #   USE_DOCKER=1                  # build/push Docker image instead of bare DLL
 #   ENSURE_AUTOSTART=1            # default ON — survive VPS reboot
 #   ORG_IMAGE=mrshoofer-org:latest
+#
+# Localhost API mesh: peer apps must always call http://127.0.0.1:5055/
+# Install once: ./deploy/scripts/install-stable-localhost-proxy.sh
 #
 set -euo pipefail
 
@@ -27,13 +31,20 @@ DEPLOY_HOST="${DEPLOY_HOST:-62.60.191.21}"
 DEPLOY_USER="${DEPLOY_USER:-root}"
 DEPLOY_DIR="${DEPLOY_DIR:-/var/www/org}"
 SERVICE="${SERVICE:-org.service}"
-PORT_A="${PORT_A:-5055}"
-PORT_B="${PORT_B:-5056}"
+# Peer apps / public nginx always call STABLE_PORT (never changes).
+# Blue/green only flips BACKEND_A <-> BACKEND_B behind the stable proxy.
+STABLE_PORT="${STABLE_PORT:-5055}"
+PORT_A="${PORT_A:-${BACKEND_A:-15055}}"
+PORT_B="${PORT_B:-${BACKEND_B:-15056}}"
+BACKEND_A="$PORT_A"
+BACKEND_B="$PORT_B"
 FROM_REF="${FROM_REF:-HEAD~1}"
 TO_REF="${TO_REF:-HEAD}"
 DRY_RUN="${DRY_RUN:-0}"
 FORCE_FULL="${FORCE_FULL:-0}"
+# Default: same-port restart (safe for localhost API mesh). Use STABLE_PROXY=1 after install.
 SKIP_BLUE_GREEN="${SKIP_BLUE_GREEN:-0}"
+STABLE_PROXY="${STABLE_PROXY:-auto}"
 USE_DOCKER="${USE_DOCKER:-0}"
 ENSURE_AUTOSTART="${ENSURE_AUTOSTART:-1}"
 ORG_IMAGE="${ORG_IMAGE:-mrshoofer-org:latest}"
@@ -179,59 +190,99 @@ if [[ "$USE_DOCKER" == "1" ]]; then
       done
     fi
 
-    echo "==> Blue-green Docker cutover on VPS"
+    echo "==> Docker cutover on VPS (stable :${STABLE_PORT} for peer apps)"
     remote "set -e
       docker load < /tmp/mrshoofer-org-deploy.tar.gz
       rm -f /tmp/mrshoofer-org-deploy.tar.gz
 
-      # Stop conflicting systemd host process if it holds 5055
+      # Stop conflicting systemd host process
       systemctl stop ${SERVICE} 2>/dev/null || true
       systemctl disable ${SERVICE} 2>/dev/null || true
 
-      ACTIVE_PORT=\$(ss -tlnp | awk '/127.0.0.1:5055/ {print 5055} /127.0.0.1:5056/ {print 5056}' | head -1)
-      [ -z \"\$ACTIVE_PORT\" ] && ACTIVE_PORT=${PORT_A}
-      if [ \"\$ACTIVE_PORT\" = \"${PORT_A}\" ]; then NEW_PORT=${PORT_B}; else NEW_PORT=${PORT_A}; fi
-      echo active=\$ACTIVE_PORT new=\$NEW_PORT
+      HAS_STABLE=0
+      if [ -f /etc/nginx/conf.d/org-stable-localhost.conf ] && [ -f /etc/nginx/conf.d/org-backend-active.conf ]; then
+        HAS_STABLE=1
+      fi
 
       STANDBY_NAME=${DOCKER_NAME}-next
       docker rm -f \$STANDBY_NAME 2>/dev/null || true
-      docker run -d --name \$STANDBY_NAME --restart always \\
-        -p 127.0.0.1:\$NEW_PORT:5000 \\
-        -e ASPNETCORE_ENVIRONMENT=Production \\
-        -e ASPNETCORE_URLS=http://0.0.0.0:5000 \\
-        -e TZ=Asia/Tehran \\
-        -v ${DEPLOY_DIR}/appsettings.json:/app/appsettings.json:ro \\
-        ${ORG_IMAGE}
 
-      ok=0
-      for i in \$(seq 1 40); do
-        code=\$(curl -s -m 2 -o /dev/null -w '%{http_code}' http://127.0.0.1:\$NEW_PORT${HEALTH_PATH} || true)
-        if [ \"\$code\" = \"200\" ] || [ \"\$code\" = \"302\" ] || [ \"\$code\" = \"301\" ]; then ok=1; break; fi
-        sleep 1
-      done
-      if [ \"\$ok\" != \"1\" ]; then
-        echo 'Standby container health FAILED' >&2
-        docker logs \$STANDBY_NAME 2>&1 | tail -50 >&2 || true
-        docker rm -f \$STANDBY_NAME 2>/dev/null || true
-        exit 1
-      fi
+      run_container() {
+        local name=\$1 port=\$2
+        docker run -d --name \$name --restart always \\
+          -p 127.0.0.1:\$port:5000 \\
+          -e ASPNETCORE_ENVIRONMENT=Production \\
+          -e ASPNETCORE_URLS=http://0.0.0.0:5000 \\
+          -e TZ=Asia/Tehran \\
+          -v ${DEPLOY_DIR}/appsettings.json:/app/appsettings.json:ro \\
+          ${ORG_IMAGE}
+      }
 
-      if grep -Rql \"127.0.0.1:\$ACTIVE_PORT\" /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ 2>/dev/null; then
-        sed -i \"s/127.0.0.1:\$ACTIVE_PORT/127.0.0.1:\$NEW_PORT/g\" /etc/nginx/sites-enabled/* /etc/nginx/conf.d/* 2>/dev/null || true
+      wait_healthy() {
+        local port=\$1 name=\$2
+        local ok=0 code
+        for i in \$(seq 1 40); do
+          code=\$(curl -s -m 2 -o /dev/null -w '%{http_code}' http://127.0.0.1:\$port${HEALTH_PATH} || true)
+          if [ \"\$code\" = \"200\" ] || [ \"\$code\" = \"302\" ] || [ \"\$code\" = \"301\" ]; then ok=1; break; fi
+          sleep 1
+        done
+        if [ \"\$ok\" != \"1\" ]; then
+          echo \"Container health FAILED on :\$port\" >&2
+          docker logs \$name 2>&1 | tail -50 >&2 || true
+          docker rm -f \$name 2>/dev/null || true
+          exit 1
+        fi
+      }
+
+      promote_standby() {
+        local port=\$1
+        docker rm -f ${DOCKER_NAME} 2>/dev/null || true
+        docker rename \$STANDBY_NAME ${DOCKER_NAME}
+        docker update --restart always ${DOCKER_NAME} >/dev/null
+        echo \$port > ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT
+        echo ${STABLE_PORT} > ${DEPLOY_DIR}/STABLE_PORT
+        docker ps --filter name=${DOCKER_NAME} --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+      }
+
+      if [ \"\$HAS_STABLE\" = \"1\" ]; then
+        # Blue/green on backends only — peer apps keep calling :${STABLE_PORT}
+        if [ -f ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT ]; then
+          ACTIVE_PORT=\$(cat ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT | tr -d '\\r')
+        elif ss -tlnp | grep -q '127.0.0.1:${BACKEND_B}'; then
+          ACTIVE_PORT=${BACKEND_B}
+        else
+          ACTIVE_PORT=${BACKEND_A}
+        fi
+        if [ \"\$ACTIVE_PORT\" = \"${BACKEND_A}\" ]; then NEW_PORT=${BACKEND_B}; else NEW_PORT=${BACKEND_A}; fi
+        echo \"docker blue-green: backend \$ACTIVE_PORT → \$NEW_PORT (stable ${STABLE_PORT})\"
+
+        run_container \$STANDBY_NAME \$NEW_PORT
+        wait_healthy \$NEW_PORT \$STANDBY_NAME
+
+        cat > /etc/nginx/conf.d/org-backend-active.conf <<EOF
+upstream org_app_backend {
+    server 127.0.0.1:\$NEW_PORT;
+}
+EOF
         nginx -t && systemctl reload nginx
-        echo nginx cutover → \$NEW_PORT
+        echo \"stable proxy :${STABLE_PORT} → backend \$NEW_PORT\"
+
+        docker ps -q --filter publish=\$ACTIVE_PORT | xargs -r docker rm -f
+        fuser -k \$ACTIVE_PORT/tcp 2>/dev/null || true
+        promote_standby \$NEW_PORT
+        curl -sf -m 8 -o /dev/null -w 'stable health %{http_code}\\n' http://127.0.0.1:${STABLE_PORT}${HEALTH_PATH} || true
+      else
+        # Same-port restart on :${STABLE_PORT} — safe for localhost API mesh (short blip)
+        echo \"docker same-port restart on :${STABLE_PORT} (install stable proxy for zero-downtime)\"
+        docker ps -q --filter publish=${STABLE_PORT} | xargs -r docker rm -f
+        docker rm -f ${DOCKER_NAME} 2>/dev/null || true
+        fuser -k ${STABLE_PORT}/tcp 2>/dev/null || true
+        sleep 1
+        run_container \$STANDBY_NAME ${STABLE_PORT}
+        wait_healthy ${STABLE_PORT} \$STANDBY_NAME
+        promote_standby ${STABLE_PORT}
+        curl -sf -m 8 -o /dev/null -w 'health %{http_code}\\n' http://127.0.0.1:${STABLE_PORT}${HEALTH_PATH} || true
       fi
-
-      # Retire old container / host listeners on ACTIVE_PORT
-      docker ps -q --filter publish=\$ACTIVE_PORT | xargs -r docker rm -f
-      fuser -k \$ACTIVE_PORT/tcp 2>/dev/null || true
-
-      # Rename standby → canonical name
-      docker rm -f ${DOCKER_NAME} 2>/dev/null || true
-      docker rename \$STANDBY_NAME ${DOCKER_NAME}
-      docker update --restart always ${DOCKER_NAME} >/dev/null
-      echo \$NEW_PORT > ${DEPLOY_DIR}/ACTIVE_PORT
-      docker ps --filter name=${DOCKER_NAME} --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
     "
 
     ensure_autostart_docker
@@ -243,12 +294,36 @@ if [[ "$USE_DOCKER" == "1" ]]; then
   echo
   echo "==> Docker deploy finished."
   echo "    Container: ${DOCKER_NAME}  image: ${ORG_IMAGE}"
+  echo "    Peer apps: always http://127.0.0.1:${STABLE_PORT}/"
   echo "    Reboot-safe: docker --restart always + systemctl enable docker"
   exit 0
 fi
 
 # ========== SYSTEMD / BARE DLL MODE ==========
 need dotnet
+
+# --- working-tree app files (so --full ships uncommitted views/css too) ---
+if [[ "$FORCE_FULL" == "1" ]]; then
+  echo
+  echo "==> Syncing dirty app files from working tree (FORCE_FULL)"
+  while IFS= read -r f; do
+    [[ -z "$f" || ! -f "$f" ]] && continue
+    case "$f" in
+      wwwroot/*)
+        rel="${f#wwwroot/}"
+        remote "mkdir -p ${DEPLOY_DIR}/wwwroot/$(dirname "$rel")"
+        remote_scp "$f" "${DEPLOY_DIR}/wwwroot/${rel}"
+        echo "  uploaded wwwroot/${rel}"
+        ;;
+      *.cshtml)
+        remote "mkdir -p ${DEPLOY_DIR}/$(dirname "$f")"
+        remote_scp "$f" "${DEPLOY_DIR}/$f"
+        echo "  uploaded $f"
+        ;;
+    esac
+  done < <(git status --porcelain -u | awk '{print substr($0,4)}' | sed 's#^"##;s#"$##')
+fi
+
 
 # --- static files (no restart) ---
 if [[ "$NEED_STATIC" == "1" ]]; then
@@ -260,13 +335,13 @@ if [[ "$NEED_STATIC" == "1" ]]; then
     remote "mkdir -p ${DEPLOY_DIR}/wwwroot/$(dirname "$rel")"
     remote_scp "$f" "${DEPLOY_DIR}/wwwroot/${rel}"
     echo "  uploaded wwwroot/${rel}"
-  done < <(git diff --name-only "${FROM_REF}" "${TO_REF}" -- wwwroot)
+  done < <(git diff --name-only "${FROM_REF}" "${TO_REF}" -- wwwroot || true)
 fi
 
-# --- config (needs process recycle to pick up) ---
-if [[ "$NEED_CONFIG" == "1" && "$NEED_CODE" != "1" ]]; then
+# --- config (upload whenever changed; recycle happens with code deploy / restart) ---
+if [[ "$NEED_CONFIG" == "1" ]]; then
   echo
-  echo "==> Uploading appsettings (will recycle via blue-green/restart)"
+  echo "==> Uploading changed appsettings"
   for f in appsettings.json appsettings.Production.json appsettings.Development.json; do
     if git diff --name-only "${FROM_REF}" "${TO_REF}" -- "$f" | grep -q .; then
       [[ -f "$f" ]] || continue
@@ -285,41 +360,64 @@ if [[ "$NEED_CODE" == "1" ]]; then
   DLL_LOCAL="bin/Release/net8.0/Application.dll"
   [[ -f "$DLL_LOCAL" ]] || { echo "Build output missing: $DLL_LOCAL" >&2; exit 1; }
 
-  if [[ "$SKIP_BLUE_GREEN" == "1" ]]; then
-    echo "==> Minimal-downtime restart deploy"
+  # Detect stable localhost proxy (keeps :5055 fixed for peer apps)
+  HAS_STABLE="$(remote "test -f /etc/nginx/conf.d/org-stable-localhost.conf && test -f /etc/nginx/conf.d/org-backend-active.conf && echo yes || echo no" | tr -d '\r' || echo no)"
+  USE_STABLE=0
+  if [[ "$HAS_STABLE" == "yes" && "$SKIP_BLUE_GREEN" != "1" ]]; then
+    if [[ "$STABLE_PROXY" == "1" || "$STABLE_PROXY" == "yes" || "$STABLE_PROXY" == "auto" ]]; then
+      USE_STABLE=1
+    fi
+  fi
+
+  if [[ "$USE_STABLE" != "1" ]]; then
+    if [[ "$HAS_STABLE" != "yes" ]]; then
+      echo "==> Same-port restart (safe for localhost API mesh)"
+      echo "    Tip: install stable proxy once, then zero-downtime blue/green works:"
+      echo "         ./deploy/scripts/install-stable-localhost-proxy.sh"
+    else
+      echo "==> Minimal-downtime restart deploy"
+    fi
+    echo "==> Uploading Application.dll"
     remote_scp "$DLL_LOCAL" "${DEPLOY_DIR}/Application.dll.new"
     remote "set -e
       mv -f ${DEPLOY_DIR}/Application.dll.new ${DEPLOY_DIR}/Application.dll
       systemctl restart ${SERVICE}
       sleep 2
       systemctl is-active ${SERVICE}
-      curl -sf -m 8 -o /dev/null -w 'health %{http_code}\\n' http://127.0.0.1:${PORT_A}${HEALTH_PATH} || true
+      curl -sf -m 8 -o /dev/null -w 'health %{http_code}\\n' http://127.0.0.1:${STABLE_PORT}${HEALTH_PATH} || true
     "
   else
-    echo "==> Blue-green deploy (zero downtime)"
-    ACTIVE_PORT="$(remote "ss -tlnp | awk '/127.0.0.1:5055/ {print 5055} /127.0.0.1:5056/ {print 5056}' | head -1" | tr -d '\r' || true)"
+    echo "==> Blue-green behind stable :${STABLE_PORT} (backends ${BACKEND_A}/${BACKEND_B})"
+    ACTIVE_PORT="$(remote "if [ -f ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT ]; then cat ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT; elif ss -tlnp | grep -q '127.0.0.1:${BACKEND_B}'; then echo ${BACKEND_B}; else echo ${BACKEND_A}; fi" | tr -d '\r' | head -1 || true)"
     if [[ -z "$ACTIVE_PORT" ]]; then
-      ACTIVE_PORT="$PORT_A"
+      ACTIVE_PORT="$BACKEND_A"
     fi
-    if [[ "$ACTIVE_PORT" == "$PORT_A" ]]; then
-      NEW_PORT="$PORT_B"
+    if [[ "$ACTIVE_PORT" == "$BACKEND_A" ]]; then
+      NEW_PORT="$BACKEND_B"
     else
-      NEW_PORT="$PORT_A"
+      NEW_PORT="$BACKEND_A"
     fi
-    echo "  active=${ACTIVE_PORT}  new=${NEW_PORT}"
+    echo "  active backend=${ACTIVE_PORT}  new backend=${NEW_PORT}  stable=${STABLE_PORT}"
 
+    echo "==> Uploading Application.dll"
     remote_scp "$DLL_LOCAL" "${DEPLOY_DIR}/Application.dll.new"
+    echo "==> Starting standby + cutover on VPS"
 
+    # NOTE: never pkill -f ASPNETCORE_URLS=... — that matches this SSH session and kills deploy.
     remote "set -e
       cp -f ${DEPLOY_DIR}/Application.dll ${DEPLOY_DIR}/Application.dll.bak 2>/dev/null || true
       mv -f ${DEPLOY_DIR}/Application.dll.new ${DEPLOY_DIR}/Application.dll
 
-      pkill -f 'ASPNETCORE_URLS=http://127.0.0.1:${NEW_PORT}' 2>/dev/null || true
+      # Free new backend port only (do not match this shell's cmdline)
+      fuser -k ${NEW_PORT}/tcp 2>/dev/null || true
+      sleep 1
+
       cd ${DEPLOY_DIR}
       ASPNETCORE_ENVIRONMENT=Production \\
       ASPNETCORE_URLS=http://127.0.0.1:${NEW_PORT} \\
       nohup ./Application > /tmp/org-standby.log 2>&1 &
       echo \$! > /tmp/org-standby.pid
+      echo \"standby pid=\$(cat /tmp/org-standby.pid) on ${NEW_PORT}\"
 
       ok=0
       for i in \$(seq 1 30); do
@@ -337,14 +435,15 @@ if [[ "$NEED_CODE" == "1" ]]; then
       fi
       echo \"standby healthy on ${NEW_PORT}\"
 
-      if grep -Rql \"127.0.0.1:${ACTIVE_PORT}\" /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ 2>/dev/null; then
-        sed -i \"s/127.0.0.1:${ACTIVE_PORT}/127.0.0.1:${NEW_PORT}/g\" /etc/nginx/sites-enabled/* /etc/nginx/conf.d/* 2>/dev/null || true
-        nginx -t
-        systemctl reload nginx
-        echo \"nginx cutover → ${NEW_PORT}\"
-      else
-        echo \"WARN: nginx upstream ${ACTIVE_PORT} not found; cutover skipped\" >&2
-      fi
+      # Cut over ONLY the stable proxy upstream — never rewrite peer/public :${STABLE_PORT}
+      cat > /etc/nginx/conf.d/org-backend-active.conf <<EOF
+upstream org_app_backend {
+    server 127.0.0.1:${NEW_PORT};
+}
+EOF
+      nginx -t
+      systemctl reload nginx
+      echo \"stable proxy :${STABLE_PORT} → backend ${NEW_PORT}\"
 
       systemctl stop ${SERVICE} 2>/dev/null || true
       fuser -k ${ACTIVE_PORT}/tcp 2>/dev/null || true
@@ -354,14 +453,19 @@ if [[ "$NEED_CODE" == "1" ]]; then
 [Service]
 Environment=ASPNETCORE_URLS=http://127.0.0.1:${NEW_PORT}
 EOF
+      # Hand port from standby → systemd
       kill \$(cat /tmp/org-standby.pid) 2>/dev/null || true
+      fuser -k ${NEW_PORT}/tcp 2>/dev/null || true
       sleep 1
       systemctl daemon-reload
       systemctl start ${SERVICE}
       sleep 2
       systemctl is-active ${SERVICE}
-      curl -sf -m 8 -o /dev/null -w 'service health %{http_code}\\n' http://127.0.0.1:${NEW_PORT}${HEALTH_PATH} || true
-      echo ${NEW_PORT} > ${DEPLOY_DIR}/ACTIVE_PORT
+      curl -sf -m 8 -o /dev/null -w 'backend health %{http_code}\\n' http://127.0.0.1:${NEW_PORT}${HEALTH_PATH} || true
+      curl -sf -m 8 -o /dev/null -w 'stable health %{http_code}\\n' http://127.0.0.1:${STABLE_PORT}${HEALTH_PATH} || true
+      echo ${NEW_PORT} > ${DEPLOY_DIR}/ACTIVE_BACKEND_PORT
+      echo ${STABLE_PORT} > ${DEPLOY_DIR}/STABLE_PORT
+      echo cutover done
     "
   fi
 fi
@@ -370,6 +474,6 @@ ensure_autostart_systemd
 
 echo
 echo "==> Deploy finished."
-echo "    Tip: USE_DOCKER=1 DEPLOY_PASS=... ./deploy/scripts/zero-downtime-deploy.sh"
+echo "    Peer apps: http://127.0.0.1:${STABLE_PORT}/ (unchanged)"
 echo "    Tip: DRY_RUN=1 ...   # plan only"
 echo "    Tip: ENSURE_AUTOSTART=1 is default (survives VPS reboot)"

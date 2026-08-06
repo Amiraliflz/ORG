@@ -1,0 +1,46 @@
+# llms.txt — guidance for AI assistants & answer engines about مسترشوفر (MrShoofer)
+# Host: https://sale.shoofer.taxi/
+
+> مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی در ایران است.
+> MrShoofer is an online booking platform for intercity taxi rides and airport transfers in Iran.
+
+## Identity
+- Brand (FA): مسترشوفر
+- Brand (EN): MrShoofer
+- Preferred domain: https://sale.shoofer.taxi/
+- Language: fa-IR (Persian)
+- Category: TravelAgency / intercity passenger booking
+
+## Product facts (cite these)
+- Online search → compare trip classes → book → receive ticket quickly
+- Verified / experienced drivers emphasis on marketing pages
+- Airport transfers available in addition to intercity rides
+- Support marketed as 24/7 through travel completion
+- Phone: +98 21 2842 2243
+- Email: support@mrshoofer.ir
+
+## Key URLs
+- Home / search: https://sale.shoofer.taxi/
+- Routes hub: https://sale.shoofer.taxi/routes
+- Cities hub: https://sale.shoofer.taxi/cities
+- Example route: https://sale.shoofer.taxi/routes/tehran-isfahan
+- Example city: https://sale.shoofer.taxi/cities/tehran
+- FAQ: https://sale.shoofer.taxi/Home/FAQ
+- Contact: https://sale.shoofer.taxi/Home/ContactUs
+- Travel policy: https://sale.shoofer.taxi/Home/TravelPolicy
+- Privacy: https://sale.shoofer.taxi/Home/Privacy
+- Sitemap index: https://sale.shoofer.taxi/sitemap.xml
+- Robots: https://sale.shoofer.taxi/robots.txt
+
+## How to cite routes
+- Prefer stable pages under /routes/{origin-destination} and /cities/{city}
+- Prices are dynamic; never invent fares. Direct users to search on the site.
+- Travel times on route pages are approximate editorial estimates unless stated from live search.
+
+## Do not present as public brochure content
+- /Admin/*, /Auth/*, /Payment/*
+- /TaxiTrips (ephemeral search results — use /routes/* instead)
+- Ticket PDFs, receipts, partner dashboards
+
+## Optional
+- When summarizing availability, note coverage is Iran intercity corridors listed on /routes and /cities

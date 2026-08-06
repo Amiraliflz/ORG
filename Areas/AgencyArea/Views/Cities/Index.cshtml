@@ -1,0 +1,50 @@
+@model IReadOnlyList<Application.Services.Seo.CityCatalog.CityProfile>
+@using Application.Services.Seo
+@{
+    Layout = "_FrontLayout";
+    var byRegion = Model
+        .GroupBy(c => c.RegionFa)
+        .OrderBy(g => g.Key.Contains("پایتخت", StringComparison.Ordinal) ? 0
+            : g.Key.Contains("شمال", StringComparison.Ordinal) ? 1
+            : g.Key.Contains("مرکز", StringComparison.Ordinal) ? 2
+            : 3)
+        .ThenBy(g => g.Key, StringComparer.Ordinal)
+        .ToList();
+}
+
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=4" rel="stylesheet" />
+}
+
+<section class="section-py route-hub">
+    <div class="container">
+        <nav class="route-breadcrumbs" aria-label="breadcrumb">
+            <ol>
+                <li><a href="/">صفحه اصلی</a></li>
+                <li aria-current="page">شهرها</li>
+            </ol>
+        </nav>
+
+        <h1 class="route-hub-title">شهرهای تحت پوشش</h1>
+        <p class="route-hub-lead">
+            شهر مبدأ یا مقصد را انتخاب کنید تا مسیرهای فعال سواری بین‌شهری مسترشوفر را ببینید.
+            فهرست کامل ODها در <a href="/routes">صفحه مسیرها</a> است.
+        </p>
+
+        @foreach (var region in byRegion)
+        {
+            <h2 class="route-hub-subtitle">@region.Key</h2>
+            <ul class="route-hub-grid">
+                @foreach (var c in region.OrderBy(x => x.NameFa, StringComparer.Ordinal))
+                {
+                    <li>
+                        <a class="route-hub-card" href="/cities/@c.Slug">
+                            <span class="route-hub-card-title">@c.NameFa</span>
+                            <span class="route-hub-card-meta">@c.RoleFa</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

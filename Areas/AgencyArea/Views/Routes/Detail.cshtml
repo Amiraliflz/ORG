@@ -1,0 +1,155 @@
+@model Application.Services.Seo.RouteCatalog.RoutePage
+@using Application.Services.Seo
+@{
+    Layout = "_FrontLayout";
+    var content = ViewBag.Content as RouteContent.Bundle ?? RouteContent.For(Model);
+    var related = ViewBag.Related as IReadOnlyList<RouteCatalog.RoutePage>
+        ?? Array.Empty<RouteCatalog.RoutePage>();
+    var reverse = ViewBag.Reverse as RouteCatalog.RoutePage;
+    var originCity = ViewBag.OriginCity as CityCatalog.CityProfile;
+    var destCity = ViewBag.DestCity as CityCatalog.CityProfile;
+    var searchDate = ViewBag.SearchDate as string ?? "";
+}
+
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=2" rel="stylesheet" />
+}
+
+<section class="section-py route-detail">
+    <div class="container">
+        <nav class="route-breadcrumbs" aria-label="breadcrumb">
+            <ol>
+                <li><a href="/">صفحه اصلی</a></li>
+                <li><a href="/routes">مسیرها</a></li>
+                @if (originCity is not null)
+                {
+                    <li><a href="/cities/@originCity.Slug">@originCity.NameFa</a></li>
+                }
+                <li aria-current="page">@content.H1.Split('|')[0].Trim()</li>
+            </ol>
+        </nav>
+
+        <div class="route-detail-layout">
+            <div class="route-detail-main">
+                <h1 class="route-detail-title">@content.H1</h1>
+                <p class="route-detail-intro">@content.Intro</p>
+
+                <ul class="route-detail-facts" aria-label="خلاصه مسیر">
+                    <li><span>مبدأ</span><strong>@Model.OriginFa</strong></li>
+                    <li><span>مقصد</span><strong>@Model.DestinationFa</strong></li>
+                    @if (Model.TravelTimeMins is int mins)
+                    {
+                        <li><span>زمان تقریبی</span><strong>@(mins >= 60 ? $"{mins / 60} ساعت{(mins % 60 > 0 ? $" و {mins % 60} دقیقه" : "")}" : $"{mins} دقیقه")</strong></li>
+                    }
+                    @if (content.ApproxKm is int km)
+                    {
+                        <li><span>مسافت تقریبی</span><strong>@km کیلومتر</strong></li>
+                    }
+                </ul>
+
+                <ul class="route-detail-bullets">
+                    <li>رزرو آنلاین سواری @Model.OriginFa به @Model.DestinationFa با نمایش قیمت قبل از پرداخت</li>
+                    <li>رانندگان مجرب و تأییدشده</li>
+                    <li>صدور سریع بلیط و پشتیبانی ۲۴/۷ تا پایان سفر</li>
+                </ul>
+
+                <a class="btn btn-primary btn-lg route-detail-cta"
+                   href="@Url.Action("Index", "TaxiTrips", new {
+                       area = "AgencyArea",
+                       originstring = Model.OriginFa,
+                       destinationstring = Model.DestinationFa,
+                       searchdate = searchDate
+                   })">
+                    جستجوی این مسیر
+                    <i class="ti ti-search" aria-hidden="true"></i>
+                </a>
+                @if (reverse is not null)
+                {
+                    <a class="btn btn-outline-primary btn-lg route-detail-cta-secondary" href="/routes/@reverse.Slug">
+                        مسیر برگشت: @reverse.OriginFa ← @reverse.DestinationFa
+                    </a>
+                }
+
+                <h2 class="route-detail-h2">درباره مسیر @Model.OriginFa به @Model.DestinationFa</h2>
+                <p class="route-detail-body">@content.AboutCorridor</p>
+
+                <h2 class="route-detail-h2">زمان، مسافت و برنامه‌ریزی</h2>
+                <p class="route-detail-body">@content.TravelInfo</p>
+
+                <h2 class="route-detail-h2">@content.TipsHeading</h2>
+                <ul class="route-detail-bullets">
+                    @foreach (var tip in content.Tips)
+                    {
+                        <li>@tip</li>
+                    }
+                </ul>
+
+                <h2 class="route-detail-h2">@content.HowToHeading</h2>
+                <ol class="route-detail-howto">
+                    @for (var i = 0; i < content.HowToSteps.Count; i++)
+                    {
+                        var step = content.HowToSteps[i];
+                        <li>
+                            <strong>@(i + 1). @step.Title</strong>
+                            <span>@step.Text</span>
+                        </li>
+                    }
+                </ol>
+
+                <h2 class="route-detail-h2">@content.WhyHeading</h2>
+                <p class="route-detail-body">@content.WhyBody</p>
+
+                <h2 class="route-detail-h2">سوالات پرتکرار این مسیر</h2>
+                <div class="accordion route-detail-faq" id="routeFaq">
+                    @for (var i = 0; i < content.Faqs.Count; i++)
+                    {
+                        var faq = content.Faqs[i];
+                        var id = $"rf{i + 1}";
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#@id"
+                                        aria-expanded="@(i == 0 ? "true" : "false")">
+                                    @faq.Question
+                                </button>
+                            </h3>
+                            <div id="@id" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#routeFaq">
+                                <div class="accordion-body">@faq.Answer</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <aside class="route-detail-aside" aria-label="پیوندهای مرتبط">
+                @if (originCity is not null || destCity is not null)
+                {
+                    <h2 class="route-detail-h2">شهرها</h2>
+                    <ul class="route-related">
+                        @if (originCity is not null)
+                        {
+                            <li><a href="/cities/@originCity.Slug">سواری از/به @originCity.NameFa</a></li>
+                        }
+                        @if (destCity is not null)
+                        {
+                            <li><a href="/cities/@destCity.Slug">سواری از/به @destCity.NameFa</a></li>
+                        }
+                    </ul>
+                }
+
+                <h2 class="route-detail-h2">مسیرهای مرتبط</h2>
+                <ul class="route-related">
+                    @foreach (var r in related)
+                    {
+                        <li>
+                            <a href="/routes/@r.Slug">سواری @r.OriginFa به @r.DestinationFa</a>
+                        </li>
+                    }
+                    <li><a href="/routes">همه مسیرها</a></li>
+                    <li><a href="/cities">همه شهرها</a></li>
+                    <li><a href="/Home/FAQ">سوالات متداول</a></li>
+                </ul>
+            </aside>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,100 @@
+@model IReadOnlyList<Application.Services.Seo.RouteCatalog.RoutePage>
+@using Application.Services.Seo
+@{
+    Layout = "_FrontLayout";
+    var byOrigin = RouteCatalog.GroupedByOrigin();
+    var featuredCities = SeoDefaults.HomepagePopularCities();
+    // Jump links: busiest origins first (Tehran already first in GroupedByOrigin)
+    var jumpOrigins = byOrigin
+        .OrderByDescending(g => g.Key == "تهران")
+        .ThenByDescending(g => g.Count())
+        .Take(10)
+        .ToList();
+}
+
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=4" rel="stylesheet" />
+}
+
+<section class="section-py route-hub">
+    <div class="container route-hub-inner">
+        <nav class="route-breadcrumbs" aria-label="breadcrumb">
+            <ol>
+                <li><a href="/">صفحه اصلی</a></li>
+                <li aria-current="page">مسیرها</li>
+            </ol>
+        </nav>
+
+        <header class="route-hub-header">
+            <h1 class="route-hub-title">مسیرهای سواری بین‌شهری</h1>
+            <p class="route-hub-lead">
+                همه مسیرهای قابل رزرو مسترشوفر را ببینید، درباره زمان و نکات سفر بخوانید و همان مسیر را آنلاین رزرو کنید.
+                برای کاوش بر اساس شهر، <a href="/cities">فهرست شهرها</a> را ببینید.
+            </p>
+        </header>
+
+        <div class="route-hub-panel">
+            <h2 class="route-hub-subtitle route-hub-subtitle--flush">شهرهای پرتردد</h2>
+            <ul class="route-city-chips">
+                @foreach (var c in featuredCities)
+                {
+                    <li><a href="/cities/@c.Slug">@c.NameFa</a></li>
+                }
+                <li><a class="route-city-chips-all" href="/cities">همه شهرها</a></li>
+            </ul>
+        </div>
+
+        @if (jumpOrigins.Count > 1)
+        {
+            <nav class="route-hub-jump" aria-label="پرش به مبدأ">
+                <span class="route-hub-jump-label">پریدن به مبدأ</span>
+                <ul>
+                    @foreach (var g in jumpOrigins)
+                    {
+                        var id = $"origin-{SeoSlugHelper.SlugifyCity(g.Key, out _)}";
+                        <li>
+                            <a href="#@id">@g.Key <span>(@g.Count())</span></a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+
+        @foreach (var group in byOrigin)
+        {
+            var originId = $"origin-{SeoSlugHelper.SlugifyCity(group.Key, out _)}";
+            var routes = group
+                .OrderByDescending(x => x.IsPrimary)
+                .ThenBy(x => x.DestinationFa, StringComparer.Ordinal)
+                .ToList();
+            <section class="route-hub-origin" id="@originId">
+                <div class="route-hub-origin-head">
+                    <h2 class="route-hub-subtitle route-hub-subtitle--flush">از @group.Key</h2>
+                    <span class="route-hub-origin-count">@routes.Count مسیر</span>
+                </div>
+                <ul class="route-hub-grid">
+                    @foreach (var r in routes)
+                    {
+                        <li>
+                            <a class="route-hub-card" href="/routes/@r.Slug">
+                                <span class="route-hub-card-od">
+                                    <span class="route-hub-card-city">@r.OriginFa</span>
+                                    <span class="route-hub-card-arrow" aria-hidden="true">←</span>
+                                    <span class="route-hub-card-city">@r.DestinationFa</span>
+                                </span>
+                                @if (r.TravelTimeMins is int m)
+                                {
+                                    <span class="route-hub-card-meta">حدود @(m >= 60 ? $"{m / 60} ساعت" : $"{m} دقیقه")</span>
+                                }
+                                else
+                                {
+                                    <span class="route-hub-card-meta route-hub-card-meta--muted">مشاهده و رزرو</span>
+                                }
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+</section>

@@ -1,0 +1,92 @@
+@model Application.Services.Seo.CityCatalog.CityProfile
+@using Application.Services.Seo
+@{
+    Layout = "_FrontLayout";
+    var from = ViewBag.FromRoutes as IReadOnlyList<RouteCatalog.RoutePage>
+        ?? Array.Empty<RouteCatalog.RoutePage>();
+    var to = ViewBag.ToRoutes as IReadOnlyList<RouteCatalog.RoutePage>
+        ?? Array.Empty<RouteCatalog.RoutePage>();
+}
+
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=4" rel="stylesheet" />
+}
+
+<section class="section-py route-detail">
+    <div class="container">
+        <nav class="route-breadcrumbs" aria-label="breadcrumb">
+            <ol>
+                <li><a href="/">صفحه اصلی</a></li>
+                <li><a href="/cities">شهرها</a></li>
+                <li aria-current="page">@Model.NameFa</li>
+            </ol>
+        </nav>
+
+        <h1 class="route-detail-title">سواری بین‌شهری از و به @Model.NameFa</h1>
+        <p class="route-detail-intro">
+            @Model.BlurbFa
+            نقش این شهر در شبکه سفر: @Model.RoleFa (@Model.RegionFa).
+        </p>
+
+        <h2 class="route-detail-h2">نکته‌های سفر مرتبط با @Model.NameFa</h2>
+        <ul class="route-detail-bullets">
+            @foreach (var tip in Model.TripTipsFa)
+            {
+                <li>@tip</li>
+            }
+            <li>برای دیدن قیمت روز، یک مسیر را باز کنید یا از صفحه اصلی مبدأ و مقصد را جستجو کنید.</li>
+        </ul>
+
+        @if (Model.NearbyDestHintsFa.Length > 0)
+        {
+            <h2 class="route-detail-h2">مقاصد مرتبط</h2>
+            <p class="route-detail-body">از @Model.NameFa معمولاً تقاضا به سمت @string.Join("، ", Model.NearbyDestHintsFa) هم دیده می‌شود.</p>
+        }
+
+        <h2 class="route-detail-h2">مسیرها از @Model.NameFa</h2>
+        @if (from.Count == 0)
+        {
+            <p class="route-detail-body">مسیر ثابتی از این شهر در فهرست فعلی نیست؛ از <a href="/">جستجوی صفحه اصلی</a> استفاده کنید.</p>
+        }
+        else
+        {
+            <ul class="route-hub-grid">
+                @foreach (var r in from)
+                {
+                    <li>
+                        <a class="route-hub-card" href="/routes/@r.Slug">
+                            <span class="route-hub-card-title">@r.OriginFa ← @r.DestinationFa</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+
+        <h2 class="route-detail-h2">مسیرها به @Model.NameFa</h2>
+        @if (to.Count == 0)
+        {
+            <p class="route-detail-body">مسیر ثابتی به این شهر در فهرست فعلی نیست.</p>
+        }
+        else
+        {
+            <ul class="route-hub-grid">
+                @foreach (var r in to)
+                {
+                    <li>
+                        <a class="route-hub-card" href="/routes/@r.Slug">
+                            <span class="route-hub-card-title">@r.OriginFa ← @r.DestinationFa</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+
+        <p class="route-detail-body" style="margin-top:2rem">
+            <a href="/routes">همه مسیرها</a>
+            ·
+            <a href="/cities">همه شهرها</a>
+            ·
+            <a href="/Home/FAQ">سوالات متداول</a>
+        </p>
+    </div>
+</section>

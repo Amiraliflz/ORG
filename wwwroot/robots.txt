@@ -1,0 +1,50 @@
+# MrShoofer sale — sale.shoofer.taxi
+# Public booking surface. Private/app surfaces stay Disallow.
+
+User-agent: *
+Allow: /
+Allow: /routes
+Allow: /routes/
+Allow: /cities
+Allow: /cities/
+Disallow: /Admin/
+Disallow: /Auth/
+Disallow: /Payment/
+Disallow: /Partner/
+Disallow: /ReserveInfo
+Disallow: /TripReceiptPdf
+Disallow: /Error/
+Disallow: /TaxiTrips
+Disallow: /TaxiTrips?
+
+# Major search + answer engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Training-only corpus crawler (not required for search citations)
+User-agent: CCBot
+Disallow: /
+
+# Sitemap index (child sitemaps linked inside)
+Sitemap: https://sale.shoofer.taxi/sitemap.xml

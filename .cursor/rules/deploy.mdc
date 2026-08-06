@@ -1,0 +1,39 @@
+---
+description: How to deploy the ORG/sale app safely (localhost :5055 peer APIs)
+alwaysApply: true
+---
+
+# Deploy (ORG / sale app)
+
+When anyone asks how to deploy, or before suggesting deploy steps, point them here.
+
+## Safe command (preferred)
+
+```bash
+./deploy.sh
+```
+
+Uses systemd, last commit, keeps peer apps on `http://127.0.0.1:5055/`.
+
+## Variants
+
+| Command | Purpose |
+|---------|---------|
+| `./deploy.sh --fast` | Short same-port restart |
+| `./deploy.sh --full` | Force full rebuild |
+| `./deploy.sh --dry-run` | Plan only |
+| `./deploy.sh --docker` | Docker path (also stable `:5055`) |
+
+## Config
+
+- `.env.deploy` (gitignored): `DEPLOY_HOST`, `DEPLOY_PASS`, etc.
+- Live host: `root@62.60.191.21`
+- Stable localhost proxy: peer apps always call `:5055`; backends are `15055`/`15056`
+
+## Help banner
+
+Terminals in this workspace auto-print deploy help. Re-show with:
+
+```bash
+./deploy/show-help.sh
+```

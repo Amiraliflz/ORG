@@ -1,0 +1,8 @@
+{
+  "files": ["Areas/AgencyArea/Views/Shared/_FrontLayout.cshtml", "Areas/AgencyArea/Views/Home/Index.cshtml"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "framework": "aspnet-mvc",
+  "devServer": "http://localhost:5055",
+  "cspChecked": true
+}

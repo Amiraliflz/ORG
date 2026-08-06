@@ -2,6 +2,7 @@ using Application.Data;
 using Application.Migrations;
 using Application.Services;
 using Application.Services.MrShooferORS;
+using Application.Services.Seo;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -123,6 +124,12 @@ namespace Application.Areas.AgencyArea
         catch { /* ignore */ }
       }
 
+      // Generated SEO catalog carries ORS city ids for all bookable ODs
+      if (origin_id == 0)
+        origin_id = CityCatalog.FindCityId(originstring) ?? 0;
+      if (destination_id == 0)
+        destination_id = CityCatalog.FindCityId(destinationstring) ?? 0;
+
       if (origin_id == 0 || destination_id == 0)
       {
         if (origin_id == 0) ModelState.AddModelError(nameof(originstring), $"شهر مبدا نامعتبر است: {originstring}");
@@ -130,6 +137,21 @@ namespace Application.Areas.AgencyArea
         ViewBag.origin_city_text = originstring;
         ViewBag.dest_city_text = destinationstring;
         ViewBag.searchdate = searchdate;
+        try
+        {
+          var fallbackPd = string.IsNullOrWhiteSpace(searchdate)
+            ? DateTime.Now.ToPersianDate()
+            : new PersianDate(searchdate.Replace('-', '/'));
+          ViewBag.searchpdate = fallbackPd;
+          ViewBag.selecteddate = fallbackPd.ToDateTime();
+        }
+        catch
+        {
+          var nowPd = DateTime.Now.ToPersianDate();
+          ViewBag.searchpdate = nowPd;
+          ViewBag.selecteddate = DateTime.Now.Date;
+        }
+        AttachRouteSeoIfCatalogMatch(originstring, destinationstring);
         return View();
       }
 
@@ -142,7 +164,42 @@ namespace Application.Areas.AgencyArea
       ViewBag.selecteddate = searchedDatetime;
       ViewBag.searchpdate = pd;
 
+      // Same SEO bottom + sticky bridge as /routes/{slug} when OD is in the catalog.
+      // Keep IsSeoRouteLanding=false so querystring URLs stay noindex (canonical → /routes/...).
+      AttachRouteSeoIfCatalogMatch(originstring, destinationstring);
+
       return View();
+    }
+
+    private void AttachRouteSeoIfCatalogMatch(string originstring, string destinationstring)
+    {
+      var route = RouteCatalog.FindByCities(originstring, destinationstring);
+      if (route is null) return;
+
+      ViewBag.RoutePage = route;
+      ViewBag.RouteSeo = RouteContent.For(route);
+      ViewBag.RelatedRoutes = RouteCatalog.Related(route);
+      ViewBag.ReverseRoute = RouteCatalog.ReverseOf(route);
+      ViewBag.IsSeoRouteLanding = false;
+    }
+
+    /// <summary>HTML fragment for #route-seo — used when the client changes OD via AJAX.</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/TaxiTrips/RouteSeoPartial")]
+    public IActionResult RouteSeoPartial(string originstring, string destinationstring)
+    {
+      var route = RouteCatalog.FindByCities(originstring, destinationstring);
+      if (route is null) return NotFound();
+
+      ViewBag.RoutePage = route;
+      ViewBag.RouteSeo = RouteContent.For(route);
+      ViewBag.RelatedRoutes = RouteCatalog.Related(route);
+      ViewBag.ReverseRoute = RouteCatalog.ReverseOf(route);
+      ViewBag.IsSeoRouteLanding = false;
+      ViewBag.origin_city_text = route.OriginFa;
+      ViewBag.dest_city_text = route.DestinationFa;
+      return PartialView("~/Areas/AgencyArea/Views/TaxiTrips/_RouteSeoBottom.cshtml");
     }
 
     [HttpGet]
@@ -272,6 +329,11 @@ namespace Application.Areas.AgencyArea
       }
 
       if (origin_id == 0)
+        origin_id = CityCatalog.FindCityId(originstring) ?? 0;
+      if (destination_id == 0)
+        destination_id = CityCatalog.FindCityId(destinationstring) ?? 0;
+
+      if (origin_id == 0)
       {
         var suggestions = allDirections.Keys.Where(k => NormalizeCity(k).Contains(originKey)).Take(5);
         return BadRequest(new { error = $"شهر مبدا نامعتبر است: {originstring}", suggestions });
@@ -294,8 +356,14 @@ namespace Application.Areas.AgencyArea
       }
       catch (Exception ex)
       {
-        // Graceful degradation: return empty array instead of 500
-        return Json(new List<SearchedTripViewModel>()); // frontend shows "سفری پیدا نشد"
+        // Prefer a clear error over a silent empty list (CookieContainer / network / API).
+        Console.Error.WriteLine($"[SearchJson] {ex}");
+        Response.StatusCode = 502;
+        return Json(new {
+          error = "خطا در دریافت سفرها از سرویس",
+          detail = ex.Message,
+          inner = ex.InnerException?.Message
+        });
       }
 
       int traveltime_mins = _travelTimeCalculator.GetTravelMins(originstring, destinationstring);
@@ -306,19 +374,24 @@ namespace Application.Areas.AgencyArea
         .Where(t => t.startingDateTime > DateTime.Now.AddMinutes(45))
         .ToList();
 
-      var searchedTripViewModels = end_result.Select(t => new SearchedTripViewModel
+      var searchedTripViewModels = end_result.Select(t =>
       {
-        startingDateTime = t.startingDateTime.ToString("HH:mm"),
-        arrivalDateTime = t.startingDateTime.AddMinutes(traveltime_mins).ToString("HH:mm"),
-        origin = $"{t.originCityName}({t.oringinLocationName})",
-        destination = $"{t.destinationCityName}({t.destinationLocationName})",
-        originalPrice = t.originalTicketprice.ToString("N0"),
-        afterdiscount = t.afterdiscticketprice.ToString("N0"),
-        taxiSupervisorName = t.taxiSupervisorName,
-        taxiSupervisorID = t.taxiSupervisorID,
-        tripcode = t.tripPlanCode,
-        carModelName = t.carModelName,
-        Image = t.Image
+        var arrival = t.startingDateTime.AddMinutes(traveltime_mins);
+        return new SearchedTripViewModel
+        {
+          startingDateTime = t.startingDateTime.ToString("HH:mm"),
+          arrivalDateTime = arrival.ToString("HH:mm"),
+          arrivesNextDay = arrival.Date > t.startingDateTime.Date,
+          origin = $"{t.originCityName}({t.oringinLocationName})",
+          destination = $"{t.destinationCityName}({t.destinationLocationName})",
+          originalPrice = t.originalTicketprice.ToString("N0"),
+          afterdiscount = t.afterdiscticketprice.ToString("N0"),
+          taxiSupervisorName = t.taxiSupervisorName,
+          taxiSupervisorID = t.taxiSupervisorID,
+          tripcode = t.tripPlanCode,
+          carModelName = t.carModelName,
+          Image = t.Image
+        };
       }).ToList();
 
       return Json(searchedTripViewModels);

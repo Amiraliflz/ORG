@@ -3,6 +3,7 @@ using Application.Services;
 using Application.Services.Auth;
 using Application.Services.MrShooferORS;
 using Application.Services.Payment;
+using Application.Services.Seo;
 using Kavenegar;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -23,11 +24,21 @@ builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
 builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();
 
 // Configure MrShooferAPIClient via IHttpClientFactory — connection pooling prevents socket exhaustion
+// UseCookies=false avoids CookieContainer domain lookup crashes on some macOS/dev hosts (GetDomainName: -1)
 builder.Services.AddHttpClient<MrShooferAPIClient>((serviceProvider, client) =>
 {
     var config = serviceProvider.GetRequiredService<IConfiguration>();
     client.BaseAddress = new Uri(config["MrShoofer:ApiBaseUrl"] ?? "https://ors.shoofer.taxi");
     client.Timeout = TimeSpan.FromSeconds(30);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    UseCookies = false,
+    // Avoid Cursor/dev HTTP_PROXY sandboxes breaking ORS calls
+    UseProxy = false,
+    Proxy = null,
+    // ORS edge rejects some default negotiations; pin modern TLS
+    SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+        | System.Security.Authentication.SslProtocols.Tls13
 });
 
 builder.Services.AddHttpClient<CustomerServiceSmsSender>(client =>
@@ -44,13 +55,18 @@ builder.Services.AddHttpClient<IPaymentService, ZarinpalService>(client =>
     client.Timeout = TimeSpan.FromSeconds(12);
 });
 
-builder.Services
+var mvcBuilder = builder.Services
   .AddControllersWithViews()
   .AddJsonOptions(opts =>
   {
     // Ensure Persian characters are not escaped in JSON responses
     opts.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
   });
+
+if (builder.Environment.IsDevelopment())
+{
+  mvcBuilder.AddRazorRuntimeCompilation();
+}
 
 
 builder.Services.TryAddTransient<IOtpLogin, SmsIrOtp>();
@@ -118,6 +134,9 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+// SEO generated catalogs resolve against wwwroot/json/Seo/
+SeoDataPaths.Configure(app.Environment.WebRootPath);
+
 app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
@@ -164,6 +183,48 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Explicit SEO routes (must stay above the AgencyArea catch-all)
+app.MapControllerRoute(
+    name: "seo-sitemap-index",
+    pattern: "sitemap.xml",
+    defaults: new { controller = "Seo", action = "SitemapIndex" });
+app.MapControllerRoute(
+    name: "seo-sitemap-pages",
+    pattern: "sitemap-pages.xml",
+    defaults: new { controller = "Seo", action = "SitemapPages" });
+app.MapControllerRoute(
+    name: "seo-sitemap-routes",
+    pattern: "sitemap-routes.xml",
+    defaults: new { controller = "Seo", action = "SitemapRoutes" });
+app.MapControllerRoute(
+    name: "seo-sitemap-cities",
+    pattern: "sitemap-cities.xml",
+    defaults: new { controller = "Seo", action = "SitemapCities" });
+
+app.MapAreaControllerRoute(
+    name: "seo-routes-hub",
+    areaName: "AgencyArea",
+    pattern: "routes",
+    defaults: new { controller = "Routes", action = "Index" });
+
+app.MapAreaControllerRoute(
+    name: "seo-routes-detail",
+    areaName: "AgencyArea",
+    pattern: "routes/{slug}",
+    defaults: new { controller = "Routes", action = "Detail" });
+
+app.MapAreaControllerRoute(
+    name: "seo-cities-hub",
+    areaName: "AgencyArea",
+    pattern: "cities",
+    defaults: new { controller = "Cities", action = "Index" });
+
+app.MapAreaControllerRoute(
+    name: "seo-cities-detail",
+    areaName: "AgencyArea",
+    pattern: "cities/{slug}",
+    defaults: new { controller = "Cities", action = "Detail" });
 
 app.MapAreaControllerRoute(
     name: "admin",

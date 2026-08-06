@@ -1,6 +1,14 @@
 @{
     Layout = "_AgencySideLayout";
-    ViewData["title"] = "سوالات متداول";
+    ViewData["Title"] = "سوالات متداول";
+    ViewData["MetaDescription"] = "پاسخ سوالات پرتکرار درباره رزرو سواری بین‌شهری، بلیط، کلاس سفر، ترانسفر فرودگاهی و پشتیبانی مسترشوفر.";
+    ViewData["CanonicalUrl"] = "https://sale.shoofer.taxi/Home/FAQ";
+    ViewData["IncludeHomeFaqs"] = true;
+    ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
+    {
+      ("صفحه اصلی", "https://sale.shoofer.taxi/"),
+      ("سوالات متداول", "https://sale.shoofer.taxi/Home/FAQ")
+    };
 }
 
 <style>

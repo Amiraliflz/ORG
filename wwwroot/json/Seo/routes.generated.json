@@ -1,0 +1,3715 @@
+{
+  "generatedAtUtc": "2026-08-06T10:00:17.7980420Z",
+  "source": "https://ors.shoofer.taxi/Directions/getAvailableDirections",
+  "routes": [
+    {
+      "originFa": "اسلامشهر",
+      "destinationFa": "بهارستان",
+      "slug": "islamshahr-baharestan",
+      "originId": 349,
+      "destinationId": 171,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اسلامشهر",
+      "destinationFa": "خمینی شهر",
+      "slug": "islamshahr-khomeinishahr",
+      "originId": 349,
+      "destinationId": 198,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اسلامشهر",
+      "destinationFa": "سپاهان شهر",
+      "slug": "islamshahr-sepahanshahr",
+      "originId": 349,
+      "destinationId": 3249,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اسلامشهر",
+      "destinationFa": "مبارکه",
+      "slug": "islamshahr-mobarakeh",
+      "originId": 349,
+      "destinationId": 254,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اسلامشهر",
+      "destinationFa": "نجف آباد",
+      "slug": "islamshahr-najafabad",
+      "originId": 349,
+      "destinationId": 264,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "آبادان",
+      "slug": "isfahan-abadan",
+      "originId": 170,
+      "destinationId": 556,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "اراک",
+      "slug": "isfahan-arak",
+      "originId": 170,
+      "destinationId": 1158,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "اسلامشهر",
+      "slug": "isfahan-islamshahr",
+      "originId": 170,
+      "destinationId": 349,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "الیگودرز",
+      "slug": "isfahan-aligudarz",
+      "originId": 170,
+      "destinationId": 1076,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "اهواز",
+      "slug": "isfahan-ahvaz",
+      "originId": 170,
+      "destinationId": 570,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "ایذه",
+      "slug": "isfahan-izeh",
+      "originId": 170,
+      "destinationId": 571,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "ایلام",
+      "slug": "isfahan-ilam",
+      "originId": 170,
+      "destinationId": 289,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "بندرعباس",
+      "slug": "isfahan-bandarabbas",
+      "originId": 170,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "بندرگناوه",
+      "slug": "isfahan-bandarganaveh",
+      "originId": 170,
+      "destinationId": 347,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "بوشهر",
+      "slug": "isfahan-bushehr",
+      "originId": 170,
+      "destinationId": 311,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "جاجرم",
+      "slug": "isfahan-jajarm",
+      "originId": 170,
+      "destinationId": 539,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "خرم آباد",
+      "slug": "isfahan-khorramabad",
+      "originId": 170,
+      "destinationId": 1083,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "خوی",
+      "slug": "isfahan-khoy",
+      "originId": 170,
+      "destinationId": 112,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "دماوند",
+      "slug": "isfahan-damavand",
+      "originId": 170,
+      "destinationId": 363,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "رشت",
+      "slug": "isfahan-rasht",
+      "originId": 170,
+      "destinationId": 1031,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "رفسنجان",
+      "slug": "isfahan-rafsanjan",
+      "originId": 170,
+      "destinationId": 894,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "زاهدان",
+      "slug": "isfahan-zahedan",
+      "originId": 170,
+      "destinationId": 685,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "سیرجان",
+      "slug": "isfahan-sirjan",
+      "originId": 170,
+      "destinationId": 910,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "شهر ری",
+      "slug": "isfahan-shahrerey",
+      "originId": 170,
+      "destinationId": 3250,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "شهرقدس",
+      "slug": "isfahan-shahrqods",
+      "originId": 170,
+      "destinationId": 3251,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "شهرکرد",
+      "slug": "isfahan-shahrekord",
+      "originId": 170,
+      "destinationId": 407,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "شیراز",
+      "slug": "isfahan-shiraz",
+      "originId": 170,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "عسلویه",
+      "slug": "isfahan-assaluyeh",
+      "originId": 170,
+      "destinationId": 341,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "فرودگاه امام خمینی",
+      "slug": "isfahan-ika-airport",
+      "originId": 170,
+      "destinationId": 3247,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "فشم",
+      "slug": "isfahan-fasham",
+      "originId": 170,
+      "destinationId": 375,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "قم",
+      "slug": "isfahan-qom",
+      "originId": 170,
+      "destinationId": 841,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "مشهد",
+      "slug": "isfahan-mashhad",
+      "originId": 170,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "مهران",
+      "slug": "isfahan-mehran",
+      "originId": 170,
+      "destinationId": 310,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "چابهار",
+      "slug": "isfahan-chabahar",
+      "originId": 170,
+      "destinationId": 678,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "چالوس",
+      "slug": "isfahan-chalus",
+      "originId": 170,
+      "destinationId": 1123,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "کاشان",
+      "slug": "isfahan-kashan",
+      "originId": 170,
+      "destinationId": 234,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "کرج",
+      "slug": "isfahan-karaj",
+      "originId": 170,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "کرمان",
+      "slug": "isfahan-kerman",
+      "originId": 170,
+      "destinationId": 933,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "کرمانشاه",
+      "slug": "isfahan-kermanshah",
+      "originId": 170,
+      "destinationId": 967,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "یاسوج",
+      "slug": "isfahan-yasuj",
+      "originId": 170,
+      "destinationId": 981,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "یزد",
+      "slug": "isfahan-yazd",
+      "originId": 170,
+      "destinationId": 1277,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "اهواز",
+      "destinationFa": "بندرعباس",
+      "slug": "ahvaz-bandarabbas",
+      "originId": 570,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "رشت",
+      "slug": "bandarabbas-rasht",
+      "originId": 1195,
+      "destinationId": 1031,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "زاهدان",
+      "slug": "bandarabbas-zahedan",
+      "originId": 1195,
+      "destinationId": 685,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "نوشهر",
+      "slug": "bandarabbas-nowshahr",
+      "originId": 1195,
+      "destinationId": 1156,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بهارستان",
+      "destinationFa": "دماوند",
+      "slug": "baharestan-damavand",
+      "originId": 171,
+      "destinationId": 363,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بهارستان",
+      "destinationFa": "شهر ری",
+      "slug": "baharestan-shahrerey",
+      "originId": 171,
+      "destinationId": 3250,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بهارستان",
+      "destinationFa": "شهرقدس",
+      "slug": "baharestan-shahrqods",
+      "originId": 171,
+      "destinationId": 3251,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "بهارستان",
+      "destinationFa": "فشم",
+      "slug": "baharestan-fasham",
+      "originId": 171,
+      "destinationId": 375,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تبریز",
+      "destinationFa": "آستارا",
+      "slug": "tabriz-astara",
+      "originId": 45,
+      "destinationId": 1022,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تبریز",
+      "destinationFa": "اردبیل",
+      "slug": "tabriz-ardabil",
+      "originId": 45,
+      "destinationId": 136,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تبریز",
+      "destinationFa": "خوی",
+      "slug": "tabriz-khoy",
+      "originId": 45,
+      "destinationId": 112,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تبریز",
+      "destinationFa": "کرج",
+      "slug": "tabriz-karaj",
+      "originId": 45,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "آبادان",
+      "slug": "tehran-abadan",
+      "originId": 360,
+      "destinationId": 556,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "آستارا",
+      "slug": "tehran-astara",
+      "originId": 360,
+      "destinationId": 1022,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "آمل",
+      "slug": "tehran-amol",
+      "originId": 360,
+      "destinationId": 1099,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "اراک",
+      "slug": "tehran-arak",
+      "originId": 360,
+      "destinationId": 1158,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "اردبیل",
+      "slug": "tehran-ardabil",
+      "originId": 360,
+      "destinationId": 136,
+      "travelTimeMins": 420,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "ارومیه",
+      "slug": "tehran-urmia",
+      "originId": 360,
+      "destinationId": 94,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "اصفهان",
+      "slug": "tehran-isfahan",
+      "originId": 360,
+      "destinationId": 170,
+      "travelTimeMins": 270,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "اهواز",
+      "slug": "tehran-ahvaz",
+      "originId": 360,
+      "destinationId": 570,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "ایلام",
+      "slug": "tehran-ilam",
+      "originId": 360,
+      "destinationId": 289,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بابل",
+      "slug": "tehran-babol",
+      "originId": 360,
+      "destinationId": 1105,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بابلسر",
+      "slug": "tehran-babolsar",
+      "originId": 360,
+      "destinationId": 1111,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بندرانزلی",
+      "slug": "tehran-anzali",
+      "originId": 360,
+      "destinationId": 1028,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بندرعباس",
+      "slug": "tehran-bandarabbas",
+      "originId": 360,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بندرگناوه",
+      "slug": "tehran-bandarganaveh",
+      "originId": 360,
+      "destinationId": 347,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بهارستان",
+      "slug": "tehran-baharestan",
+      "originId": 360,
+      "destinationId": 171,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "بوشهر",
+      "slug": "tehran-bushehr",
+      "originId": 360,
+      "destinationId": 311,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "تاکستان",
+      "slug": "tehran-takestan",
+      "originId": 360,
+      "destinationId": 827,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "تبریز",
+      "slug": "tehran-tabriz",
+      "originId": 360,
+      "destinationId": 45,
+      "travelTimeMins": 405,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "تنکابن",
+      "slug": "tehran-tonekabon",
+      "originId": 360,
+      "destinationId": 1117,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "خرمشهر",
+      "slug": "tehran-khorramshahr",
+      "originId": 360,
+      "destinationId": 588,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "خمینی شهر",
+      "slug": "tehran-khomeinishahr",
+      "originId": 360,
+      "destinationId": 198,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "خوی",
+      "slug": "tehran-khoy",
+      "originId": 360,
+      "destinationId": 112,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "رامسر",
+      "slug": "tehran-ramsar",
+      "originId": 360,
+      "destinationId": 1126,
+      "travelTimeMins": 265,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "رشت",
+      "slug": "tehran-rasht",
+      "originId": 360,
+      "destinationId": 1031,
+      "travelTimeMins": 240,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "رفسنجان",
+      "slug": "tehran-rafsanjan",
+      "originId": 360,
+      "destinationId": 894,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "رودسر",
+      "slug": "tehran-rudsar",
+      "originId": 360,
+      "destinationId": 1047,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "زاهدان",
+      "slug": "tehran-zahedan",
+      "originId": 360,
+      "destinationId": 685,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "زنجان",
+      "slug": "tehran-zanjan",
+      "originId": 360,
+      "destinationId": 647,
+      "travelTimeMins": 220,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "ساری",
+      "slug": "tehran-sari",
+      "originId": 360,
+      "destinationId": 1129,
+      "travelTimeMins": 280,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "سمنان",
+      "slug": "tehran-semnan",
+      "originId": 360,
+      "destinationId": 661,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "سنندج",
+      "slug": "tehran-sanandaj",
+      "originId": 360,
+      "destinationId": 861,
+      "travelTimeMins": 360,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "سپاهان شهر",
+      "slug": "tehran-sepahanshahr",
+      "originId": 360,
+      "destinationId": 3249,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "سیرجان",
+      "slug": "tehran-sirjan",
+      "originId": 360,
+      "destinationId": 910,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "شهرکرد",
+      "slug": "tehran-shahrekord",
+      "originId": 360,
+      "destinationId": 407,
+      "travelTimeMins": 360,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "شیراز",
+      "slug": "tehran-shiraz",
+      "originId": 360,
+      "destinationId": 758,
+      "travelTimeMins": 540,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "عباس اباد",
+      "slug": "tehran-abbasabad",
+      "originId": 360,
+      "destinationId": 1138,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "عسلویه",
+      "slug": "tehran-assaluyeh",
+      "originId": 360,
+      "destinationId": 341,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "فرودگاه امام خمینی",
+      "slug": "tehran-ika-airport",
+      "originId": 360,
+      "destinationId": 3247,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "فرودگاه وان",
+      "slug": "tehran-van-airport",
+      "originId": 360,
+      "destinationId": 10101,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "قزوین",
+      "slug": "tehran-qazvin",
+      "originId": 360,
+      "destinationId": 834,
+      "travelTimeMins": 110,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "قم",
+      "slug": "tehran-qom",
+      "originId": 360,
+      "destinationId": 841,
+      "travelTimeMins": 105,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "لاهیجان",
+      "slug": "tehran-lahijan",
+      "originId": 360,
+      "destinationId": 1066,
+      "travelTimeMins": 270,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "ماکو",
+      "slug": "tehran-maku",
+      "originId": 360,
+      "destinationId": 128,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "مبارکه",
+      "slug": "tehran-mobarakeh",
+      "originId": 360,
+      "destinationId": 254,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "محمودآباد",
+      "slug": "tehran-mahmoudabad",
+      "originId": 360,
+      "destinationId": 124,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "مشهد",
+      "slug": "tehran-mashhad",
+      "originId": 360,
+      "destinationId": 522,
+      "travelTimeMins": 600,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "ملایر",
+      "slug": "tehran-malayer",
+      "originId": 360,
+      "destinationId": 1248,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "مهران",
+      "slug": "tehran-mehran",
+      "originId": 360,
+      "destinationId": 310,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "نجف آباد",
+      "slug": "tehran-najafabad",
+      "originId": 360,
+      "destinationId": 264,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "نور",
+      "slug": "tehran-nur",
+      "originId": 360,
+      "destinationId": 1153,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "نوشهر",
+      "slug": "tehran-nowshahr",
+      "originId": 360,
+      "destinationId": 1156,
+      "travelTimeMins": 170,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "همدان",
+      "slug": "tehran-hamedan",
+      "originId": 360,
+      "destinationId": 1256,
+      "travelTimeMins": 220,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "وان",
+      "slug": "tehran-van",
+      "originId": 360,
+      "destinationId": 10100,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "چابهار",
+      "slug": "tehran-chabahar",
+      "originId": 360,
+      "destinationId": 678,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "چابکسر",
+      "slug": "tehran-chaboksar",
+      "originId": 360,
+      "destinationId": 1045,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "چالوس",
+      "slug": "tehran-chalus",
+      "originId": 360,
+      "destinationId": 1123,
+      "travelTimeMins": 160,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "کاشان",
+      "slug": "tehran-kashan",
+      "originId": 360,
+      "destinationId": 234,
+      "travelTimeMins": 164,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "کرمان",
+      "slug": "tehran-kerman",
+      "originId": 360,
+      "destinationId": 933,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "کرمانشاه",
+      "slug": "tehran-kermanshah",
+      "originId": 360,
+      "destinationId": 967,
+      "travelTimeMins": 380,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "کلاردشت",
+      "slug": "tehran-kelardasht",
+      "originId": 360,
+      "destinationId": 1143,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "گرگان",
+      "slug": "tehran-gorgan",
+      "originId": 360,
+      "destinationId": 1015,
+      "travelTimeMins": 300,
+      "isPrimary": true
+    },
+    {
+      "originFa": "تهران",
+      "destinationFa": "یزد",
+      "slug": "tehran-yazd",
+      "originId": 360,
+      "destinationId": 1277,
+      "travelTimeMins": 420,
+      "isPrimary": true
+    },
+    {
+      "originFa": "جاجرم",
+      "destinationFa": "فولادشهر",
+      "slug": "jajarm-fooladshahr",
+      "originId": 539,
+      "destinationId": 248,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "خمینی شهر",
+      "destinationFa": "دماوند",
+      "slug": "khomeinishahr-damavand",
+      "originId": 198,
+      "destinationId": 363,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "خمینی شهر",
+      "destinationFa": "شهر ری",
+      "slug": "khomeinishahr-shahrerey",
+      "originId": 198,
+      "destinationId": 3250,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "خمینی شهر",
+      "destinationFa": "شهرقدس",
+      "slug": "khomeinishahr-shahrqods",
+      "originId": 198,
+      "destinationId": 3251,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "خمینی شهر",
+      "destinationFa": "فشم",
+      "slug": "khomeinishahr-fasham",
+      "originId": 198,
+      "destinationId": 375,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "خوی",
+      "destinationFa": "فرودگاه وان",
+      "slug": "khoy-van-airport",
+      "originId": 112,
+      "destinationId": 10101,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "خوی",
+      "destinationFa": "وان",
+      "slug": "khoy-van",
+      "originId": 112,
+      "destinationId": 10100,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "دماوند",
+      "destinationFa": "سپاهان شهر",
+      "slug": "damavand-sepahanshahr",
+      "originId": 363,
+      "destinationId": 3249,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "دماوند",
+      "destinationFa": "مبارکه",
+      "slug": "damavand-mobarakeh",
+      "originId": 363,
+      "destinationId": 254,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "دماوند",
+      "destinationFa": "نجف آباد",
+      "slug": "damavand-najafabad",
+      "originId": 363,
+      "destinationId": 264,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "رشت",
+      "destinationFa": "ساری",
+      "slug": "rasht-sari",
+      "originId": 1031,
+      "destinationId": 1129,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "رشت",
+      "destinationFa": "گرگان",
+      "slug": "rasht-gorgan",
+      "originId": 1031,
+      "destinationId": 1015,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "سپاهان شهر",
+      "destinationFa": "شهر ری",
+      "slug": "sepahanshahr-shahrerey",
+      "originId": 3249,
+      "destinationId": 3250,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "سپاهان شهر",
+      "destinationFa": "شهرقدس",
+      "slug": "sepahanshahr-shahrqods",
+      "originId": 3249,
+      "destinationId": 3251,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "سپاهان شهر",
+      "destinationFa": "فشم",
+      "slug": "sepahanshahr-fasham",
+      "originId": 3249,
+      "destinationId": 375,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شهر ری",
+      "destinationFa": "مبارکه",
+      "slug": "shahrerey-mobarakeh",
+      "originId": 3250,
+      "destinationId": 254,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شهر ری",
+      "destinationFa": "نجف آباد",
+      "slug": "shahrerey-najafabad",
+      "originId": 3250,
+      "destinationId": 264,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شهرقدس",
+      "destinationFa": "مبارکه",
+      "slug": "shahrqods-mobarakeh",
+      "originId": 3251,
+      "destinationId": 254,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شهرقدس",
+      "destinationFa": "نجف آباد",
+      "slug": "shahrqods-najafabad",
+      "originId": 3251,
+      "destinationId": 264,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "آبادان",
+      "slug": "shiraz-abadan",
+      "originId": 758,
+      "destinationId": 556,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "اهواز",
+      "slug": "shiraz-ahvaz",
+      "originId": 758,
+      "destinationId": 570,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "بندرعباس",
+      "slug": "shiraz-bandarabbas",
+      "originId": 758,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "بندرگناوه",
+      "slug": "shiraz-bandarganaveh",
+      "originId": 758,
+      "destinationId": 347,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "بوشهر",
+      "slug": "shiraz-bushehr",
+      "originId": 758,
+      "destinationId": 311,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "رفسنجان",
+      "slug": "shiraz-rafsanjan",
+      "originId": 758,
+      "destinationId": 894,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "زاهدان",
+      "slug": "shiraz-zahedan",
+      "originId": 758,
+      "destinationId": 685,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "سیرجان",
+      "slug": "shiraz-sirjan",
+      "originId": 758,
+      "destinationId": 910,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "عسلویه",
+      "slug": "shiraz-assaluyeh",
+      "originId": 758,
+      "destinationId": 341,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "چابهار",
+      "slug": "shiraz-chabahar",
+      "originId": 758,
+      "destinationId": 678,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "کرج",
+      "slug": "shiraz-karaj",
+      "originId": 758,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "کرمان",
+      "slug": "shiraz-kerman",
+      "originId": 758,
+      "destinationId": 933,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "کرمانشاه",
+      "slug": "shiraz-kermanshah",
+      "originId": 758,
+      "destinationId": 967,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "فشم",
+      "destinationFa": "مبارکه",
+      "slug": "fasham-mobarakeh",
+      "originId": 375,
+      "destinationId": 254,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "فشم",
+      "destinationFa": "نجف آباد",
+      "slug": "fasham-najafabad",
+      "originId": 375,
+      "destinationId": 264,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "بابل",
+      "slug": "mashhad-babol",
+      "originId": 522,
+      "destinationId": 1105,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "بابلسر",
+      "slug": "mashhad-babolsar",
+      "originId": 522,
+      "destinationId": 1111,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "بندرترکمن",
+      "slug": "mashhad-bandartorkaman",
+      "originId": 522,
+      "destinationId": 1000,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "بندرعباس",
+      "slug": "mashhad-bandarabbas",
+      "originId": 522,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "ساری",
+      "slug": "mashhad-sari",
+      "originId": 522,
+      "destinationId": 1129,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "کرج",
+      "slug": "mashhad-karaj",
+      "originId": 522,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "گرگان",
+      "slug": "mashhad-gorgan",
+      "originId": 522,
+      "destinationId": 1015,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "آبادان",
+      "slug": "karaj-abadan",
+      "originId": 279,
+      "destinationId": 556,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "آستارا",
+      "slug": "karaj-astara",
+      "originId": 279,
+      "destinationId": 1022,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "آمل",
+      "slug": "karaj-amol",
+      "originId": 279,
+      "destinationId": 1099,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "اراک",
+      "slug": "karaj-arak",
+      "originId": 279,
+      "destinationId": 1158,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "اردبیل",
+      "slug": "karaj-ardabil",
+      "originId": 279,
+      "destinationId": 136,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "ارومیه",
+      "slug": "karaj-urmia",
+      "originId": 279,
+      "destinationId": 94,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "اهواز",
+      "slug": "karaj-ahvaz",
+      "originId": 279,
+      "destinationId": 570,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "ایلام",
+      "slug": "karaj-ilam",
+      "originId": 279,
+      "destinationId": 289,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "بابل",
+      "slug": "karaj-babol",
+      "originId": 279,
+      "destinationId": 1105,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "بابلسر",
+      "slug": "karaj-babolsar",
+      "originId": 279,
+      "destinationId": 1111,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "بندرانزلی",
+      "slug": "karaj-anzali",
+      "originId": 279,
+      "destinationId": 1028,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "بندرعباس",
+      "slug": "karaj-bandarabbas",
+      "originId": 279,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "بندرگناوه",
+      "slug": "karaj-bandarganaveh",
+      "originId": 279,
+      "destinationId": 347,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "بوشهر",
+      "slug": "karaj-bushehr",
+      "originId": 279,
+      "destinationId": 311,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "تاکستان",
+      "slug": "karaj-takestan",
+      "originId": 279,
+      "destinationId": 827,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "تنکابن",
+      "slug": "karaj-tonekabon",
+      "originId": 279,
+      "destinationId": 1117,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "خرمشهر",
+      "slug": "karaj-khorramshahr",
+      "originId": 279,
+      "destinationId": 588,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "خوی",
+      "slug": "karaj-khoy",
+      "originId": 279,
+      "destinationId": 112,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "رامسر",
+      "slug": "karaj-ramsar",
+      "originId": 279,
+      "destinationId": 1126,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "رشت",
+      "slug": "karaj-rasht",
+      "originId": 279,
+      "destinationId": 1031,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "رفسنجان",
+      "slug": "karaj-rafsanjan",
+      "originId": 279,
+      "destinationId": 894,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "رودسر",
+      "slug": "karaj-rudsar",
+      "originId": 279,
+      "destinationId": 1047,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "زنجان",
+      "slug": "karaj-zanjan",
+      "originId": 279,
+      "destinationId": 647,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "ساری",
+      "slug": "karaj-sari",
+      "originId": 279,
+      "destinationId": 1129,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "سمنان",
+      "slug": "karaj-semnan",
+      "originId": 279,
+      "destinationId": 661,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "سنندج",
+      "slug": "karaj-sanandaj",
+      "originId": 279,
+      "destinationId": 861,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "سیرجان",
+      "slug": "karaj-sirjan",
+      "originId": 279,
+      "destinationId": 910,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "شهرکرد",
+      "slug": "karaj-shahrekord",
+      "originId": 279,
+      "destinationId": 407,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "عباس اباد",
+      "slug": "karaj-abbasabad",
+      "originId": 279,
+      "destinationId": 1138,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "عسلویه",
+      "slug": "karaj-assaluyeh",
+      "originId": 279,
+      "destinationId": 341,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "فرودگاه وان",
+      "slug": "karaj-van-airport",
+      "originId": 279,
+      "destinationId": 10101,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "قزوین",
+      "slug": "karaj-qazvin",
+      "originId": 279,
+      "destinationId": 834,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "قم",
+      "slug": "karaj-qom",
+      "originId": 279,
+      "destinationId": 841,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "لاهیجان",
+      "slug": "karaj-lahijan",
+      "originId": 279,
+      "destinationId": 1066,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "ماکو",
+      "slug": "karaj-maku",
+      "originId": 279,
+      "destinationId": 128,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "محمودآباد",
+      "slug": "karaj-mahmoudabad",
+      "originId": 279,
+      "destinationId": 124,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "ملایر",
+      "slug": "karaj-malayer",
+      "originId": 279,
+      "destinationId": 1248,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "مهران",
+      "slug": "karaj-mehran",
+      "originId": 279,
+      "destinationId": 310,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "نور",
+      "slug": "karaj-nur",
+      "originId": 279,
+      "destinationId": 1153,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "نوشهر",
+      "slug": "karaj-nowshahr",
+      "originId": 279,
+      "destinationId": 1156,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "همدان",
+      "slug": "karaj-hamedan",
+      "originId": 279,
+      "destinationId": 1256,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "وان",
+      "slug": "karaj-van",
+      "originId": 279,
+      "destinationId": 10100,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "چابکسر",
+      "slug": "karaj-chaboksar",
+      "originId": 279,
+      "destinationId": 1045,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "چالوس",
+      "slug": "karaj-chalus",
+      "originId": 279,
+      "destinationId": 1123,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "کاشان",
+      "slug": "karaj-kashan",
+      "originId": 279,
+      "destinationId": 234,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "کرمان",
+      "slug": "karaj-kerman",
+      "originId": 279,
+      "destinationId": 933,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "کرمانشاه",
+      "slug": "karaj-kermanshah",
+      "originId": 279,
+      "destinationId": 967,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "کلاردشت",
+      "slug": "karaj-kelardasht",
+      "originId": 279,
+      "destinationId": 1143,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "گرگان",
+      "slug": "karaj-gorgan",
+      "originId": 279,
+      "destinationId": 1015,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "یزد",
+      "slug": "karaj-yazd",
+      "originId": 279,
+      "destinationId": 1277,
+      "travelTimeMins": null,
+      "isPrimary": true
+    },
+    {
+      "originFa": "آبادان",
+      "destinationFa": "اصفهان",
+      "slug": "abadan-isfahan",
+      "originId": 556,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آبادان",
+      "destinationFa": "تهران",
+      "slug": "abadan-tehran",
+      "originId": 556,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آبادان",
+      "destinationFa": "شیراز",
+      "slug": "abadan-shiraz",
+      "originId": 556,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آبادان",
+      "destinationFa": "کرج",
+      "slug": "abadan-karaj",
+      "originId": 556,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آستارا",
+      "destinationFa": "تبریز",
+      "slug": "astara-tabriz",
+      "originId": 1022,
+      "destinationId": 45,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آستارا",
+      "destinationFa": "تهران",
+      "slug": "astara-tehran",
+      "originId": 1022,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آستارا",
+      "destinationFa": "کرج",
+      "slug": "astara-karaj",
+      "originId": 1022,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آمل",
+      "destinationFa": "تهران",
+      "slug": "amol-tehran",
+      "originId": 1099,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "آمل",
+      "destinationFa": "کرج",
+      "slug": "amol-karaj",
+      "originId": 1099,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اراک",
+      "destinationFa": "اصفهان",
+      "slug": "arak-isfahan",
+      "originId": 1158,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اراک",
+      "destinationFa": "تهران",
+      "slug": "arak-tehran",
+      "originId": 1158,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اراک",
+      "destinationFa": "کرج",
+      "slug": "arak-karaj",
+      "originId": 1158,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اردبیل",
+      "destinationFa": "تبریز",
+      "slug": "ardabil-tabriz",
+      "originId": 136,
+      "destinationId": 45,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اردبیل",
+      "destinationFa": "تهران",
+      "slug": "ardabil-tehran",
+      "originId": 136,
+      "destinationId": 360,
+      "travelTimeMins": 420,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اردبیل",
+      "destinationFa": "کرج",
+      "slug": "ardabil-karaj",
+      "originId": 136,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ارومیه",
+      "destinationFa": "تهران",
+      "slug": "urmia-tehran",
+      "originId": 94,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ارومیه",
+      "destinationFa": "کرج",
+      "slug": "urmia-karaj",
+      "originId": 94,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اسلامشهر",
+      "destinationFa": "اصفهان",
+      "slug": "islamshahr-isfahan",
+      "originId": 349,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اصفهان",
+      "destinationFa": "تهران",
+      "slug": "isfahan-tehran",
+      "originId": 170,
+      "destinationId": 360,
+      "travelTimeMins": 270,
+      "isPrimary": false
+    },
+    {
+      "originFa": "الیگودرز",
+      "destinationFa": "اصفهان",
+      "slug": "aligudarz-isfahan",
+      "originId": 1076,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اهواز",
+      "destinationFa": "اصفهان",
+      "slug": "ahvaz-isfahan",
+      "originId": 570,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اهواز",
+      "destinationFa": "تهران",
+      "slug": "ahvaz-tehran",
+      "originId": 570,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اهواز",
+      "destinationFa": "شیراز",
+      "slug": "ahvaz-shiraz",
+      "originId": 570,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "اهواز",
+      "destinationFa": "کرج",
+      "slug": "ahvaz-karaj",
+      "originId": 570,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ایذه",
+      "destinationFa": "اصفهان",
+      "slug": "izeh-isfahan",
+      "originId": 571,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ایلام",
+      "destinationFa": "اصفهان",
+      "slug": "ilam-isfahan",
+      "originId": 289,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ایلام",
+      "destinationFa": "تهران",
+      "slug": "ilam-tehran",
+      "originId": 289,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ایلام",
+      "destinationFa": "کرج",
+      "slug": "ilam-karaj",
+      "originId": 289,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بابل",
+      "destinationFa": "تهران",
+      "slug": "babol-tehran",
+      "originId": 1105,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بابل",
+      "destinationFa": "مشهد",
+      "slug": "babol-mashhad",
+      "originId": 1105,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بابل",
+      "destinationFa": "کرج",
+      "slug": "babol-karaj",
+      "originId": 1105,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بابلسر",
+      "destinationFa": "تهران",
+      "slug": "babolsar-tehran",
+      "originId": 1111,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بابلسر",
+      "destinationFa": "مشهد",
+      "slug": "babolsar-mashhad",
+      "originId": 1111,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بابلسر",
+      "destinationFa": "کرج",
+      "slug": "babolsar-karaj",
+      "originId": 1111,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرانزلی",
+      "destinationFa": "تهران",
+      "slug": "anzali-tehran",
+      "originId": 1028,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرانزلی",
+      "destinationFa": "کرج",
+      "slug": "anzali-karaj",
+      "originId": 1028,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرترکمن",
+      "destinationFa": "مشهد",
+      "slug": "bandartorkaman-mashhad",
+      "originId": 1000,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "اصفهان",
+      "slug": "bandarabbas-isfahan",
+      "originId": 1195,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "اهواز",
+      "slug": "bandarabbas-ahvaz",
+      "originId": 1195,
+      "destinationId": 570,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "تهران",
+      "slug": "bandarabbas-tehran",
+      "originId": 1195,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "شیراز",
+      "slug": "bandarabbas-shiraz",
+      "originId": 1195,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "مشهد",
+      "slug": "bandarabbas-mashhad",
+      "originId": 1195,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرعباس",
+      "destinationFa": "کرج",
+      "slug": "bandarabbas-karaj",
+      "originId": 1195,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرگناوه",
+      "destinationFa": "اصفهان",
+      "slug": "bandarganaveh-isfahan",
+      "originId": 347,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرگناوه",
+      "destinationFa": "تهران",
+      "slug": "bandarganaveh-tehran",
+      "originId": 347,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرگناوه",
+      "destinationFa": "شیراز",
+      "slug": "bandarganaveh-shiraz",
+      "originId": 347,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بندرگناوه",
+      "destinationFa": "کرج",
+      "slug": "bandarganaveh-karaj",
+      "originId": 347,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بهارستان",
+      "destinationFa": "اسلامشهر",
+      "slug": "baharestan-islamshahr",
+      "originId": 171,
+      "destinationId": 349,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بهارستان",
+      "destinationFa": "تهران",
+      "slug": "baharestan-tehran",
+      "originId": 171,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بوشهر",
+      "destinationFa": "اصفهان",
+      "slug": "bushehr-isfahan",
+      "originId": 311,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بوشهر",
+      "destinationFa": "تهران",
+      "slug": "bushehr-tehran",
+      "originId": 311,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بوشهر",
+      "destinationFa": "شیراز",
+      "slug": "bushehr-shiraz",
+      "originId": 311,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "بوشهر",
+      "destinationFa": "کرج",
+      "slug": "bushehr-karaj",
+      "originId": 311,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "تاکستان",
+      "destinationFa": "تهران",
+      "slug": "takestan-tehran",
+      "originId": 827,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "تاکستان",
+      "destinationFa": "کرج",
+      "slug": "takestan-karaj",
+      "originId": 827,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "تبریز",
+      "destinationFa": "تهران",
+      "slug": "tabriz-tehran",
+      "originId": 45,
+      "destinationId": 360,
+      "travelTimeMins": 405,
+      "isPrimary": false
+    },
+    {
+      "originFa": "تنکابن",
+      "destinationFa": "تهران",
+      "slug": "tonekabon-tehran",
+      "originId": 1117,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "تنکابن",
+      "destinationFa": "کرج",
+      "slug": "tonekabon-karaj",
+      "originId": 1117,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "جاجرم",
+      "destinationFa": "اصفهان",
+      "slug": "jajarm-isfahan",
+      "originId": 539,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خرم آباد",
+      "destinationFa": "اصفهان",
+      "slug": "khorramabad-isfahan",
+      "originId": 1083,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خرمشهر",
+      "destinationFa": "تهران",
+      "slug": "khorramshahr-tehran",
+      "originId": 588,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خرمشهر",
+      "destinationFa": "کرج",
+      "slug": "khorramshahr-karaj",
+      "originId": 588,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خمینی شهر",
+      "destinationFa": "اسلامشهر",
+      "slug": "khomeinishahr-islamshahr",
+      "originId": 198,
+      "destinationId": 349,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خمینی شهر",
+      "destinationFa": "تهران",
+      "slug": "khomeinishahr-tehran",
+      "originId": 198,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خوی",
+      "destinationFa": "اصفهان",
+      "slug": "khoy-isfahan",
+      "originId": 112,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خوی",
+      "destinationFa": "تبریز",
+      "slug": "khoy-tabriz",
+      "originId": 112,
+      "destinationId": 45,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خوی",
+      "destinationFa": "تهران",
+      "slug": "khoy-tehran",
+      "originId": 112,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "خوی",
+      "destinationFa": "کرج",
+      "slug": "khoy-karaj",
+      "originId": 112,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "دماوند",
+      "destinationFa": "اصفهان",
+      "slug": "damavand-isfahan",
+      "originId": 363,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "دماوند",
+      "destinationFa": "بهارستان",
+      "slug": "damavand-baharestan",
+      "originId": 363,
+      "destinationId": 171,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "دماوند",
+      "destinationFa": "خمینی شهر",
+      "slug": "damavand-khomeinishahr",
+      "originId": 363,
+      "destinationId": 198,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رامسر",
+      "destinationFa": "تهران",
+      "slug": "ramsar-tehran",
+      "originId": 1126,
+      "destinationId": 360,
+      "travelTimeMins": 265,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رامسر",
+      "destinationFa": "کرج",
+      "slug": "ramsar-karaj",
+      "originId": 1126,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رشت",
+      "destinationFa": "اصفهان",
+      "slug": "rasht-isfahan",
+      "originId": 1031,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رشت",
+      "destinationFa": "بندرعباس",
+      "slug": "rasht-bandarabbas",
+      "originId": 1031,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رشت",
+      "destinationFa": "تهران",
+      "slug": "rasht-tehran",
+      "originId": 1031,
+      "destinationId": 360,
+      "travelTimeMins": 240,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رشت",
+      "destinationFa": "کرج",
+      "slug": "rasht-karaj",
+      "originId": 1031,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رفسنجان",
+      "destinationFa": "اصفهان",
+      "slug": "rafsanjan-isfahan",
+      "originId": 894,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رفسنجان",
+      "destinationFa": "تهران",
+      "slug": "rafsanjan-tehran",
+      "originId": 894,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رفسنجان",
+      "destinationFa": "شیراز",
+      "slug": "rafsanjan-shiraz",
+      "originId": 894,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رفسنجان",
+      "destinationFa": "کرج",
+      "slug": "rafsanjan-karaj",
+      "originId": 894,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رودسر",
+      "destinationFa": "تهران",
+      "slug": "rudsar-tehran",
+      "originId": 1047,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "رودسر",
+      "destinationFa": "کرج",
+      "slug": "rudsar-karaj",
+      "originId": 1047,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "زاهدان",
+      "destinationFa": "اصفهان",
+      "slug": "zahedan-isfahan",
+      "originId": 685,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "زاهدان",
+      "destinationFa": "بندرعباس",
+      "slug": "zahedan-bandarabbas",
+      "originId": 685,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "زاهدان",
+      "destinationFa": "تهران",
+      "slug": "zahedan-tehran",
+      "originId": 685,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "زاهدان",
+      "destinationFa": "شیراز",
+      "slug": "zahedan-shiraz",
+      "originId": 685,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "زنجان",
+      "destinationFa": "تهران",
+      "slug": "zanjan-tehran",
+      "originId": 647,
+      "destinationId": 360,
+      "travelTimeMins": 220,
+      "isPrimary": false
+    },
+    {
+      "originFa": "زنجان",
+      "destinationFa": "کرج",
+      "slug": "zanjan-karaj",
+      "originId": 647,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ساری",
+      "destinationFa": "تهران",
+      "slug": "sari-tehran",
+      "originId": 1129,
+      "destinationId": 360,
+      "travelTimeMins": 280,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ساری",
+      "destinationFa": "رشت",
+      "slug": "sari-rasht",
+      "originId": 1129,
+      "destinationId": 1031,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ساری",
+      "destinationFa": "مشهد",
+      "slug": "sari-mashhad",
+      "originId": 1129,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ساری",
+      "destinationFa": "کرج",
+      "slug": "sari-karaj",
+      "originId": 1129,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سمنان",
+      "destinationFa": "تهران",
+      "slug": "semnan-tehran",
+      "originId": 661,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سمنان",
+      "destinationFa": "کرج",
+      "slug": "semnan-karaj",
+      "originId": 661,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سنندج",
+      "destinationFa": "تهران",
+      "slug": "sanandaj-tehran",
+      "originId": 861,
+      "destinationId": 360,
+      "travelTimeMins": 360,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سنندج",
+      "destinationFa": "کرج",
+      "slug": "sanandaj-karaj",
+      "originId": 861,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سپاهان شهر",
+      "destinationFa": "اسلامشهر",
+      "slug": "sepahanshahr-islamshahr",
+      "originId": 3249,
+      "destinationId": 349,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سپاهان شهر",
+      "destinationFa": "تهران",
+      "slug": "sepahanshahr-tehran",
+      "originId": 3249,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سپاهان شهر",
+      "destinationFa": "دماوند",
+      "slug": "sepahanshahr-damavand",
+      "originId": 3249,
+      "destinationId": 363,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سیرجان",
+      "destinationFa": "اصفهان",
+      "slug": "sirjan-isfahan",
+      "originId": 910,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سیرجان",
+      "destinationFa": "تهران",
+      "slug": "sirjan-tehran",
+      "originId": 910,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سیرجان",
+      "destinationFa": "شیراز",
+      "slug": "sirjan-shiraz",
+      "originId": 910,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "سیرجان",
+      "destinationFa": "کرج",
+      "slug": "sirjan-karaj",
+      "originId": 910,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهر ری",
+      "destinationFa": "اصفهان",
+      "slug": "shahrerey-isfahan",
+      "originId": 3250,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهر ری",
+      "destinationFa": "بهارستان",
+      "slug": "shahrerey-baharestan",
+      "originId": 3250,
+      "destinationId": 171,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهر ری",
+      "destinationFa": "خمینی شهر",
+      "slug": "shahrerey-khomeinishahr",
+      "originId": 3250,
+      "destinationId": 198,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهر ری",
+      "destinationFa": "سپاهان شهر",
+      "slug": "shahrerey-sepahanshahr",
+      "originId": 3250,
+      "destinationId": 3249,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرقدس",
+      "destinationFa": "اصفهان",
+      "slug": "shahrqods-isfahan",
+      "originId": 3251,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرقدس",
+      "destinationFa": "بهارستان",
+      "slug": "shahrqods-baharestan",
+      "originId": 3251,
+      "destinationId": 171,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرقدس",
+      "destinationFa": "خمینی شهر",
+      "slug": "shahrqods-khomeinishahr",
+      "originId": 3251,
+      "destinationId": 198,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرقدس",
+      "destinationFa": "سپاهان شهر",
+      "slug": "shahrqods-sepahanshahr",
+      "originId": 3251,
+      "destinationId": 3249,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرکرد",
+      "destinationFa": "اصفهان",
+      "slug": "shahrekord-isfahan",
+      "originId": 407,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرکرد",
+      "destinationFa": "تهران",
+      "slug": "shahrekord-tehran",
+      "originId": 407,
+      "destinationId": 360,
+      "travelTimeMins": 360,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شهرکرد",
+      "destinationFa": "کرج",
+      "slug": "shahrekord-karaj",
+      "originId": 407,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "اصفهان",
+      "slug": "shiraz-isfahan",
+      "originId": 758,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "شیراز",
+      "destinationFa": "تهران",
+      "slug": "shiraz-tehran",
+      "originId": 758,
+      "destinationId": 360,
+      "travelTimeMins": 540,
+      "isPrimary": false
+    },
+    {
+      "originFa": "عباس اباد",
+      "destinationFa": "تهران",
+      "slug": "abbasabad-tehran",
+      "originId": 1138,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "عباس اباد",
+      "destinationFa": "کرج",
+      "slug": "abbasabad-karaj",
+      "originId": 1138,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "عسلویه",
+      "destinationFa": "اصفهان",
+      "slug": "assaluyeh-isfahan",
+      "originId": 341,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "عسلویه",
+      "destinationFa": "تهران",
+      "slug": "assaluyeh-tehran",
+      "originId": 341,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "عسلویه",
+      "destinationFa": "شیراز",
+      "slug": "assaluyeh-shiraz",
+      "originId": 341,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "عسلویه",
+      "destinationFa": "کرج",
+      "slug": "assaluyeh-karaj",
+      "originId": 341,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فرودگاه امام خمینی",
+      "destinationFa": "اصفهان",
+      "slug": "ika-airport-isfahan",
+      "originId": 3247,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فرودگاه امام خمینی",
+      "destinationFa": "تهران",
+      "slug": "ika-airport-tehran",
+      "originId": 3247,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فرودگاه وان",
+      "destinationFa": "تهران",
+      "slug": "van-airport-tehran",
+      "originId": 10101,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فرودگاه وان",
+      "destinationFa": "خوی",
+      "slug": "van-airport-khoy",
+      "originId": 10101,
+      "destinationId": 112,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فرودگاه وان",
+      "destinationFa": "کرج",
+      "slug": "van-airport-karaj",
+      "originId": 10101,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فشم",
+      "destinationFa": "اصفهان",
+      "slug": "fasham-isfahan",
+      "originId": 375,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فشم",
+      "destinationFa": "بهارستان",
+      "slug": "fasham-baharestan",
+      "originId": 375,
+      "destinationId": 171,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فشم",
+      "destinationFa": "خمینی شهر",
+      "slug": "fasham-khomeinishahr",
+      "originId": 375,
+      "destinationId": 198,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فشم",
+      "destinationFa": "سپاهان شهر",
+      "slug": "fasham-sepahanshahr",
+      "originId": 375,
+      "destinationId": 3249,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "فولادشهر",
+      "destinationFa": "جاجرم",
+      "slug": "fooladshahr-jajarm",
+      "originId": 248,
+      "destinationId": 539,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "قزوین",
+      "destinationFa": "تهران",
+      "slug": "qazvin-tehran",
+      "originId": 834,
+      "destinationId": 360,
+      "travelTimeMins": 110,
+      "isPrimary": false
+    },
+    {
+      "originFa": "قزوین",
+      "destinationFa": "کرج",
+      "slug": "qazvin-karaj",
+      "originId": 834,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "قم",
+      "destinationFa": "اصفهان",
+      "slug": "qom-isfahan",
+      "originId": 841,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "قم",
+      "destinationFa": "تهران",
+      "slug": "qom-tehran",
+      "originId": 841,
+      "destinationId": 360,
+      "travelTimeMins": 105,
+      "isPrimary": false
+    },
+    {
+      "originFa": "قم",
+      "destinationFa": "کرج",
+      "slug": "qom-karaj",
+      "originId": 841,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "لاهیجان",
+      "destinationFa": "تهران",
+      "slug": "lahijan-tehran",
+      "originId": 1066,
+      "destinationId": 360,
+      "travelTimeMins": 270,
+      "isPrimary": false
+    },
+    {
+      "originFa": "لاهیجان",
+      "destinationFa": "کرج",
+      "slug": "lahijan-karaj",
+      "originId": 1066,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ماکو",
+      "destinationFa": "تهران",
+      "slug": "maku-tehran",
+      "originId": 128,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ماکو",
+      "destinationFa": "کرج",
+      "slug": "maku-karaj",
+      "originId": 128,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مبارکه",
+      "destinationFa": "اسلامشهر",
+      "slug": "mobarakeh-islamshahr",
+      "originId": 254,
+      "destinationId": 349,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مبارکه",
+      "destinationFa": "تهران",
+      "slug": "mobarakeh-tehran",
+      "originId": 254,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مبارکه",
+      "destinationFa": "دماوند",
+      "slug": "mobarakeh-damavand",
+      "originId": 254,
+      "destinationId": 363,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مبارکه",
+      "destinationFa": "شهر ری",
+      "slug": "mobarakeh-shahrerey",
+      "originId": 254,
+      "destinationId": 3250,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مبارکه",
+      "destinationFa": "شهرقدس",
+      "slug": "mobarakeh-shahrqods",
+      "originId": 254,
+      "destinationId": 3251,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مبارکه",
+      "destinationFa": "فشم",
+      "slug": "mobarakeh-fasham",
+      "originId": 254,
+      "destinationId": 375,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "محمودآباد",
+      "destinationFa": "تهران",
+      "slug": "mahmoudabad-tehran",
+      "originId": 124,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "محمودآباد",
+      "destinationFa": "کرج",
+      "slug": "mahmoudabad-karaj",
+      "originId": 124,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "اصفهان",
+      "slug": "mashhad-isfahan",
+      "originId": 522,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مشهد",
+      "destinationFa": "تهران",
+      "slug": "mashhad-tehran",
+      "originId": 522,
+      "destinationId": 360,
+      "travelTimeMins": 600,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ملایر",
+      "destinationFa": "تهران",
+      "slug": "malayer-tehran",
+      "originId": 1248,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "ملایر",
+      "destinationFa": "کرج",
+      "slug": "malayer-karaj",
+      "originId": 1248,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مهران",
+      "destinationFa": "اصفهان",
+      "slug": "mehran-isfahan",
+      "originId": 310,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مهران",
+      "destinationFa": "تهران",
+      "slug": "mehran-tehran",
+      "originId": 310,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "مهران",
+      "destinationFa": "کرج",
+      "slug": "mehran-karaj",
+      "originId": 310,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نجف آباد",
+      "destinationFa": "اسلامشهر",
+      "slug": "najafabad-islamshahr",
+      "originId": 264,
+      "destinationId": 349,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نجف آباد",
+      "destinationFa": "تهران",
+      "slug": "najafabad-tehran",
+      "originId": 264,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نجف آباد",
+      "destinationFa": "دماوند",
+      "slug": "najafabad-damavand",
+      "originId": 264,
+      "destinationId": 363,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نجف آباد",
+      "destinationFa": "شهر ری",
+      "slug": "najafabad-shahrerey",
+      "originId": 264,
+      "destinationId": 3250,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نجف آباد",
+      "destinationFa": "شهرقدس",
+      "slug": "najafabad-shahrqods",
+      "originId": 264,
+      "destinationId": 3251,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نجف آباد",
+      "destinationFa": "فشم",
+      "slug": "najafabad-fasham",
+      "originId": 264,
+      "destinationId": 375,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نور",
+      "destinationFa": "تهران",
+      "slug": "nur-tehran",
+      "originId": 1153,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نور",
+      "destinationFa": "کرج",
+      "slug": "nur-karaj",
+      "originId": 1153,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نوشهر",
+      "destinationFa": "بندرعباس",
+      "slug": "nowshahr-bandarabbas",
+      "originId": 1156,
+      "destinationId": 1195,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نوشهر",
+      "destinationFa": "تهران",
+      "slug": "nowshahr-tehran",
+      "originId": 1156,
+      "destinationId": 360,
+      "travelTimeMins": 170,
+      "isPrimary": false
+    },
+    {
+      "originFa": "نوشهر",
+      "destinationFa": "کرج",
+      "slug": "nowshahr-karaj",
+      "originId": 1156,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "همدان",
+      "destinationFa": "تهران",
+      "slug": "hamedan-tehran",
+      "originId": 1256,
+      "destinationId": 360,
+      "travelTimeMins": 220,
+      "isPrimary": false
+    },
+    {
+      "originFa": "همدان",
+      "destinationFa": "کرج",
+      "slug": "hamedan-karaj",
+      "originId": 1256,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "وان",
+      "destinationFa": "تهران",
+      "slug": "van-tehran",
+      "originId": 10100,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "وان",
+      "destinationFa": "خوی",
+      "slug": "van-khoy",
+      "originId": 10100,
+      "destinationId": 112,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "وان",
+      "destinationFa": "کرج",
+      "slug": "van-karaj",
+      "originId": 10100,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چابهار",
+      "destinationFa": "اصفهان",
+      "slug": "chabahar-isfahan",
+      "originId": 678,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چابهار",
+      "destinationFa": "تهران",
+      "slug": "chabahar-tehran",
+      "originId": 678,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چابهار",
+      "destinationFa": "شیراز",
+      "slug": "chabahar-shiraz",
+      "originId": 678,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چابکسر",
+      "destinationFa": "تهران",
+      "slug": "chaboksar-tehran",
+      "originId": 1045,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چابکسر",
+      "destinationFa": "کرج",
+      "slug": "chaboksar-karaj",
+      "originId": 1045,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چالوس",
+      "destinationFa": "اصفهان",
+      "slug": "chalus-isfahan",
+      "originId": 1123,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چالوس",
+      "destinationFa": "تهران",
+      "slug": "chalus-tehran",
+      "originId": 1123,
+      "destinationId": 360,
+      "travelTimeMins": 160,
+      "isPrimary": false
+    },
+    {
+      "originFa": "چالوس",
+      "destinationFa": "کرج",
+      "slug": "chalus-karaj",
+      "originId": 1123,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کاشان",
+      "destinationFa": "اصفهان",
+      "slug": "kashan-isfahan",
+      "originId": 234,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کاشان",
+      "destinationFa": "تهران",
+      "slug": "kashan-tehran",
+      "originId": 234,
+      "destinationId": 360,
+      "travelTimeMins": 164,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کاشان",
+      "destinationFa": "کرج",
+      "slug": "kashan-karaj",
+      "originId": 234,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "اصفهان",
+      "slug": "karaj-isfahan",
+      "originId": 279,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "تبریز",
+      "slug": "karaj-tabriz",
+      "originId": 279,
+      "destinationId": 45,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "شیراز",
+      "slug": "karaj-shiraz",
+      "originId": 279,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرج",
+      "destinationFa": "مشهد",
+      "slug": "karaj-mashhad",
+      "originId": 279,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمان",
+      "destinationFa": "اصفهان",
+      "slug": "kerman-isfahan",
+      "originId": 933,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمان",
+      "destinationFa": "تهران",
+      "slug": "kerman-tehran",
+      "originId": 933,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمان",
+      "destinationFa": "شیراز",
+      "slug": "kerman-shiraz",
+      "originId": 933,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمان",
+      "destinationFa": "کرج",
+      "slug": "kerman-karaj",
+      "originId": 933,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمانشاه",
+      "destinationFa": "اصفهان",
+      "slug": "kermanshah-isfahan",
+      "originId": 967,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمانشاه",
+      "destinationFa": "تهران",
+      "slug": "kermanshah-tehran",
+      "originId": 967,
+      "destinationId": 360,
+      "travelTimeMins": 380,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمانشاه",
+      "destinationFa": "شیراز",
+      "slug": "kermanshah-shiraz",
+      "originId": 967,
+      "destinationId": 758,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کرمانشاه",
+      "destinationFa": "کرج",
+      "slug": "kermanshah-karaj",
+      "originId": 967,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کلاردشت",
+      "destinationFa": "تهران",
+      "slug": "kelardasht-tehran",
+      "originId": 1143,
+      "destinationId": 360,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "کلاردشت",
+      "destinationFa": "کرج",
+      "slug": "kelardasht-karaj",
+      "originId": 1143,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "گرگان",
+      "destinationFa": "تهران",
+      "slug": "gorgan-tehran",
+      "originId": 1015,
+      "destinationId": 360,
+      "travelTimeMins": 300,
+      "isPrimary": false
+    },
+    {
+      "originFa": "گرگان",
+      "destinationFa": "رشت",
+      "slug": "gorgan-rasht",
+      "originId": 1015,
+      "destinationId": 1031,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "گرگان",
+      "destinationFa": "مشهد",
+      "slug": "gorgan-mashhad",
+      "originId": 1015,
+      "destinationId": 522,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "گرگان",
+      "destinationFa": "کرج",
+      "slug": "gorgan-karaj",
+      "originId": 1015,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "یاسوج",
+      "destinationFa": "اصفهان",
+      "slug": "yasuj-isfahan",
+      "originId": 981,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "یزد",
+      "destinationFa": "اصفهان",
+      "slug": "yazd-isfahan",
+      "originId": 1277,
+      "destinationId": 170,
+      "travelTimeMins": null,
+      "isPrimary": false
+    },
+    {
+      "originFa": "یزد",
+      "destinationFa": "تهران",
+      "slug": "yazd-tehran",
+      "originId": 1277,
+      "destinationId": 360,
+      "travelTimeMins": 420,
+      "isPrimary": false
+    },
+    {
+      "originFa": "یزد",
+      "destinationFa": "کرج",
+      "slug": "yazd-karaj",
+      "originId": 1277,
+      "destinationId": 279,
+      "travelTimeMins": null,
+      "isPrimary": false
+    }
+  ],
+  "unresolvedSlugs": []
+}

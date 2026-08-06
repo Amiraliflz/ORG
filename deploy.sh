@@ -2,12 +2,17 @@
 # One-command deploy for MrShoofer ORG (sale app).
 #
 # Usage:
-#   ./deploy.sh                  # systemd, last commit, blue-green
+#   ./deploy.sh                  # systemd, last commit (same-port unless stable proxy installed)
 #   ./deploy.sh --docker         # Docker image deploy
 #   ./deploy.sh --fast           # short restart (~1s blip)
 #   ./deploy.sh --dry-run        # plan only
 #   ./deploy.sh --full           # force full rebuild
 #   ./deploy.sh --autostart-only # only enable reboot persistence
+#
+# Localhost API mesh (peer apps on :5055):
+#   Never flip the port other apps call. Install once:
+#     DEPLOY_PASS=... ./deploy/scripts/install-stable-localhost-proxy.sh
+#   Then blue/green only swaps backends 15055/15056 behind stable :5055.
 #
 # Config (optional file: .env.deploy — not committed):
 #   DEPLOY_HOST=62.60.191.21

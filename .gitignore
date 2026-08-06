@@ -422,8 +422,11 @@ ASALocalRun/
 *.dump
 *.bak
 
-# VS Code workspace settings
-.vscode/
+# VS Code / Cursor workspace settings (keep shared terminal deploy help)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
 
 # Docker image exports
 *.tar.gz

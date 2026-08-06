@@ -1,0 +1,102 @@
+@using Application.Services.Seo
+@{
+  var path = Context.Request.Path.Value ?? "/";
+  var canonical = ViewData["CanonicalUrl"] as string ?? SeoDefaults.BuildCanonical(path);
+
+  var appName = TempData.Peek("appName") as string ?? SeoDefaults.SiteName;
+  var titlePart = ViewData["Title"] as string
+      ?? ViewData["title"] as string
+      ?? SeoDefaults.DefaultTitle;
+
+  // Prefer explicit OG overrides (route/city landings); else build from page title + meta.
+  var ogTitle = ViewData["OgTitle"] as string ?? SeoDefaults.BuildOgTitle(titlePart);
+  var fullTitle = ogTitle; // <title> and og:title stay aligned
+  var description = ViewData["OgDescription"] as string
+      ?? ViewData["MetaDescription"] as string
+      ?? SeoDefaults.DefaultDescription;
+  var ogImage = SeoDefaults.ResolveOgImage(ViewData["OgImage"] as string);
+  var ogImageAlt = ViewData["OgImageAlt"] as string ?? ogTitle;
+
+  var robots = ViewData["Robots"] as string;
+  if (string.IsNullOrWhiteSpace(robots))
+  {
+    robots = SeoDefaults.IsPrivatePath(path)
+      ? "noindex, nofollow"
+      : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+  }
+
+  var isFront = ViewData["isFront"] is bool front && front;
+  var forceNoGraph = robots.Contains("noindex", StringComparison.OrdinalIgnoreCase);
+  // JSON-LD on all public front pages (and any explicit opt-in), never on private/noindex surfaces
+  var includeGraph = !forceNoGraph && (isFront || ViewData["IncludeJsonLd"] is true);
+
+  IReadOnlyList<(string Question, string Answer)>? faqs = null;
+  if (ViewData["IncludeHomeFaqs"] is true)
+    faqs = SeoDefaults.HomeFaqs;
+  else if (ViewData["RouteFaqs"] is IReadOnlyList<(string, string)> routeFaqs)
+    faqs = routeFaqs;
+
+  var breadcrumbs = ViewData["Breadcrumbs"] as IReadOnlyList<(string Name, string Url)>;
+  var howTo = ViewData["HowToSteps"] as IReadOnlyList<(string Title, string Text)>;
+  if (howTo is null && ViewData["IncludeHomeFaqs"] is true)
+    howTo = SeoDefaults.BookingHowToSteps;
+
+  var itemList = ViewData["ItemList"] as IReadOnlyList<(string Name, string Url)>;
+  var serviceName = ViewData["RouteServiceName"] as string;
+  var originCity = ViewData["OriginCity"] as string;
+  var destCity = ViewData["DestinationCity"] as string;
+  var dateModified = ViewData["DateModified"] as string;
+}
+<meta name="description" content="@description" />
+<meta name="robots" content="@robots" />
+<meta name="googlebot" content="@robots" />
+<meta name="bingbot" content="@robots" />
+<meta name="author" content="@appName" />
+<meta name="language" content="fa" />
+<meta http-equiv="content-language" content="fa" />
+<meta name="geo.region" content="IR" />
+<meta name="theme-color" content="#696cff" />
+<meta name="format-detection" content="telephone=yes" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+
+<link rel="canonical" href="@canonical" />
+<link rel="alternate" hreflang="fa-IR" href="@canonical" />
+<link rel="alternate" hreflang="x-default" href="@canonical" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="@appName" />
+<meta property="og:locale" content="fa_IR" />
+<meta property="og:url" content="@canonical" />
+<meta property="og:title" content="@ogTitle" />
+<meta property="og:description" content="@description" />
+<meta property="og:image" content="@ogImage" />
+<meta property="og:image:url" content="@ogImage" />
+<meta property="og:image:secure_url" content="@ogImage" />
+<meta property="og:image:width" content="@SeoDefaults.OgImageWidth" />
+<meta property="og:image:height" content="@SeoDefaults.OgImageHeight" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:alt" content="@ogImageAlt" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="@ogTitle" />
+<meta name="twitter:description" content="@description" />
+<meta name="twitter:image" content="@ogImage" />
+<meta name="twitter:image:alt" content="@ogImageAlt" />
+
+@if (includeGraph)
+{
+  <script type="application/ld+json">
+@Html.Raw(SeoDefaults.BuildJsonLdGraph(canonical, ogTitle, description, new SeoDefaults.JsonLdOptions
+{
+  Faqs = faqs,
+  Breadcrumbs = breadcrumbs,
+  ServiceName = serviceName,
+  OriginCity = originCity,
+  DestinationCity = destCity,
+  HowToSteps = howTo,
+  ItemList = itemList,
+  OgImageUrl = ogImage,
+  DateModifiedIso = dateModified
+}))
+  </script>
+}

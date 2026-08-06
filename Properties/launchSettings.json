@@ -3,6 +3,8 @@
     "http": {
       "commandName": "Project",
       "launchBrowser": true,
+      "hotReloadEnabled": true,
+      "hotReloadProfile": "aspnetcore",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -12,6 +14,8 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
+      "hotReloadEnabled": true,
+      "hotReloadProfile": "aspnetcore",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

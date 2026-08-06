@@ -1,44 +1,48 @@
 {
-  "editor.wordWrap": "off",
-  "editor.formatOnSave": true,
-  "files.trimFinalNewlines": true,
-  "diffEditor.ignoreTrimWhitespace": false,
-  "cSpell.language": "en",
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/_temp": true,
-    "**/bower_components": true,
-    "*.min.js": true,
-    "*.min.css": true
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "terminal.integrated.defaultProfile.osx": "ORG deploy help",
+  "terminal.integrated.defaultProfile.linux": "ORG deploy help",
+  "terminal.integrated.defaultProfile.windows": "ORG deploy help",
+  "terminal.integrated.profiles.osx": {
+    "ORG deploy help": {
+      "path": "/bin/zsh",
+      "args": [
+        "-c",
+        "cd \"${workspaceFolder}\" 2>/dev/null || true; if [ -f ./deploy/show-help.sh ]; then bash ./deploy/show-help.sh; elif [ -f \"$HOME/ORG/deploy/show-help.sh\" ]; then bash \"$HOME/ORG/deploy/show-help.sh\"; fi; exec /bin/zsh -l"
+      ],
+      "overrideName": true,
+      "icon": "rocket"
+    },
+    "zsh": {
+      "path": "zsh",
+      "args": ["-l"]
+    }
   },
-  // JS
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  // JSON
-  "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+  "terminal.integrated.profiles.linux": {
+    "ORG deploy help": {
+      "path": "bash",
+      "args": [
+        "-c",
+        "cd \"${workspaceFolder}\" 2>/dev/null || true; if [ -f ./deploy/show-help.sh ]; then bash ./deploy/show-help.sh; fi; exec bash -l"
+      ],
+      "overrideName": true,
+      "icon": "rocket"
+    },
+    "bash": {
+      "path": "bash",
+      "args": ["-l"]
+    }
   },
-  // Extension: Prettier
-  "prettier.requireConfig": true,
-  "prettier.configPath": ".prettierrc.json",
-  "prettier.ignorePath": ".prettierignore",
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[scss]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  // Extension: Git
-  "git.rebaseWhenSync": true,
-  "git.enableSmartCommit": true,
-  // Extension: npm
-  "npm.packageManager": "yarn",
+  "terminal.integrated.profiles.windows": {
+    "ORG deploy help": {
+      "path": "powershell",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "Set-Location '${workspaceFolder}'; if (Test-Path .\\deploy\\show-help.sh) { bash ./deploy/show-help.sh }"
+      ],
+      "overrideName": true,
+      "icon": "rocket"
+    }
+  }
 }

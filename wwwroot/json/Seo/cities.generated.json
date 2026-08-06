@@ -1,0 +1,386 @@
+{
+  "generatedAtUtc": "2026-08-06T10:00:17.7980420Z",
+  "source": "https://ors.shoofer.taxi/Directions/getAvailableDirections",
+  "cities": [
+    {
+      "nameFa": "آبادان",
+      "slug": "abadan",
+      "cityId": 556
+    },
+    {
+      "nameFa": "آستارا",
+      "slug": "astara",
+      "cityId": 1022
+    },
+    {
+      "nameFa": "آمل",
+      "slug": "amol",
+      "cityId": 1099
+    },
+    {
+      "nameFa": "اراک",
+      "slug": "arak",
+      "cityId": 1158
+    },
+    {
+      "nameFa": "اردبیل",
+      "slug": "ardabil",
+      "cityId": 136
+    },
+    {
+      "nameFa": "ارومیه",
+      "slug": "urmia",
+      "cityId": 94
+    },
+    {
+      "nameFa": "اسلامشهر",
+      "slug": "islamshahr",
+      "cityId": 349
+    },
+    {
+      "nameFa": "اصفهان",
+      "slug": "isfahan",
+      "cityId": 170
+    },
+    {
+      "nameFa": "الیگودرز",
+      "slug": "aligudarz",
+      "cityId": 1076
+    },
+    {
+      "nameFa": "اهواز",
+      "slug": "ahvaz",
+      "cityId": 570
+    },
+    {
+      "nameFa": "ایذه",
+      "slug": "izeh",
+      "cityId": 571
+    },
+    {
+      "nameFa": "ایلام",
+      "slug": "ilam",
+      "cityId": 289
+    },
+    {
+      "nameFa": "بابل",
+      "slug": "babol",
+      "cityId": 1105
+    },
+    {
+      "nameFa": "بابلسر",
+      "slug": "babolsar",
+      "cityId": 1111
+    },
+    {
+      "nameFa": "بندرانزلی",
+      "slug": "anzali",
+      "cityId": 1028
+    },
+    {
+      "nameFa": "بندرترکمن",
+      "slug": "bandartorkaman",
+      "cityId": 1000
+    },
+    {
+      "nameFa": "بندرعباس",
+      "slug": "bandarabbas",
+      "cityId": 1195
+    },
+    {
+      "nameFa": "بندرگناوه",
+      "slug": "bandarganaveh",
+      "cityId": 347
+    },
+    {
+      "nameFa": "بهارستان",
+      "slug": "baharestan",
+      "cityId": 171
+    },
+    {
+      "nameFa": "بوشهر",
+      "slug": "bushehr",
+      "cityId": 311
+    },
+    {
+      "nameFa": "تاکستان",
+      "slug": "takestan",
+      "cityId": 827
+    },
+    {
+      "nameFa": "تبریز",
+      "slug": "tabriz",
+      "cityId": 45
+    },
+    {
+      "nameFa": "تنکابن",
+      "slug": "tonekabon",
+      "cityId": 1117
+    },
+    {
+      "nameFa": "تهران",
+      "slug": "tehran",
+      "cityId": 360
+    },
+    {
+      "nameFa": "جاجرم",
+      "slug": "jajarm",
+      "cityId": 539
+    },
+    {
+      "nameFa": "خرم آباد",
+      "slug": "khorramabad",
+      "cityId": 1083
+    },
+    {
+      "nameFa": "خرمشهر",
+      "slug": "khorramshahr",
+      "cityId": 588
+    },
+    {
+      "nameFa": "خمینی شهر",
+      "slug": "khomeinishahr",
+      "cityId": 198
+    },
+    {
+      "nameFa": "خوی",
+      "slug": "khoy",
+      "cityId": 112
+    },
+    {
+      "nameFa": "دماوند",
+      "slug": "damavand",
+      "cityId": 363
+    },
+    {
+      "nameFa": "رامسر",
+      "slug": "ramsar",
+      "cityId": 1126
+    },
+    {
+      "nameFa": "رشت",
+      "slug": "rasht",
+      "cityId": 1031
+    },
+    {
+      "nameFa": "رفسنجان",
+      "slug": "rafsanjan",
+      "cityId": 894
+    },
+    {
+      "nameFa": "رودسر",
+      "slug": "rudsar",
+      "cityId": 1047
+    },
+    {
+      "nameFa": "زاهدان",
+      "slug": "zahedan",
+      "cityId": 685
+    },
+    {
+      "nameFa": "زنجان",
+      "slug": "zanjan",
+      "cityId": 647
+    },
+    {
+      "nameFa": "ساری",
+      "slug": "sari",
+      "cityId": 1129
+    },
+    {
+      "nameFa": "سمنان",
+      "slug": "semnan",
+      "cityId": 661
+    },
+    {
+      "nameFa": "سنندج",
+      "slug": "sanandaj",
+      "cityId": 861
+    },
+    {
+      "nameFa": "سپاهان شهر",
+      "slug": "sepahanshahr",
+      "cityId": 3249
+    },
+    {
+      "nameFa": "سیرجان",
+      "slug": "sirjan",
+      "cityId": 910
+    },
+    {
+      "nameFa": "شهر ری",
+      "slug": "shahrerey",
+      "cityId": 3250
+    },
+    {
+      "nameFa": "شهرقدس",
+      "slug": "shahrqods",
+      "cityId": 3251
+    },
+    {
+      "nameFa": "شهرکرد",
+      "slug": "shahrekord",
+      "cityId": 407
+    },
+    {
+      "nameFa": "شیراز",
+      "slug": "shiraz",
+      "cityId": 758
+    },
+    {
+      "nameFa": "عباس اباد",
+      "slug": "abbasabad",
+      "cityId": 1138
+    },
+    {
+      "nameFa": "عسلویه",
+      "slug": "assaluyeh",
+      "cityId": 341
+    },
+    {
+      "nameFa": "فرودگاه امام خمینی",
+      "slug": "ika-airport",
+      "cityId": 3247
+    },
+    {
+      "nameFa": "فرودگاه وان",
+      "slug": "van-airport",
+      "cityId": 10101
+    },
+    {
+      "nameFa": "فشم",
+      "slug": "fasham",
+      "cityId": 375
+    },
+    {
+      "nameFa": "فولادشهر",
+      "slug": "fooladshahr",
+      "cityId": 248
+    },
+    {
+      "nameFa": "قزوین",
+      "slug": "qazvin",
+      "cityId": 834
+    },
+    {
+      "nameFa": "قم",
+      "slug": "qom",
+      "cityId": 841
+    },
+    {
+      "nameFa": "لاهیجان",
+      "slug": "lahijan",
+      "cityId": 1066
+    },
+    {
+      "nameFa": "ماکو",
+      "slug": "maku",
+      "cityId": 128
+    },
+    {
+      "nameFa": "مبارکه",
+      "slug": "mobarakeh",
+      "cityId": 254
+    },
+    {
+      "nameFa": "محمودآباد",
+      "slug": "mahmoudabad",
+      "cityId": 124
+    },
+    {
+      "nameFa": "مشهد",
+      "slug": "mashhad",
+      "cityId": 522
+    },
+    {
+      "nameFa": "ملایر",
+      "slug": "malayer",
+      "cityId": 1248
+    },
+    {
+      "nameFa": "مهران",
+      "slug": "mehran",
+      "cityId": 310
+    },
+    {
+      "nameFa": "نجف آباد",
+      "slug": "najafabad",
+      "cityId": 264
+    },
+    {
+      "nameFa": "نور",
+      "slug": "nur",
+      "cityId": 1153
+    },
+    {
+      "nameFa": "نوشهر",
+      "slug": "nowshahr",
+      "cityId": 1156
+    },
+    {
+      "nameFa": "همدان",
+      "slug": "hamedan",
+      "cityId": 1256
+    },
+    {
+      "nameFa": "وان",
+      "slug": "van",
+      "cityId": 10100
+    },
+    {
+      "nameFa": "چابهار",
+      "slug": "chabahar",
+      "cityId": 678
+    },
+    {
+      "nameFa": "چابکسر",
+      "slug": "chaboksar",
+      "cityId": 1045
+    },
+    {
+      "nameFa": "چالوس",
+      "slug": "chalus",
+      "cityId": 1123
+    },
+    {
+      "nameFa": "کاشان",
+      "slug": "kashan",
+      "cityId": 234
+    },
+    {
+      "nameFa": "کرج",
+      "slug": "karaj",
+      "cityId": 279
+    },
+    {
+      "nameFa": "کرمان",
+      "slug": "kerman",
+      "cityId": 933
+    },
+    {
+      "nameFa": "کرمانشاه",
+      "slug": "kermanshah",
+      "cityId": 967
+    },
+    {
+      "nameFa": "کلاردشت",
+      "slug": "kelardasht",
+      "cityId": 1143
+    },
+    {
+      "nameFa": "گرگان",
+      "slug": "gorgan",
+      "cityId": 1015
+    },
+    {
+      "nameFa": "یاسوج",
+      "slug": "yasuj",
+      "cityId": 981
+    },
+    {
+      "nameFa": "یزد",
+      "slug": "yazd",
+      "cityId": 1277
+    }
+  ]
+}

@@ -9,6 +9,8 @@ namespace Application.ViewModels.TaxiTrips
     public string destination { get; set; }
     public string startingDateTime { get; set; }
     public string arrivalDateTime { get; set; }
+    /// <summary>True when estimated arrival falls on the calendar day after departure.</summary>
+    public bool arrivesNextDay { get; set; }
     public string taxiSupervisorName { get; set; }
     public int taxiSupervisorID { get; set; }
     public string originalPrice { get; set; }
