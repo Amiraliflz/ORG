@@ -331,7 +331,25 @@ fi
 
 
 # --- static files (no restart) ---
-if [[ "$NEED_STATIC" == "1" ]]; then
+if [[ "$FORCE_FULL" == "1" ]]; then
+  echo
+  echo "==> FORCE_FULL: syncing ALL tracked wwwroot files (tar)"
+  WWW_TAR="$(mktemp -t org-wwwroot.XXXXXX.tar.gz)"
+  git ls-files -z wwwroot | tar -czf "$WWW_TAR" --null -T -
+  remote "mkdir -p ${DEPLOY_DIR}"
+  remote_scp "$WWW_TAR" /tmp/org-wwwroot-sync.tar.gz
+  remote "set -e
+    mkdir -p ${DEPLOY_DIR}
+    tar -xzf /tmp/org-wwwroot-sync.tar.gz -C ${DEPLOY_DIR}
+    rm -f /tmp/org-wwwroot-sync.tar.gz
+    test -f ${DEPLOY_DIR}/wwwroot/cta-taxi.jpg
+    test -f ${DEPLOY_DIR}/wwwroot/css/IndexPage.css
+    test -f ${DEPLOY_DIR}/wwwroot/css/TaxiTripsIndex.css
+    wc -c ${DEPLOY_DIR}/wwwroot/cta-taxi.jpg ${DEPLOY_DIR}/wwwroot/css/IndexPage.css ${DEPLOY_DIR}/wwwroot/css/TaxiTripsIndex.css
+  "
+  rm -f "$WWW_TAR"
+  echo "  wwwroot full sync done"
+elif [[ "$NEED_STATIC" == "1" ]]; then
   echo
   echo "==> Syncing changed wwwroot files (no restart)"
   while IFS= read -r f; do
