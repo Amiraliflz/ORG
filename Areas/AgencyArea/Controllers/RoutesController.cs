@@ -9,7 +9,7 @@ public class RoutesController : Controller
 {
   private static readonly string ContentStamp = "2026-08-05";
 
-  [HttpGet]
+  [AcceptVerbs("GET", "HEAD")]
   public IActionResult Index()
   {
     ViewData["Title"] = "مسیرهای سواری بین‌شهری";
@@ -40,7 +40,7 @@ public class RoutesController : Controller
   /// Programmatic landing URL for Google: real search results UX (today) + SEO copy at bottom.
   /// Renders TaxiTrips/Index so the experience matches /TaxiTrips results.
   /// </summary>
-  [HttpGet]
+  [AcceptVerbs("GET", "HEAD")]
   public IActionResult Detail(string slug)
   {
     var route = RouteCatalog.FindBySlug(slug);

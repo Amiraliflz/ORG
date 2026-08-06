@@ -18,18 +18,19 @@ namespace Application.Areas.AgencyArea
       if (statusCode == 403)
       {
         Response.StatusCode = 403;
-        return View("AccessDenied"); // Assuming the view name is "AccessDenied"
+        return View("AccessDenied");
       }
-      else if (statusCode == 404)
+
+      if (statusCode == 404)
       {
         Response.StatusCode = 404;
-        return View("NotFound"); // Assuming the view name is "NotFound"
+        return View("NotFound");
       }
-      else
-      {
-        // Handle other error scenarios or return a generic error view
-        return View("GenericError"); // Assuming the view name is "GenericError"
-      }
+
+      // 405 Method Not Allowed (e.g. HEAD before AcceptVerbs) and other codes —
+      // avoid missing GenericError view which previously turned probes into 500.
+      Response.StatusCode = statusCode;
+      return Content($"Error {statusCode}", "text/plain");
     }
   }
 }

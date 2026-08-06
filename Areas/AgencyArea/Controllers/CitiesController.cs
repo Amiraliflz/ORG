@@ -8,7 +8,7 @@ public class CitiesController : Controller
 {
   private static readonly string ContentStamp = "2026-08-05";
 
-  [HttpGet]
+  [AcceptVerbs("GET", "HEAD")]
   public IActionResult Index()
   {
     ViewData["Title"] = "شهرهای تحت پوشش سواری بین‌شهری";
@@ -31,7 +31,7 @@ public class CitiesController : Controller
     return View(CityCatalog.All);
   }
 
-  [HttpGet]
+  [AcceptVerbs("GET", "HEAD")]
   public IActionResult Detail(string slug)
   {
     var city = CityCatalog.FindBySlug(slug);

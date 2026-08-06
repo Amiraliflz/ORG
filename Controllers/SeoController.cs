@@ -11,7 +11,8 @@ public class SeoController : Controller
 {
   private static readonly string ContentStamp = "2026-08-05";
 
-  [HttpGet("/sitemap.xml")]
+  // Accept HEAD so crawlers / GSC probes don't 405 → broken status-code re-execute.
+  [AcceptVerbs("GET", "HEAD")]
   [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
   public IActionResult SitemapIndex()
   {
@@ -33,7 +34,7 @@ public class SeoController : Controller
     return Xml(doc);
   }
 
-  [HttpGet("/sitemap-pages.xml")]
+  [AcceptVerbs("GET", "HEAD")]
   [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
   public IActionResult SitemapPages()
   {
@@ -50,7 +51,7 @@ public class SeoController : Controller
     return Urlset(urls, includeImage: true);
   }
 
-  [HttpGet("/sitemap-routes.xml")]
+  [AcceptVerbs("GET", "HEAD")]
   [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
   public IActionResult SitemapRoutes()
   {
@@ -60,7 +61,7 @@ public class SeoController : Controller
     return Urlset(urls, includeImage: false);
   }
 
-  [HttpGet("/sitemap-cities.xml")]
+  [AcceptVerbs("GET", "HEAD")]
   [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
   public IActionResult SitemapCities()
   {
