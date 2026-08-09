@@ -514,7 +514,7 @@
 }
 
 .landing-routes-inner {
-  max-width: 52rem;
+  max-width: 64rem;
 }
 
 .landing-routes-lead {
@@ -534,13 +534,21 @@
   direction: rtl;
 }
 
+@media (min-width: 992px) {
+  .landing-routes-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+  }
+}
+
 .landing-route-link {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 0.75rem;
-  min-height: 3.25rem;
-  padding: 0.75rem 1rem;
+  gap: 0.55rem;
+  min-height: 4.5rem;
+  padding: 0.85rem 1rem;
   border-radius: 0.85rem;
   background: var(--lr-surface);
   border: 1px solid var(--lr-line);
@@ -577,6 +585,36 @@
   font-family: font-regular, "tahoma", sans-serif;
 }
 
+.landing-route-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.landing-route-price {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.landing-route-price-label {
+  font-size: 0.75rem;
+  color: var(--lr-muted);
+}
+
+.landing-route-price-value {
+  font-family: font-bold, "tahoma", sans-serif;
+  font-size: 0.88rem;
+  color: var(--lr-accent);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .landing-route-hint {
   flex-shrink: 0;
   font-size: 0.78rem;
@@ -596,7 +634,8 @@
   color: var(--lr-accent);
 }
 
-.landing-route-link:hover .landing-route-hint {
+.landing-route-link:hover .landing-route-hint,
+.landing-route-link:hover .landing-route-price-label {
   color: var(--lr-accent);
   opacity: 1;
 }
@@ -671,12 +710,11 @@
   }
 
   .landing-route-link {
-    justify-content: center;
-    text-align: center;
+    text-align: right;
   }
 
-  .landing-route-od {
-    justify-content: center;
+  .landing-route-meta {
+    justify-content: flex-start;
   }
 }
 
@@ -734,49 +772,72 @@
   font-size: 1rem !important;
 }
 
-
-.dropdown-menu {
-  inset: unset !important;
-  min-width: 250px;
-  transition: ease-out 300ms all;
+/* Do NOT set inset:unset — it breaks Bootstrap Popper and dumps the menu into layout
+   (page “shrinks” vertically when destination list opens). */
+.landing-hero .input-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
-/* Scrollable origin and destination dropdowns - limit to ~10 items */
-.dropdown-menu.origin_location,
-.dropdown-menu.destination_location {
-  max-height: 380px !important; /* Approximately 10 items at ~38px each */
+.landing-hero .dropdown-menu.origin_location,
+.landing-hero .dropdown-menu.destination_location {
+  /* Match field width; avoid fixed 230–250px min-width that overflows mobile */
+  width: 100%;
+  min-width: 100% !important;
+  max-width: 100%;
+  max-height: min(42dvh, 280px) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  z-index: 1080;
+}
+
+@media (min-width: 768px) {
+  .landing-hero .dropdown-menu.origin_location,
+  .landing-hero .dropdown-menu.destination_location {
+    max-height: 380px !important;
+  }
 }
 
 /* Custom scrollbar styling for better UX */
-.dropdown-menu.origin_location::-webkit-scrollbar,
-.dropdown-menu.destination_location::-webkit-scrollbar {
+.landing-hero .dropdown-menu.origin_location::-webkit-scrollbar,
+.landing-hero .dropdown-menu.destination_location::-webkit-scrollbar {
   width: 6px;
 }
 
-.dropdown-menu.origin_location::-webkit-scrollbar-track,
-.dropdown-menu.destination_location::-webkit-scrollbar-track {
+.landing-hero .dropdown-menu.origin_location::-webkit-scrollbar-track,
+.landing-hero .dropdown-menu.destination_location::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.dropdown-menu.origin_location::-webkit-scrollbar-thumb,
-.dropdown-menu.destination_location::-webkit-scrollbar-thumb {
+.landing-hero .dropdown-menu.origin_location::-webkit-scrollbar-thumb,
+.landing-hero .dropdown-menu.destination_location::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
 }
 
-.dropdown-menu.origin_location::-webkit-scrollbar-thumb:hover,
-.dropdown-menu.destination_location::-webkit-scrollbar-thumb:hover {
+.landing-hero .dropdown-menu.origin_location::-webkit-scrollbar-thumb:hover,
+.landing-hero .dropdown-menu.destination_location::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
 
-/* Firefox scrollbar styling */
-.dropdown-menu.origin_location,
-.dropdown-menu.destination_location {
+.landing-hero .dropdown-menu.origin_location,
+.landing-hero .dropdown-menu.destination_location {
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Kill horizontal page scroll on the homepage (mobile).
+   Only on html/body — overflow-x on hero ancestors would clip city dropdowns. */
+html:has(.landing-hero),
+body:has(.landing-hero) {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+.landing-hero > .container {
+  max-width: 100%;
 }
 
 .locationicon {

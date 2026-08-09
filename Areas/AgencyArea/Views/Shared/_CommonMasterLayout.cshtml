@@ -22,6 +22,13 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+	<style>
+		/* Site-wide: no horizontal page scroll on phones */
+		html, body {
+			overflow-x: clip;
+			max-width: 100%;
+		}
+	</style>
 	@{
 		string title = ViewData["Title"] as string ?? ViewData["title"] as string ?? "";
 

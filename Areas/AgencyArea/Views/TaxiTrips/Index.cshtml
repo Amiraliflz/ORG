@@ -62,7 +62,7 @@
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
 
-	<link href="~/css/TaxiTripsIndex.css?v=30" rel="stylesheet" />
+	<link href="~/css/TaxiTripsIndex.css?v=37" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/spinkit/spinkit.css">
     <style>
       .searchbar .od-pair-col { position: relative; }
@@ -313,11 +313,13 @@
 
     .directionval {
         font-weight: 400;
-        font-size: 14px;
+        font-size: 0.8rem;
         font-style: normal;
         font-variation-settings: "wght" 400;
-        font-weight: 400;
-        line-height: 28px;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
 
@@ -386,76 +388,55 @@
 <div class="landing-hero px-lg-5 px-0 pb-md-3" style="padding-top: 7.5rem !important;">
 	<div class="container px-lg-6 px-0">
 
-	<div class="searchbar card shadow" style="">
-
-		<div class="row">
-			<div class="col-lg-1 col-0"></div>
-			<div class="row col-12 col-lg-10 p-0">
-				<div class="px-4 px-md-0">
-                        <form asp-controller="TaxiTrips" method="get" asp-action="Index" id="tripForm"
-                              data-initial-origin="@(ViewBag.origin_city_text as string ?? "")"
-                              data-initial-dest="@(ViewBag.dest_city_text as string ?? "")">
-						<div class="card-body row mx-0  p-4 pt-md-2">
-							<div class="col-md-6 col-12 od-pair-col">
-								<div class="row g-0 od-pair">
-									<div class="col-6 inputcel">
-										<small class="ms-3">مبدا</small>
-										<div class="input-container">
-											<input required id="origin_input" name="originstring" autocomplete="off" aria-describedby="defaultFormControlHelp" value="@ViewBag.origin_city_text" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" placeholder="مبدا" type="text" role="button" style="font-weight:bold;" />
-											<i class="ti ti-location mb-2 icon"></i>
-											<span class="dropdown-menu dropdown-menu-end origin_location" style="inset:unset !important; min-width:230px;">
-											</span>
-										</div>
-									</div>
-
-									<div class="col-6 inputcel">
-										<small class="ms-3">مقصد</small>
-										<div class="input-container">
-											<input required id="destination_input" name="destinationstring" value="@ViewBag.dest_city_text" data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle" placeholder="مقصد" type="text" role="button" style="font-weight:bold;" />
-											<i class="ti ti-map-pin mb-2 icon"></i>
-											<span class="dropdown-menu dropdown-menu-end destination_location" style="inset:unset !important; min-width:230px;">
-											</span>
-										</div>
-									</div>
-								</div>
-								<button type="button" class="od-swap-btn" id="od-swap-btn" title="جابه‌جایی مبدأ و مقصد" aria-label="جابه‌جایی مبدأ و مقصد">
-									<i class="ti ti-arrows-left-right" aria-hidden="true"></i>
-								</button>
-							</div>
-
-							<div class="col-md-3 col-sm-12 inputcel mt-2 mt-md-0">
-
-								<small class="ms-3">تاریخ سفر</small>
-
-								<!-- /Human Friendly Date Picker-->
-								<!-- Disabled Range-->
-
+	<div class="searchbar card shadow">
+		<form asp-controller="TaxiTrips" method="get" asp-action="Index" id="tripForm"
+			  class="searchbar-form"
+			  data-initial-origin="@(ViewBag.origin_city_text as string ?? "")"
+			  data-initial-dest="@(ViewBag.dest_city_text as string ?? "")">
+			<div class="card-body searchbar-body">
+				<div class="row g-3 align-items-end justify-content-center mx-0">
+					<div class="col-12 col-md-6 od-pair-col">
+						<div class="row g-0 od-pair">
+							<div class="col-6 inputcel">
+								<small class="searchbar-field-label">مبدا</small>
 								<div class="input-container">
-                                        <input required name="searchdate" autocomplete="off" value="@ViewBag.searchdate" class="form-control bdi starttimeselector" id="starttime" placeholder="تاریخ سفر" type="text" />
-									<i class="ti ti-calendar-stats mb-2 icon pe-0"></i>
+									<input required id="origin_input" name="originstring" autocomplete="off" aria-describedby="defaultFormControlHelp" value="@ViewBag.origin_city_text" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" placeholder="مبدا" type="text" role="button" style="font-weight:bold;" />
+									<i class="ti ti-location mb-2 icon"></i>
+									<span class="dropdown-menu dropdown-menu-end origin_location"></span>
 								</div>
-								@* <div class="form-text" id="defaultFormControlHelp">انتخاب تاریخ</div> *@
-
-
 							</div>
 
-
-
-							<div class="col-md-3 col-12 inputcel pt-2 align-items-end mt-md-0 mt-2 d-flex justify-content-end">
-								<button style="width:100%;" class="btn btn-primary waves-effect waves-light" type="submit">
-									پیدا کن
-									<i class="ti ti-search"></i>
-								</button>
+							<div class="col-6 inputcel">
+								<small class="searchbar-field-label">مقصد</small>
+								<div class="input-container">
+									<input required id="destination_input" name="destinationstring" value="@ViewBag.dest_city_text" data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle" placeholder="مقصد" type="text" role="button" style="font-weight:bold;" />
+									<i class="ti ti-map-pin mb-2 icon"></i>
+									<span class="dropdown-menu dropdown-menu-end destination_location"></span>
+								</div>
 							</div>
-
 						</div>
-					</form>
+						<button type="button" class="od-swap-btn" id="od-swap-btn" title="جابه‌جایی مبدأ و مقصد" aria-label="جابه‌جایی مبدأ و مقصد">
+							<i class="ti ti-arrows-left-right" aria-hidden="true"></i>
+						</button>
+					</div>
+
+					<div class="col-12 col-md-3 inputcel">
+						<small class="searchbar-field-label">تاریخ سفر</small>
+						<div class="input-container">
+							<input required name="searchdate" autocomplete="off" value="@ViewBag.searchdate" class="form-control bdi starttimeselector" id="starttime" placeholder="تاریخ سفر" type="text" />
+							<i class="ti ti-calendar-stats mb-2 icon pe-0"></i>
+						</div>
+					</div>
+
+					<div class="col-12 col-md-3 inputcel d-flex align-items-end">
+						<button class="btn btn-primary waves-effect waves-light searchbar-submit" type="submit">
+							پیدا کن
+							<i class="ti ti-search"></i>
+						</button>
+					</div>
 				</div>
 			</div>
-			<div class="col-lg-1 col-0"></div>
-
-		</div>
-
+		</form>
 	</div>
 	</div>
 </div>

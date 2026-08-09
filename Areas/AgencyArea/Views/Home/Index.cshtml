@@ -2,11 +2,11 @@
     Layout = "_FrontLayout";
 
     ViewData["Title"] = "سواری بین شهری";
-    ViewData["MetaDescription"] = "مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری — بلیط در کمتر از چند دقیقه و پشتیبانی ۲۴/۷";
-    ViewData["OgTitle"] = "مسترشوفر | سواری بین‌شهری و ترانسفر فرودگاهی";
+    ViewData["MetaDescription"] = "مستر شوفر (مسترشوفر) سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری — بلیط در کمتر از چند دقیقه و پشتیبانی ۲۴/۷";
+    ViewData["OgTitle"] = "مستر شوفر | سواری بین‌شهری و ترانسفر فرودگاهی";
     ViewData["OgDescription"] = (string)ViewData["MetaDescription"]!;
     ViewData["OgImage"] = Application.Services.Seo.SeoDefaults.DefaultOgImageUrl;
-    ViewData["OgImageAlt"] = "مسترشوفر — رزرو آنلاین سواری بین‌شهری";
+    ViewData["OgImageAlt"] = "مستر شوفر — رزرو آنلاین سواری بین‌شهری";
     ViewData["CanonicalUrl"] = "https://sale.shoofer.taxi/";
     ViewData["IncludeHomeFaqs"] = true;
     ViewData["DateModified"] = "2026-08-05";
@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
-    <link href="~/css/IndexPage.css?v=30" rel="stylesheet" />
+    <link href="~/css/IndexPage.css?v=32" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
     <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
     @* Critical: swap control + field gutters (survive stale/CDN-cached IndexPage.css) *@
@@ -97,7 +97,7 @@
             <div class="container">
                 <div class="hero-text-box text-center">
                     <h1 class="text-center hero-title">
-                        راهی مطمئن به همه مقاصد ایران
+                        مستر شوفر — راهی مطمئن به همه مقاصد ایران
                     </h1>
                     <h2 class="hero-sub-title text-center">
                         سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده و بهترین خودروها
@@ -123,11 +123,11 @@
                                             جستجوی سواری
                                         </h5>
                                         <p class="mb-0 text-muted small">
-                                            مسترشوفر — سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده
+                                            مستر شوفر — سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده
                                             <i class="ti ti-circle-check text-primary ms-1"></i>
                                         </p>
                                     </div>
-                                    <img src="/mrshoofer_cars_banner.png" class="d-none d-md-block" height="72" alt="ناوگان سواری رسمی مسترشوفر" />
+                                    <img src="/mrshoofer_cars_banner.png" class="d-none d-md-block" height="72" alt="ناوگان سواری رسمی مستر شوفر" />
                                 </div>
 
                                 <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row g-3 m-0" id="tripForm">
@@ -138,7 +138,7 @@
                                                 <div class="input-container">
                                                     <input autocomplete="off" aria-describedby="originHelpDesktop originHelpMobile" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" id="origin_input" placeholder="مبدا" type="text" role="button" name="originstring" />
                                                     <i class="ti ti-location mb-2 icon" aria-hidden="true"></i>
-                                                    <span class="dropdown-menu dropdown-menu-end origin_location" style="inset:unset !important; min-width:230px;"></span>
+                                                    <span class="dropdown-menu dropdown-menu-end origin_location"></span>
                                                 </div>
                                                 <div class="form-text d-md-block d-none" id="originHelpDesktop">شهر مبدا سفر</div>
                                             </div>
@@ -148,7 +148,7 @@
                                                 <div class="input-container">
                                                     <input data-bs-toggle="dropdown" autocomplete="off" aria-describedby="destinationHelpDesktop destinationHelpMobile" class="form-control destination input-field dropdown-toggle" id="destination_input" placeholder="مقصد" type="text" role="button" name="destinationstring" />
                                                     <i class="ti ti-map-pin mb-2 icon" aria-hidden="true"></i>
-                                                    <span class="dropdown-menu dropdown-menu-end destination_location" style="inset:unset !important; min-width:230px;"></span>
+                                                    <span class="dropdown-menu dropdown-menu-end destination_location"></span>
                                                 </div>
                                                 <div class="form-text d-none d-md-block" id="destinationHelpDesktop">شهر مقصد سفر</div>
                                             </div>
@@ -207,13 +207,13 @@
                         <div class="card hero-definition-card hero-zone-card">
                             <div class="card-body hero-definition-body-wrap">
                                 <div class="hero-definition-content">
-                                    <h3 class="hero-definition-title">مسترشوفر چیست؟</h3>
+                                    <h3 class="hero-definition-title">مستر شوفر چیست؟</h3>
                                     <p class="hero-definition-body">
-                                        مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری است. سفر خود را از بین کلاس‌های متنوع ما انتخاب کنید و بلیط خود را در کمتر از چند دقیقه دریافت کنید. همکاران ما در سریع‌ترین زمان ممکن برای هماهنگی سفر با شما تماس می‌گیرند و تا آخرین لحظه سفر در کنار شما هستند تا تجربه‌ای با آرامش خاطر و امنیت رقم بخورد.
+                                        مستر شوفر (همان مسترشوفر) سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری است. سفر خود را از بین کلاس‌های متنوع ما انتخاب کنید و بلیط خود را در کمتر از چند دقیقه دریافت کنید. همکاران ما در سریع‌ترین زمان ممکن برای هماهنگی سفر با شما تماس می‌گیرند و تا آخرین لحظه سفر در کنار شما هستند تا تجربه‌ای با آرامش خاطر و امنیت رقم بخورد.
                                     </p>
                                     <div class="hero-definition-mid">
                                         <div class="hero-definition-media">
-                                            <img src="/cta-taxi.jpg?v=4" alt="ناوگان سواری مسترشوفر" width="480" height="270" loading="eager" decoding="async" class="hero-definition-img" />
+                                            <img src="/cta-taxi.jpg?v=4" alt="ناوگان سواری مستر شوفر" width="480" height="270" loading="eager" decoding="async" class="hero-definition-img" />
                                         </div>
                                         <div class="hero-definition-aside">
                                             <ul class="hero-definition-bullets">
@@ -317,6 +317,7 @@
             <ul class="landing-routes-grid">
                 @foreach (var r in popularRoutes)
                 {
+                    var startPrice = Application.Services.Seo.SeoDefaults.HomepageRouteStartingPrice(r.Slug);
                     <li>
                         <a class="landing-route-link" href="/routes/@r.Slug">
                             <span class="landing-route-od">
@@ -324,7 +325,16 @@
                                 <span class="landing-route-arrow" aria-hidden="true">←</span>
                                 <span class="landing-route-city">@r.DestinationFa</span>
                             </span>
-                            <span class="landing-route-hint">مشاهده و رزرو</span>
+                            <span class="landing-route-meta">
+                                @if (startPrice is long price)
+                                {
+                                    <span class="landing-route-price">
+                                        <span class="landing-route-price-label">شروع قیمت</span>
+                                        <span class="landing-route-price-value">@price.ToString("N0") تومان</span>
+                                    </span>
+                                }
+                                <span class="landing-route-hint">مشاهده و رزرو</span>
+                            </span>
                         </a>
                     </li>
                 }
@@ -427,7 +437,7 @@
             <h3 class="text-center mb-1">
                 <span class="section-title">سوالات پرتکرار</span>
             </h3>
-            <p class="text-center mb-5 pb-3">پاسخ‌های کوتاه درباره رزرو سواری بین‌شهری و ترانسفر فرودگاهی با مسترشوفر</p>
+            <p class="text-center mb-5 pb-3">پاسخ‌های کوتاه درباره رزرو سواری بین‌شهری و ترانسفر فرودگاهی با مستر شوفر</p>
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     <div class="accordion" id="accordionHomeFaq">

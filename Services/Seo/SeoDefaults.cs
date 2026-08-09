@@ -8,10 +8,24 @@ public static class SeoDefaults
 {
   public const string PreferredOrigin = "https://sale.shoofer.taxi";
   public const string SiteName = "مسترشوفر";
+  /// <summary>Spaced brand spelling people type in search («مستر شوفر»).</summary>
+  public const string SiteNameSpaced = "مستر شوفر";
   public const string SiteNameEn = "MrShoofer";
+  /// <summary>Spaced English brand spelling («Mr Shoofer» / «mr shoofer»).</summary>
+  public const string SiteNameEnSpaced = "Mr Shoofer";
   public const string DefaultTitle = "سواری بین شهری";
   public const string DefaultDescription =
-    "سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده و بهترین خودروها | رزرو آنلاین مسترشوفر";
+    "مستر شوفر (مسترشوفر) — سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده و بهترین خودروها | رزرو آنلاین";
+
+  /// <summary>All brand spellings for schema alternateName (FA + EN, spaced and compound).</summary>
+  public static readonly string[] BrandAlternateNames =
+  [
+    SiteNameSpaced,
+    SiteNameEn,
+    SiteNameEnSpaced,
+    "mrshoofer",
+    "mr shoofer"
+  ];
   public const string DefaultOgImagePath = "/og-home.jpg";
   /// <summary>Cache-busted absolute OG image (shared brand asset; titles/descriptions stay per-page).</summary>
   public const string DefaultOgImageUrl = PreferredOrigin + DefaultOgImagePath + "?v=1";
@@ -25,8 +39,8 @@ public static class SeoDefaults
   public static readonly (string Question, string Answer)[] HomeFaqs =
   [
     (
-      "مسترشوفر چیست؟",
-      "مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری است. می‌توانید از بین کلاس‌های متنوع سفر انتخاب کنید و بلیط را در کمتر از چند دقیقه دریافت کنید."
+      "مستر شوفر چیست؟",
+      "مستر شوفر (همان مسترشوفر) سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری است. می‌توانید از بین کلاس‌های متنوع سفر انتخاب کنید و بلیط را در کمتر از چند دقیقه دریافت کنید."
     ),
     (
       "چطور سواری رزرو کنم؟",
@@ -90,6 +104,31 @@ public static class SeoDefaults
     "isfahan-bandarabbas",
     "isfahan-shiraz",
   ];
+
+  /// <summary>
+  /// Approximate starting ticket prices (تومان) for homepage route cards — marketing floor, not live ORS quotes.
+  /// </summary>
+  private static readonly Dictionary<string, long> HomepageRouteStartingPriceToman = new(StringComparer.OrdinalIgnoreCase)
+  {
+    ["tehran-isfahan"] = 3_500_000,
+    ["tehran-mashhad"] = 7_500_000,
+    ["tehran-rasht"] = 2_800_000,
+    ["tehran-shiraz"] = 6_500_000,
+    ["tehran-tabriz"] = 5_500_000,
+    ["tehran-chalus"] = 2_200_000,
+    ["tehran-bandarabbas"] = 9_000_000,
+    ["tehran-ahvaz"] = 7_000_000,
+    ["tehran-sari"] = 3_200_000,
+    ["tehran-qom"] = 1_200_000,
+    ["isfahan-bandarabbas"] = 5_500_000,
+    ["isfahan-shiraz"] = 2_800_000,
+  };
+
+  public static long? HomepageRouteStartingPrice(string? slug)
+  {
+    if (string.IsNullOrWhiteSpace(slug)) return null;
+    return HomepageRouteStartingPriceToman.TryGetValue(slug.Trim(), out var price) ? price : null;
+  }
 
   /// <summary>City hub chips under homepage popular routes.</summary>
   public static readonly string[] HomepagePopularCitySlugs =
@@ -314,7 +353,7 @@ public static class SeoDefaults
     ["@type"] = new[] { "Organization", "TravelAgency" },
     ["@id"] = PreferredOrigin + "/#organization",
     ["name"] = SiteName,
-    ["alternateName"] = new[] { SiteNameEn, "مستر شوفر", "Mr Shoofer" },
+    ["alternateName"] = BrandAlternateNames,
     ["url"] = PreferredOrigin + "/",
     ["logo"] = new Dictionary<string, object?>
     {
@@ -353,7 +392,7 @@ public static class SeoDefaults
     ["@id"] = PreferredOrigin + "/#website",
     ["url"] = PreferredOrigin + "/",
     ["name"] = SiteName,
-    ["alternateName"] = SiteNameEn,
+    ["alternateName"] = BrandAlternateNames,
     ["inLanguage"] = ContentLanguage,
     ["publisher"] = new Dictionary<string, object?> { ["@id"] = PreferredOrigin + "/#organization" },
     // SearchAction targets a stable public landing (homepage form), never thin result pages.

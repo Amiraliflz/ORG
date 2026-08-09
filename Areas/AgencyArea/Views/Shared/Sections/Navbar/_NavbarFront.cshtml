@@ -20,9 +20,88 @@
 		right: auto !important;
 	}
 
+	.landing-navbar .navbar-login-btn {
+		position: relative;
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		gap: 0.4rem;
+		padding: 0 !important;
+		border-radius: 1.25rem !important;
+		line-height: 1 !important;
+		width: 2.75rem !important;
+		height: 2.75rem !important;
+		min-width: 2.75rem !important;
+		min-height: 2.75rem !important;
+		box-sizing: border-box !important;
+		text-align: center;
+	}
+
+	/* Kill Bootstrap/theme icon side margins that shove the glyph off-center */
+	.landing-navbar .navbar-login-btn .ti,
+	.landing-navbar .navbar-login-btn .tf-icons,
+	.landing-navbar .navbar-login-btn i {
+		position: absolute !important;
+		inset: 0 !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		width: 100% !important;
+		height: 100% !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		font-size: 1.25rem !important;
+		line-height: 1 !important;
+		transform: none !important;
+	}
+
+	/* Optical RTL flip without breaking centering */
+	[dir="rtl"] .landing-navbar .navbar-login-btn .ti::before,
+	html[dir="rtl"] .landing-navbar .navbar-login-btn .ti::before,
+	.landing-navbar .navbar-login-btn .ti.scaleX-n1-rtl::before {
+		display: inline-block;
+		transform: scaleX(-1);
+	}
+
+	@@media (min-width: 768px) {
+		.landing-navbar .navbar-login-btn {
+			width: auto !important;
+			min-width: 0 !important;
+			height: auto !important;
+			min-height: 2.5rem !important;
+			padding: 0.55rem 1.15rem !important;
+		}
+
+		.landing-navbar .navbar-login-btn .ti,
+		.landing-navbar .navbar-login-btn .tf-icons,
+		.landing-navbar .navbar-login-btn i {
+			position: static !important;
+			inset: auto !important;
+			width: 1.15rem !important;
+			height: 1.15rem !important;
+			flex: 0 0 auto;
+		}
+	}
+
 	@@media (max-width: 767.98px) {
 		.layout-navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
 			left: 0.9rem !important;
+		}
+
+		.navbar.landing-navbar {
+			padding-inline: 0.75rem !important;
+			padding-block: 0.45rem !important;
+			margin-inline: 0.75rem;
+			border-radius: 1rem;
+		}
+
+		.landing-navbar .navbar-brand {
+			margin-inline-end: 0.5rem !important;
+		}
+
+		/* Hide text label span so only centered icon remains */
+		.landing-navbar .navbar-login-btn > span {
+			display: none !important;
 		}
 	}
 </style>
@@ -39,7 +118,7 @@
 				</button>
 				<!-- Mobile menu toggle: End-->
 				<a asp-controller="Home" asp-action="Index" class="app-brand-link d-flex align-items-center gap-2">
-					<img src="~/logo_full_b.png" height="34" alt="مسترشوفر" />
+					<img src="~/logo_full_b.png" height="34" alt="مستر شوفر" />
 					@if (partner.Src != null)
 					{
 						<span style="width:1px;height:28px;background:#ddd;display:inline-block;margin:0 4px"></span>
@@ -219,9 +298,9 @@
 						else
 
 						{
-						<a asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" class="btn btn-primary">
-							<span class="tf-icons ti ti-login scaleX-n1-rtl me-md-1"></span>
-							<span class="d-none d-md-block">ورود / ثبت‌نام</span>
+						<a asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" class="btn btn-primary navbar-login-btn" aria-label="ورود / ثبت‌نام">
+							<i class="ti ti-login" aria-hidden="true"></i>
+							<span class="d-none d-md-inline navbar-login-label">ورود / ثبت‌نام</span>
 						</a>
 						}
 					}

@@ -29,15 +29,15 @@ $(document).ready(function () {
 function showTripInfoModal() {
     var modal = `
         <div class="modal fade" id="tripInfoModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content" style="border-radius: 1.5rem; border: none; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable trip-info-modal-dialog" role="document">
+                <div class="modal-content trip-info-modal-content">
                     <!-- Map Image Header with Overlay -->
-                    <div class="modal-header border-0 p-0" style="position: relative; height: 200px; overflow: hidden;">
+                    <div class="modal-header border-0 p-0 trip-info-modal-map">
                         <!-- Background Map Image -->
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('/Gemini_Generated_Image_s4ahl2s4ahl2s4ah.png '); background-size: cover; background-position: center; opacity: 0.95;"></div>
+                        <div class="trip-info-modal-map-bg" style="background-image: url('/Gemini_Generated_Image_s4ahl2s4ahl2s4ah.png');"></div>
                         
                         <!-- Overlay for better contrast -->
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.08), rgba(0,0,0,0.03));"></div>
+                        <div class="trip-info-modal-map-overlay"></div>
                         
                         <!-- Route and Markers Overlay -->
                         <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="position: relative; z-index: 2;">
@@ -328,40 +328,38 @@ function showTripInfoModal() {
                     </div>
                     
                     <!-- Modal Body -->
-                    <div class="modal-body p-4 text-center">
-                        <div class="mb-3">
-                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <i class="ti ti-map-pin ti-lg text-white"></i>
-                            </div>
+                    <div class="modal-body trip-info-modal-body text-center">
+                        <div class="trip-info-modal-icon mb-2">
+                            <i class="ti ti-map-pin text-white"></i>
                         </div>
-                        <h4 class="mb-3" style="color: #2f3349; font-weight: 600;">
+                        <h4 class="trip-info-modal-title mb-2">
                             اطلاعات مبدا و مقصد
                         </h4>
-                        <p class="text-muted mb-4" style="font-size: 1rem; line-height: 1.8;">
+                        <p class="text-muted trip-info-modal-copy mb-3">
                             بعد از رزرو سفر، اطلاعات دقیق مبدا و مقصد از طریق <strong>نقشه تعاملی</strong> از شما دریافت می‌گردد تا راننده بتواند با دقت بیشتری به مقصد شما برسد.
                         </p>
                         
                         <!-- Info Cards -->
-                        <div class="row g-3 mb-4">
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <div class="p-3 rounded-3" style="background: #f0f4ff; border: 1px solid #e0e7ff;">
-                                    <i class="ti ti-map-2 ti-md text-primary mb-2"></i>
+                                <div class="trip-info-feature trip-info-feature--origin">
+                                    <i class="ti ti-map-2 text-primary mb-1"></i>
                                     <small class="d-block text-muted">انتخاب دقیق</small>
-                                    <strong class="d-block" style="color: #667eea; font-size: 0.875rem;">مبدا</strong>
+                                    <strong class="d-block">مبدا</strong>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="p-3 rounded-3" style="background: #fff4f0; border: 1px solid #ffe7e0;">
-                                    <i class="ti ti-flag ti-md text-danger mb-2"></i>
+                                <div class="trip-info-feature trip-info-feature--dest">
+                                    <i class="ti ti-flag text-danger mb-1"></i>
                                     <small class="d-block text-muted">انتخاب دقیق</small>
-                                    <strong class="d-block" style="color: #764ba2; font-size: 0.875rem;">مقصد</strong>
+                                    <strong class="d-block">مقصد</strong>
                                 </div>
                             </div>
                         </div>
                         
-                        <button type="button" class="btn btn-primary btn-lg w-100 waves-effect waves-light" data-bs-dismiss="modal" style="border-radius: 1rem; height: 3.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-weight: 500;">
-                            <i class="ti ti-check me-2"></i>
-                            متوجه شدم، ادامه
+                        <button type="button" class="btn btn-primary btn-lg w-100 waves-effect waves-light trip-info-modal-cta" data-bs-dismiss="modal">
+                            <i class="ti ti-check"></i>
+                            <span>متوجه شدم، ادامه</span>
                         </button>
                     </div>
                 </div>

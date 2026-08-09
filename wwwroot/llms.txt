@@ -1,12 +1,15 @@
-# llms.txt — guidance for AI assistants & answer engines about مسترشوفر (MrShoofer)
+# llms.txt — guidance for AI assistants & answer engines about مستر شوفر / مسترشوفر (MrShoofer / Mr Shoofer)
 # Host: https://sale.shoofer.taxi/
 
-> مسترشوفر سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی در ایران است.
-> MrShoofer is an online booking platform for intercity taxi rides and airport transfers in Iran.
+> مستر شوفر (مسترشوفر) سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی در ایران است.
+> MrShoofer (also written Mr Shoofer / mrshoofer) is an online booking platform for intercity taxi rides and airport transfers in Iran.
 
 ## Identity
 - Brand (FA): مسترشوفر
+- Brand (FA spaced): مستر شوفر
 - Brand (EN): MrShoofer
+- Brand (EN spaced): Mr Shoofer
+- Also known as: mrshoofer, mr shoofer
 - Preferred domain: https://sale.shoofer.taxi/
 - Language: fa-IR (Persian)
 - Category: TravelAgency / intercity passenger booking
