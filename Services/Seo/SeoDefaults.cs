@@ -13,9 +13,9 @@ public static class SeoDefaults
   public const string SiteNameEn = "MrShoofer";
   /// <summary>Spaced English brand spelling («Mr Shoofer» / «mr shoofer»).</summary>
   public const string SiteNameEnSpaced = "Mr Shoofer";
-  public const string DefaultTitle = "سواری بین شهری";
+  public const string DefaultTitle = "رزرو تاکسی بین شهری و سواری دربستی";
   public const string DefaultDescription =
-    "مستر شوفر (مسترشوفر) — سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده و بهترین خودروها | رزرو آنلاین";
+    "مستر شوفر (مسترشوفر) — رزرو آنلاین تاکسی بین شهری، سواری دربستی و ترانسفر فرودگاهی با رانندگان تأییدشده | رزرو آنلاین";
 
   /// <summary>All brand spellings for schema alternateName (FA + EN, spaced and compound).</summary>
   public static readonly string[] BrandAlternateNames =
@@ -40,7 +40,7 @@ public static class SeoDefaults
   [
     (
       "مستر شوفر چیست؟",
-      "مستر شوفر (همان مسترشوفر) سامانه رزرو آنلاین سواری بین‌شهری و ترانسفر فرودگاهی با ناوگان سواری است. می‌توانید از بین کلاس‌های متنوع سفر انتخاب کنید و بلیط را در کمتر از چند دقیقه دریافت کنید."
+      "مستر شوفر (همان مسترشوفر) سامانه رزرو آنلاین تاکسی بین شهری، سواری دربستی و ترانسفر فرودگاهی با ناوگان سواری است. می‌توانید از بین کلاس‌های متنوع سفر انتخاب کنید و بلیط را در کمتر از چند دقیقه دریافت کنید."
     ),
     (
       "چطور سواری رزرو کنم؟",
