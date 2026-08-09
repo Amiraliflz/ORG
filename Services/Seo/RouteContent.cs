@@ -29,13 +29,13 @@ public static class RouteContent
     var timeText = time is null ? "" : $" مدت تقریبی حرکت{time}";
     var corridor = CorridorLabel(o, d);
 
-    var h1 = $"سواری {route.OriginFa} به {route.DestinationFa} | رزرو آنلاین";
+    var h1 = $"سواری {route.OriginFa} به {DisplayCity(d)} | رزرو آنلاین";
     var meta =
-      $"رزرو آنلاین سواری {route.OriginFa} به {route.DestinationFa} با مسترشوفر — {corridor}، رانندگان تأییدشده،{timeText}{kmText}، بلیط سریع و پشتیبانی ۲۴/۷.";
+      $"رزرو آنلاین سواری {route.OriginFa} به {DisplayCity(d)} با مسترشوفر — {corridor}، رانندگان تأییدشده،{timeText}{kmText}، بلیط سریع و پشتیبانی ۲۴/۷.";
 
     var intro =
-      $"سواری {route.OriginFa} ({o.RegionFa}) به {route.DestinationFa} ({d.RegionFa}) را در این صفحه جستجو و رزرو می‌کنید. " +
-      $"{o.NameFa} {o.RoleFa} است و {d.NameFa} به‌عنوان {d.RoleFa} مقصد این مسیر شناخته می‌شود. " +
+      $"سواری {route.OriginFa} ({o.RegionFa}) به {DisplayCity(d)} ({d.RegionFa}) را در این صفحه جستجو و رزرو می‌کنید. " +
+      $"{o.NameFa} {o.RoleFa} است و {DisplayCity(d)} به‌عنوان {d.RoleFa} مقصد این مسیر شناخته می‌شود. " +
       "تاریخ را مطابق برنامه خود تنظیم کنید تا گزینه‌های همان روز و کلاس‌های ناوگان نمایش داده شوند." +
       (time is null ? "" : $" زمان تقریبی حرکت این مسیر حدود{time} است.") +
       (km is int kk ? $" مسافت تقریبی حدود {kk} کیلومتر برآورد می‌شود." : "");
@@ -44,15 +44,15 @@ public static class RouteContent
     {
       (
         "مسیر",
-        $"مسیر {route.OriginFa} به {route.DestinationFa} یکی از مسیرهای فعال سواری بین‌شهری مسترشوفر در کریدور {corridor} است."
+        PathBlurb(route, o, d, corridor)
       ),
       (
-        $"مبدأ — {o.NameFa}",
-        $"{o.NameFa} {o.RoleFa} در {o.RegionFa} است. {o.BlurbFa}"
+        $"مبدأ — {DisplayCity(o)}",
+        $"{DisplayCity(o)} {o.RoleFa} در {o.RegionFa} است. {o.BlurbFa}"
       ),
       (
-        $"مقصد — {d.NameFa}",
-        $"مقصد {d.NameFa} در {d.RegionFa} قرار دارد و {d.RoleFa} محسوب می‌شود. {d.BlurbFa}"
+        $"مقصد — {DisplayCity(d)}",
+        $"مقصد {DisplayCity(d)} در {d.RegionFa} قرار دارد و {d.RoleFa} محسوب می‌شود. {d.BlurbFa}"
       ),
       (
         "قیمت",
@@ -112,7 +112,7 @@ public static class RouteContent
       ),
       (
         $"ویژگی مسیر {route.OriginFa}–{route.DestinationFa} چیست؟",
-        $"این مسیر کریدور {corridor} را پوشش می‌دهد: مبدأ {o.RoleFa} و مقصد {d.RoleFa}."
+        $"این مسیر محور {corridor} را پوشش می‌دهد: مبدأ {o.RoleFa} و مقصد {d.RoleFa}."
       ),
       (
         "آیا قیمت قبل از پرداخت مشخص است؟",
@@ -159,6 +159,33 @@ public static class RouteContent
   {
     if (o.RegionFa == d.RegionFa) return o.RegionFa;
     return $"{o.RegionFa} → {d.RegionFa}";
+  }
+
+  private static bool IsTurkey(CityCatalog.CityProfile c) =>
+    c.RegionFa.Contains("ترکیه", StringComparison.Ordinal) ||
+    c.NameFa.Contains("وان", StringComparison.Ordinal);
+
+  private static string DisplayCity(CityCatalog.CityProfile c) =>
+    IsTurkey(c) && !c.NameFa.Contains("ترکیه", StringComparison.Ordinal)
+      ? $"{c.NameFa} ترکیه"
+      : c.NameFa;
+
+  private static string PathBlurb(
+    RouteCatalog.RoutePage route,
+    CityCatalog.CityProfile o,
+    CityCatalog.CityProfile d,
+    string corridor)
+  {
+    if (IsTurkey(d) && o.NameFa.Contains("تهران", StringComparison.Ordinal))
+      return "مسیر تهران به ترکیه یک مسیر فعال ترانزیتی است در محور پایتخت به کشور ترکیه است.";
+
+    if (IsTurkey(o) && d.NameFa.Contains("تهران", StringComparison.Ordinal))
+      return "مسیر ترکیه به تهران یک مسیر فعال ترانزیتی است در محور کشور ترکیه به پایتخت است.";
+
+    if (IsTurkey(o) || IsTurkey(d))
+      return $"مسیر {DisplayCity(o)} به {DisplayCity(d)} یک مسیر فعال ترانزیتی در محور {corridor} است.";
+
+    return $"مسیر {route.OriginFa} به {route.DestinationFa} یکی از مسیرهای فعال سواری بین‌شهری مسترشوفر در محور {corridor} است.";
   }
 
   private static bool IsNorthRegion(CityCatalog.CityProfile c) =>

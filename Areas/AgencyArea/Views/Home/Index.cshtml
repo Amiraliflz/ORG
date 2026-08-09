@@ -19,13 +19,7 @@
 @section VendorStyles {
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link rel="stylesheet" href="~/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css" />
-    <link rel="stylesheet" href="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
-    <link rel="stylesheet" href="~/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
-    <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
-    <link href="~/css/IndexPage.css?v=32" rel="stylesheet" />
-    <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
-    <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
+    <link href="~/css/IndexPage.css?v=33" rel="stylesheet" />
     @* Critical: swap control + field gutters (survive stale/CDN-cached IndexPage.css) *@
     <style>
       .landing-hero .od-pair-col { position: relative; }
@@ -69,23 +63,11 @@
 
 @section VendorScripts {
     <script src="~/libs/jquery.js"></script>
-    <script src="~/vendor/js/dropdown-hover.js"></script>
-    <script src="~/vendor/libs/moment/moment.js"></script>
     <script src="~/vendor/libs/jdate/jdate.min.js"></script>
     <script src="~/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
     <script src="~/vendor/libs/flatpickr/l10n/fa.js"></script>
-    <script src="~/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js"></script>
-    <script src="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js"></script>
-    <script src="~/vendor/libs/jquery-timepicker/jquery-timepicker.js"></script>
-    <script src="~/vendor/libs/pickr/pickr.js"></script>
-    <script src="~/js/IndexPage.js"></script>
+    <script src="~/js/IndexPage.js?v=2"></script>
     <script src="~/js/searchpage.js?v=5"></script>
-    <script src="~/vendor/libs/sweetalert2/sweetalert2.js"></script>
-    <script src="~/js/extended-ui-sweetalert2.js"></script>
-}
-
-@section PageScripts {
-
 }
 
 
@@ -127,7 +109,7 @@
                                             <i class="ti ti-circle-check text-primary ms-1"></i>
                                         </p>
                                     </div>
-                                    <img src="/mrshoofer_cars_banner.png" class="d-none d-md-block" height="72" alt="ناوگان سواری رسمی مستر شوفر" />
+                                    <img src="/mrshoofer_cars_banner.webp" width="72" height="72" class="d-none d-md-block" alt="ناوگان سواری رسمی مستر شوفر" decoding="async" />
                                 </div>
 
                                 <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row g-3 m-0" id="tripForm">
@@ -213,7 +195,7 @@
                                     </p>
                                     <div class="hero-definition-mid">
                                         <div class="hero-definition-media">
-                                            <img src="/cta-taxi.jpg?v=4" alt="ناوگان سواری مستر شوفر" width="480" height="270" loading="eager" decoding="async" class="hero-definition-img" />
+                                            <img src="/cta-taxi.webp" alt="ناوگان سواری مستر شوفر" width="480" height="270" loading="lazy" decoding="async" class="hero-definition-img" />
                                         </div>
                                         <div class="hero-definition-aside">
                                             <ul class="hero-definition-bullets">
@@ -260,7 +242,7 @@
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="/taxi.png" height="66" width="66" alt="ناوگان سواری بین‌شهری مسترشوفر" />
+                        <img src="/taxi.webp" height="66" width="66" alt="ناوگان سواری بین‌شهری مسترشوفر" loading="lazy" decoding="async" />
                     </div>
                     <h5 class="mb-2">ناوگان گسترده در سراسر ایران</h5>
                     <p class="features-icon-description">صدها مسیر بین‌شهری و ترانسفر فرودگاهی با ظرفیت بالا؛ همیشه گزینه‌ای برای سفر شما هست.</p>
@@ -485,7 +467,7 @@
                     <a href="#landingHero" class="btn btn-lg btn-primary">جستجوی سواری</a>
                 </div>
                 <div class="col-lg-6 pt-lg-5 text-center text-lg-end">
-                    <img src="/mrshooferserachdemo.png" alt="نمایش جستجوی سواری در مسترشوفر" class="img-fluid landing-cta-img" />
+                    <img src="/mrshooferserachdemo.webp" width="900" height="431" alt="نمایش جستجوی سواری در مسترشوفر" class="img-fluid landing-cta-img" loading="lazy" decoding="async" />
                 </div>
             </div>
         </div>
@@ -508,7 +490,7 @@
                 <div class="col-lg-5">
                     <div class="contact-img-box position-relative border p-2 h-100">
                         <img src="~/img/front-pages/icons/contact-border.png" alt="contact border" class="contact-border-img position-absolute d-none d-md-block scaleX-n1-rtl" />
-                        <img src="/callcenter.jpg " alt="contact customer service" class="contact-img w-100 scaleX-n1-rtl" />
+                        <img src="/callcenter.webp" width="800" height="533" alt="پشتیبانی مشتریان مستر شوفر" class="contact-img w-100 scaleX-n1-rtl" loading="lazy" decoding="async" />
                         <div class="pt-3 px-4 pb-1">
                             <div class="row gy-3 gx-md-4">
                                 <div class="col-md-6 col-lg-12 col-xl-6">
@@ -584,49 +566,67 @@
     <!-- Contact Us: End -->
 </div>
 
-
+@section PageScripts {
 <script>
-    $(document).ready(function () {
-        $('#contact-us').on('submit', function (event) {
-            event.preventDefault();
-
-            var name = $('#name').val();
-            var number = $('#number').val();
-            var message = $('#message').val();
-
-
-
-            $.ajax({
-                url: '/Message',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ name: name, number: number, message: message }),
-
-                success: function (response) {
-                    Swal.fire({
-                        title: 'پیام شما ثبت شد',
-                        text: 'با تشکر از شما، پیام شما در اسرع وقت و با ارجعیت، توسط کارشناسان ما برسی خواهد شد.',
-                        confirmButtonText: 'باشه',
-                        icon: 'success',
-                        customClass: {
-                            confirmButton: 'btn btn-primary waves-effect waves-light'
-                        },
-                        buttonsStyling: false
-                    });
-                    // Optionally, clear the form fields
-                    $('#contact-us')[0].reset();
-                },
-                error: function (xhr, status, error) {
-                    $('#contact-us')[0].reset();
-
-                    Swal.fire({
-                        icon: "error",
-                        title: "پیام شما ثبت نشد",
-                        text: "پیام شما در سیستم ثبت نشد",
-                    });
-                }
-            });
-            
-        });
+(function () {
+  function loadSweetAlert() {
+    return new Promise(function (resolve) {
+      if (window.Swal) {
+        resolve();
+        return;
+      }
+      if (!document.getElementById('sweetalert2-css')) {
+        var css = document.createElement('link');
+        css.id = 'sweetalert2-css';
+        css.rel = 'stylesheet';
+        css.href = '/vendor/libs/sweetalert2/sweetalert2.css';
+        document.head.appendChild(css);
+      }
+      var s = document.createElement('script');
+      s.src = '/vendor/libs/sweetalert2/sweetalert2.js';
+      s.onload = function () { resolve(); };
+      document.body.appendChild(s);
     });
+  }
+
+  $(function () {
+    $('#contact-us').on('submit', function (event) {
+      event.preventDefault();
+      var name = $('#name').val();
+      var number = $('#number').val();
+      var message = $('#message').val();
+
+      $.ajax({
+        url: '/Message',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ name: name, number: number, message: message }),
+        success: function () {
+          loadSweetAlert().then(function () {
+            Swal.fire({
+              title: 'پیام شما ثبت شد',
+              text: 'با تشکر از شما، پیام شما در اسرع وقت و با ارجعیت، توسط کارشناسان ما برسی خواهد شد.',
+              confirmButtonText: 'باشه',
+              icon: 'success',
+              customClass: { confirmButton: 'btn btn-primary' },
+              buttonsStyling: false
+            });
+          });
+          $('#contact-us')[0].reset();
+        },
+        error: function () {
+          $('#contact-us')[0].reset();
+          loadSweetAlert().then(function () {
+            Swal.fire({
+              icon: 'error',
+              title: 'پیام شما ثبت نشد',
+              text: 'پیام شما در سیستم ثبت نشد'
+            });
+          });
+        }
+      });
+    });
+  });
+})();
 </script>
+}

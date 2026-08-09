@@ -16,7 +16,7 @@
 <!DOCTYPE html>
 <html lang="fa"
 	  class='light-style @(ViewData["navbarType"] is string navbarType ? navbarType : "") @(ViewData["menuFixed"] is string menuFixed ? menuFixed : "") @(ViewData["menuCollapsed"] is string menuCollapsed ? menuCollapsed : "") @(ViewData["contentType"] is string contentType ? contentType : "") @(ViewData["footerFixed"] is string footerFixed ? footerFixed : "") @(ViewData["customizerHidden"] is string customizerHidden ? customizerHidden : "")'
-	  dir="ltr" data-theme="theme-default" data-assets-path='@((httpContextAccessor.HttpContext?.Request.PathBase ?? "") + "/")'
+	  dir="rtl" data-theme="theme-default" data-assets-path='@((httpContextAccessor.HttpContext?.Request.PathBase ?? "") + "/")'
 	  data-template='@(isFront ? "front-page" : (Convert.ToBoolean(TempData.Peek("menuHorizontal")?.ToString()) ? "horizontal-menu-template" : "vertical-menu-template"))'>
 
 <head>
@@ -49,11 +49,24 @@
 	<!-- Page Styles -->
 	@RenderSection("PageStyles", required: false)
 
-	<!-- Include Scripts for customizer, helper, analytics, config -->
-	@await Html.PartialAsync("Sections/_ScriptsIncludes" + ViewData["frontVar"])
+	@if (!isFront)
+	{
+		<!-- Include Scripts for customizer, helper, analytics, config -->
+		@await Html.PartialAsync("Sections/_ScriptsIncludes" + ViewData["frontVar"])
+	}
 </head>
 
 <body>
+
+	@if (isFront)
+	{
+		@RenderBody()
+	}
+
+	@if (isFront)
+	{
+		@await Html.PartialAsync("Sections/_ScriptsIncludes" + ViewData["frontVar"])
+	}
 
 	<!-- Core Scripts -->
 	@await Html.PartialAsync("Sections/_Scripts" + ViewData["frontVar"])
@@ -66,7 +79,10 @@
 	<!-- Page Scripts-->
 	@RenderSection("PageScripts", required: false)
 
-	@RenderBody()
+	@if (!isFront)
+	{
+		@RenderBody()
+	}
 
 </body>
 

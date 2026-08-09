@@ -1,0 +1,146 @@
+/* Front-page Tabler subset */
+@font-face {
+  font-family: "tabler-icons";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("tabler-front/tabler-icons-front.woff2") format("woff2");
+}
+.ti {
+  vertical-align: middle;
+  font-size: 1.25rem;
+  line-height: 1;
+  display: inline-block;
+  font-family: "tabler-icons" !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ti-route:before {
+  content: "\eb17";
+}
+.ti-circle-check:before {
+  content: "\ea67";
+}
+.ti-location:before {
+  content: "\eae0";
+}
+.ti-map-pin:before {
+  content: "\eae8";
+}
+.ti-arrows-left-right:before {
+  content: "\edb0";
+}
+.ti-calendar-stats:before {
+  content: "\ee20";
+}
+.ti-search:before {
+  content: "\eb1c";
+}
+.ti-steering-wheel:before {
+  content: "\ec7b";
+}
+.ti-headset:before {
+  content: "\eb90";
+}
+.ti-shield-check:before {
+  content: "\eb22";
+}
+.ti-mail:before {
+  content: "\eae5";
+}
+.ti-phone-call:before {
+  content: "\eb05";
+}
+.ti-menu-2:before {
+  content: "\ec42";
+}
+.ti-x:before {
+  content: "\eb55";
+}
+.ti-ticket:before {
+  content: "\eb3d";
+}
+.ti-user-circle:before {
+  content: "\ef68";
+}
+.ti-home:before {
+  content: "\eac1";
+}
+.ti-certificate-2:before {
+  content: "\f073";
+}
+.ti-heart-handshake:before {
+  content: "\f0f3";
+}
+.ti-sun:before {
+  content: "\eb30";
+}
+.ti-moon:before {
+  content: "\eaf8";
+}
+.ti-device-desktop:before {
+  content: "\ea89";
+}
+.ti-user:before {
+  content: "\eb4d";
+}
+.ti-user-check:before {
+  content: "\eb49";
+}
+.ti-wallet:before {
+  content: "\eb75";
+}
+.ti-logout:before {
+  content: "\eba8";
+}
+.ti-login:before {
+  content: "\eba7";
+}
+.ti-chevrons-down:before {
+  content: "\ea63";
+}
+.ti-filter:before {
+  content: "\eaa5";
+}
+.ti-chevron-right:before {
+  content: "\ea61";
+}
+.ti-chevron-left:before {
+  content: "\ea60";
+}
+.ti-car:before {
+  content: "\ebbb";
+}
+.ti-armchair-2:before {
+  content: "\efe7";
+}
+.ti-arrow-left:before {
+  content: "\ea19";
+}
+.ti-chevron-down:before {
+  content: "\ea5f";
+}
+.ti-info-circle:before {
+  content: "\eac5";
+}
+.ti-xs {
+  font-size: 1.125rem !important;
+}
+.ti-sm {
+  font-size: 1.376rem !important;
+}
+.ti-md {
+  font-size: 1.625rem !important;
+}
+.ti-lg {
+  font-size: 2rem !important;
+}
+.ti-xl {
+  font-size: 2.25rem !important;
+}

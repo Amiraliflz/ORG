@@ -257,7 +257,7 @@ nav.layout-navbar.navbar-active::after {
   color: #fff;
 }
 .light-style .landing-footer .footer-top {
-  background-image: url("../../../img/front-pages/backgrounds/footer-bg-light.png");
+  background-image: url("../../../img/front-pages/backgrounds/footer-bg-light.webp");
 }
 .light-style .landing-footer .footer-bottom {
   background-color: #282c3e;
@@ -271,7 +271,7 @@ nav.layout-navbar.navbar-active::after {
   color: #cfd3ec;
 }
 .dark-style .landing-footer .footer-top {
-  background-image: url("../../../img/front-pages/backgrounds/footer-bg-dark.png");
+  background-image: url("../../../img/front-pages/backgrounds/footer-bg-dark.webp");
 }
 .dark-style .landing-footer .footer-bottom {
   background-color: #171925;

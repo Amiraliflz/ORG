@@ -267,12 +267,14 @@ async function refreshRouteSeoUi(origin, destination) {
         `<div class="trips-sticky-bridge">
           <a href="#route-seo" class="trips-sticky-bridge-inner">
             <span class="trips-sticky-bridge-text">
-              <span class="trips-sticky-bridge-label">راهنمای مسیر</span>
+              <span class="trips-sticky-bridge-top">
+                <span class="trips-sticky-bridge-label">راهنمای مسیر</span>
+                <span class="trips-sticky-bridge-cta">
+                  نکته‌ها و سوالات
+                  <i class="ti ti-chevrons-down" aria-hidden="true"></i>
+                </span>
+              </span>
               <span class="trips-sticky-bridge-route"></span>
-            </span>
-            <span class="trips-sticky-bridge-cta">
-              نکته‌ها و سوالات متداول
-              <i class="ti ti-arrow-down"></i>
             </span>
           </a>
         </div>`
@@ -289,7 +291,7 @@ async function refreshRouteSeoUi(origin, destination) {
     if (!document.querySelector('link[href*="RoutePages.css"]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = '/css/RoutePages.css?v=11';
+      link.href = '/css/RoutePages.css?v=12';
       document.head.appendChild(link);
     }
   } catch (err) {

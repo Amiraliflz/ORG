@@ -10,150 +10,252 @@
 
 <section class="route-seo-bottom" id="route-seo" dir="rtl" style="scroll-margin-top: 5.5rem;">
 
-                <div class="card route-seo-card shadow-none">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="badge bg-label-primary rounded-pill">راهنمای مسیر</span>
-                        </div>
-                        <h1 class="route-seo-h1">@content.H1</h1>
-                        <p class="route-seo-lead mb-0">@content.Intro</p>
-                        @{
-                            var hasTime = route.TravelTimeMins is int;
-                            var hasKm = content.ApproxKm is int;
-                        }
-                        @if (hasTime || hasKm)
+    <div class="card route-seo-card shadow-none">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge bg-label-primary rounded-pill">راهنمای مسیر</span>
+            </div>
+            <h1 class="route-seo-h1">@content.H1</h1>
+            <div class="route-seo-hero-media mb-3">
+                <img src="/cta-taxi.webp"
+                     alt="سواری @route.OriginFa به @route.DestinationFa — ناوگان مستر شوفر"
+                     width="960" height="540"
+                     class="route-seo-hero-img"
+                     loading="lazy" decoding="async" />
+            </div>
+            <p class="route-seo-lead mb-0">@content.Intro</p>
+            @{
+                var hasTime = route.TravelTimeMins is int;
+                var hasKm = content.ApproxKm is int;
+            }
+            @if (hasTime || hasKm)
+            {
+                <ul class="route-seo-facts">
+                    @if (route.TravelTimeMins is int mins)
+                    {
+                        <li class="route-seo-fact">
+                            <span class="route-seo-fact-label">زمان تقریبی</span>
+                            <span class="route-seo-fact-value">@(mins >= 60 ? $"{mins / 60} ساعت{(mins % 60 > 0 ? $" و {mins % 60} دقیقه" : "")}" : $"{mins} دقیقه")</span>
+                        </li>
+                    }
+                    @if (content.ApproxKm is int km)
+                    {
+                        <li class="route-seo-fact">
+                            <span class="route-seo-fact-label">مسافت تقریبی</span>
+                            <span class="route-seo-fact-value">@km کیلومتر</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="route-seo-fact-fallback mb-0">قیمت پس از جستجو مشخص می‌شود · پشتیبانی ۲۴/۷</p>
+            }
+        </div>
+    </div>
+
+    <div class="accordion route-seo-expand mt-3" id="routeSeoExpand">
+
+        <div class="accordion-item route-seo-card shadow-none">
+            <h2 class="accordion-header" id="routeSeoAboutHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoAbout"
+                        aria-expanded="false" aria-controls="routeSeoAbout">
+                    درباره مسیر @route.OriginFa به @route.DestinationFa
+                </button>
+            </h2>
+            <div id="routeSeoAbout" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoAboutHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <div class="route-seo-media-row mb-3">
+                        <img src="/mrshoofer_cars_banner.webp"
+                             alt="ناوگان سواری مستر شوفر برای مسیر @route.OriginFa به @route.DestinationFa"
+                             width="291" height="296"
+                             class="route-seo-side-img"
+                             loading="lazy" decoding="async" />
+                    </div>
+                    <div class="route-seo-blocks">
+                        @foreach (var block in content.AboutBlocks)
                         {
-                            <ul class="route-seo-facts">
-                                @if (route.TravelTimeMins is int mins)
-                                {
-                                    <li class="route-seo-fact">
-                                        <span class="route-seo-fact-label">زمان تقریبی</span>
-                                        <span class="route-seo-fact-value">@(mins >= 60 ? $"{mins / 60} ساعت{(mins % 60 > 0 ? $" و {mins % 60} دقیقه" : "")}" : $"{mins} دقیقه")</span>
-                                    </li>
-                                }
-                                @if (content.ApproxKm is int km)
-                                {
-                                    <li class="route-seo-fact">
-                                        <span class="route-seo-fact-label">مسافت تقریبی</span>
-                                        <span class="route-seo-fact-value">@km کیلومتر</span>
-                                    </li>
-                                }
-                            </ul>
+                            <div class="route-seo-block">
+                                <strong class="route-seo-block-label">@block.Label</strong>
+                                <p class="route-seo-p mb-0">@block.Text</p>
+                            </div>
                         }
-                        else
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item route-seo-card shadow-none">
+            <h2 class="accordion-header" id="routeSeoTravelHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoTravel"
+                        aria-expanded="false" aria-controls="routeSeoTravel">
+                    زمان، مسافت و برنامه‌ریزی
+                </button>
+            </h2>
+            <div id="routeSeoTravel" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoTravelHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <div class="route-seo-media-row mb-3">
+                        <img src="/caronraod.png"
+                             alt="سفر جاده‌ای @route.OriginFa به @route.DestinationFa"
+                             width="512" height="512"
+                             class="route-seo-side-img"
+                             loading="lazy" decoding="async" />
+                    </div>
+                    <p class="route-seo-p mb-0">@content.TravelInfo</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item route-seo-card shadow-none">
+            <h2 class="accordion-header" id="routeSeoTipsHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoTips"
+                        aria-expanded="false" aria-controls="routeSeoTips">
+                    @content.TipsHeading
+                </button>
+            </h2>
+            <div id="routeSeoTips" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoTipsHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <ul class="route-seo-list mb-0">
+                        @foreach (var tip in content.Tips)
                         {
-                            <p class="route-seo-fact-fallback mb-0">قیمت پس از جستجو مشخص می‌شود · پشتیبانی ۲۴/۷</p>
+                            <li>@tip</li>
                         }
-                    </div>
+                    </ul>
                 </div>
+            </div>
+        </div>
 
-                <div class="card route-seo-card shadow-none mt-3">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">درباره مسیر @route.OriginFa به @route.DestinationFa</h2>
-                        <div class="route-seo-blocks">
-                            @foreach (var block in content.AboutBlocks)
-                            {
-                                <div class="route-seo-block">
-                                    <strong class="route-seo-block-label">@block.Label</strong>
-                                    <p class="route-seo-p mb-0">@block.Text</p>
-                                </div>
-                            }
-                        </div>
+        <div class="accordion-item route-seo-card shadow-none">
+            <h2 class="accordion-header" id="routeSeoHowHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoHow"
+                        aria-expanded="false" aria-controls="routeSeoHow">
+                    @content.HowToHeading
+                </button>
+            </h2>
+            <div id="routeSeoHow" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoHowHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <div class="route-seo-media-row mb-3">
+                        <img src="/mrshooferserachdemo.webp"
+                             alt="جستجو و رزرو آنلاین مسیر @route.OriginFa به @route.DestinationFa در مستر شوفر"
+                             width="900" height="431"
+                             class="route-seo-side-img route-seo-side-img--wide"
+                             loading="lazy" decoding="async" />
                     </div>
-                </div>
-
-                <div class="card route-seo-card shadow-none mt-3">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">زمان، مسافت و برنامه‌ریزی</h2>
-                        <p class="route-seo-p mb-0">@content.TravelInfo</p>
-                    </div>
-                </div>
-
-                <div class="card route-seo-card shadow-none mt-3">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">@content.TipsHeading</h2>
-                        <ul class="route-seo-list mb-0">
-                            @foreach (var tip in content.Tips)
-                            {
-                                <li>@tip</li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card route-seo-card shadow-none mt-3">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">@content.HowToHeading</h2>
-                        <div class="row g-2">
-                            @for (var i = 0; i < content.HowToSteps.Count; i++)
-                            {
-                                var step = content.HowToSteps[i];
-                                <div class="col-md-6">
-                                    <div class="route-seo-step">
-                                        <span class="route-seo-step-num">@(i + 1)</span>
-                                        <div>
-                                            <strong>@step.Title</strong>
-                                            <p class="mb-0">@step.Text</p>
-                                        </div>
+                    <div class="row g-2">
+                        @for (var i = 0; i < content.HowToSteps.Count; i++)
+                        {
+                            var step = content.HowToSteps[i];
+                            <div class="col-md-6">
+                                <div class="route-seo-step">
+                                    <span class="route-seo-step-num">@(i + 1)</span>
+                                    <div>
+                                        <strong>@step.Title</strong>
+                                        <p class="mb-0">@step.Text</p>
                                     </div>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="card route-seo-card shadow-none mt-3">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">@content.WhyHeading</h2>
-                        <p class="route-seo-p mb-0">@content.WhyBody</p>
+        <div class="accordion-item route-seo-card shadow-none">
+            <h2 class="accordion-header" id="routeSeoWhyHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoWhy"
+                        aria-expanded="false" aria-controls="routeSeoWhy">
+                    @content.WhyHeading
+                </button>
+            </h2>
+            <div id="routeSeoWhy" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoWhyHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <div class="route-seo-media-row mb-3">
+                        <img src="/callcenter.webp"
+                             alt="پشتیبانی مستر شوفر برای مسیر @route.OriginFa به @route.DestinationFa"
+                             width="800" height="533"
+                             class="route-seo-side-img route-seo-side-img--wide"
+                             loading="lazy" decoding="async" />
                     </div>
+                    <p class="route-seo-p mb-0">@content.WhyBody</p>
                 </div>
+            </div>
+        </div>
 
-                <div class="card route-seo-card shadow-none mt-3">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">سوالات پرتکرار</h2>
-                        <div class="accordion route-seo-faq" id="routeSeoFaq">
-                            @for (var i = 0; i < content.Faqs.Count; i++)
-                            {
-                                var faq = content.Faqs[i];
-                                var id = $"rsf{i + 1}";
-                                <div class="accordion-item">
-                                    <h3 class="accordion-header">
-                                        <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#@id"
-                                                aria-expanded="@(i == 0 ? "true" : "false")">
-                                            @faq.Question
-                                        </button>
-                                    </h3>
-                                    <div id="@id" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#routeSeoFaq">
-                                        <div class="accordion-body">@faq.Answer</div>
-                                    </div>
+        <div class="accordion-item route-seo-card shadow-none">
+            <h2 class="accordion-header" id="routeSeoFaqHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoFaqPanel"
+                        aria-expanded="false" aria-controls="routeSeoFaqPanel">
+                    سوالات پرتکرار
+                </button>
+            </h2>
+            <div id="routeSeoFaqPanel" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoFaqHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <div class="accordion route-seo-faq" id="routeSeoFaq">
+                        @for (var i = 0; i < content.Faqs.Count; i++)
+                        {
+                            var faq = content.Faqs[i];
+                            var id = $"rsf{i + 1}";
+                            <div class="accordion-item">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#@id"
+                                            aria-expanded="false">
+                                        @faq.Question
+                                    </button>
+                                </h3>
+                                <div id="@id" class="accordion-collapse collapse" data-bs-parent="#routeSeoFaq">
+                                    <div class="accordion-body">@faq.Answer</div>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="card route-seo-card shadow-none mt-3 mb-0">
-                    <div class="card-body p-3 p-md-4">
-                        <h2 class="route-seo-h2 mt-0">مسیرهای مرتبط</h2>
-                        <div class="d-flex flex-wrap gap-2">
-                            @if (reverse is not null)
-                            {
-                                <a class="btn btn-sm btn-outline-primary rounded-pill" href="/routes/@reverse.Slug">
-                                    برگشت: @reverse.OriginFa ← @reverse.DestinationFa
-                                </a>
-                            }
-                            @foreach (var r in related.Take(6))
-                            {
-                                <a class="btn btn-sm btn-outline-secondary rounded-pill" href="/routes/@r.Slug">
-                                    @r.OriginFa ← @r.DestinationFa
-                                </a>
-                            }
-                            <a class="btn btn-sm btn-label-primary rounded-pill" href="/routes">همه مسیرها</a>
-                            <a class="btn btn-sm btn-label-secondary rounded-pill" href="/cities">شهرها</a>
-                        </div>
+        <div class="accordion-item route-seo-card shadow-none mb-0">
+            <h2 class="accordion-header" id="routeSeoRelatedHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#routeSeoRelated"
+                        aria-expanded="false" aria-controls="routeSeoRelated">
+                    مسیرهای مرتبط
+                </button>
+            </h2>
+            <div id="routeSeoRelated" class="accordion-collapse collapse"
+                 aria-labelledby="routeSeoRelatedHeading" data-bs-parent="#routeSeoExpand">
+                <div class="accordion-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (reverse is not null)
+                        {
+                            <a class="btn btn-sm btn-outline-primary rounded-pill" href="/routes/@reverse.Slug">
+                                برگشت: @reverse.OriginFa ← @reverse.DestinationFa
+                            </a>
+                        }
+                        @foreach (var r in related.Take(6))
+                        {
+                            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="/routes/@r.Slug">
+                                @r.OriginFa ← @r.DestinationFa
+                            </a>
+                        }
+                        <a class="btn btn-sm btn-label-primary rounded-pill" href="/routes">همه مسیرها</a>
+                        <a class="btn btn-sm btn-label-secondary rounded-pill" href="/cities">شهرها</a>
                     </div>
                 </div>
+            </div>
+        </div>
+
+    </div>
 
 </section>

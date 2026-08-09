@@ -760,3 +760,91 @@
 .route-seo-faq .accordion-header + .accordion-collapse .accordion-body {
   padding-top: 10px;
 }
+
+/* Expandable route SEO sections */
+.route-seo-expand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.route-seo-expand > .accordion-item {
+  border: 1px solid #e7e7ec;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  background: #fff;
+}
+
+.route-seo-expand > .accordion-item + .accordion-item {
+  margin-top: 0;
+}
+
+.route-seo-expand .accordion-button {
+  font-family: font-bold, "tahoma", sans-serif;
+  font-weight: normal;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: #5d596c;
+  background: #fff;
+  box-shadow: none !important;
+  padding: 1rem 1.15rem;
+}
+
+.route-seo-expand .accordion-button:not(.collapsed) {
+  background: rgba(105, 108, 255, 0.06);
+  color: #5d596c;
+}
+
+.route-seo-expand .accordion-button::after {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+
+.route-seo-expand .accordion-body {
+  padding: 0.85rem 1.15rem 1.15rem;
+}
+
+.route-seo-hero-media {
+  width: 100%;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f5f5f9;
+}
+
+.route-seo-hero-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.route-seo-media-row {
+  display: flex;
+  justify-content: center;
+}
+
+.route-seo-side-img {
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.65rem;
+}
+
+.route-seo-side-img--wide {
+  max-width: 420px;
+}
+
+@media (min-width: 768px) {
+  .route-seo-side-img {
+    max-width: 220px;
+  }
+
+  .route-seo-side-img--wide {
+    max-width: 520px;
+  }
+}
