@@ -18,6 +18,10 @@ namespace Application.Data
     public DbSet<DiscountCode> DiscountCodes { get; set; }
     public DbSet<DiscountCodeUsage> DiscountCodeUsages { get; set; }
 
+    public DbSet<CityCoordinate> CityCoordinates { get; set; }
+    public DbSet<RouteTravelTime> RouteTravelTimes { get; set; }
+    public DbSet<TravelTimeSyncState> TravelTimeSyncStates { get; set; }
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
@@ -26,6 +30,18 @@ namespace Application.Data
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
+
+      modelBuilder.Entity<CityCoordinate>(e =>
+      {
+        e.HasIndex(x => x.CityId).IsUnique();
+        e.HasIndex(x => x.NameFa);
+      });
+
+      modelBuilder.Entity<RouteTravelTime>(e =>
+      {
+        e.HasIndex(x => new { x.OriginCityId, x.DestinationCityId }).IsUnique();
+        e.HasIndex(x => new { x.OriginNameFa, x.DestinationNameFa });
+      });
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

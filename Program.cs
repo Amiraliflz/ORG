@@ -39,7 +39,25 @@ builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = Compre
 // Add services to the container.
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
-builder.Services.AddSingleton<DirectionsTravelTimeCalculator>();
+builder.Services.AddScoped<DirectionsTravelTimeCalculator>();
+
+builder.Services.Configure<Application.Services.Neshan.NeshanOptions>(
+  builder.Configuration.GetSection(Application.Services.Neshan.NeshanOptions.SectionName));
+builder.Services.AddHttpClient<Application.Services.Neshan.NeshanApiClient>((sp, client) =>
+{
+  var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Application.Services.Neshan.NeshanOptions>>().Value;
+  var baseUrl = string.IsNullOrWhiteSpace(opts.BaseUrl) ? "https://api.neshan.org" : opts.BaseUrl.TrimEnd('/') + "/";
+  client.BaseAddress = new Uri(baseUrl);
+  client.Timeout = TimeSpan.FromSeconds(30);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+  UseCookies = false,
+  UseProxy = false,
+  Proxy = null
+});
+
+builder.Services.AddScoped<Application.Services.TravelTime.ITravelTimeSyncService, Application.Services.TravelTime.TravelTimeSyncService>();
+builder.Services.AddHostedService<Application.Services.TravelTime.TravelTimeSyncHostedService>();
 
 // Configure MrShooferAPIClient via IHttpClientFactory — connection pooling prevents socket exhaustion
 // UseCookies=false avoids CookieContainer domain lookup crashes on some macOS/dev hosts (GetDomainName: -1)

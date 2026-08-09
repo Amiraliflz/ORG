@@ -16,14 +16,16 @@
                 <span class="badge bg-label-primary rounded-pill">راهنمای مسیر</span>
             </div>
             <h1 class="route-seo-h1">@content.H1</h1>
-            <div class="route-seo-hero-media mb-3">
-                <img src="/cta-taxi.webp"
-                     alt="سواری @route.OriginFa به @route.DestinationFa — ناوگان مستر شوفر"
-                     width="960" height="540"
-                     class="route-seo-hero-img"
-                     loading="lazy" decoding="async" />
+            <div class="route-seo-hero-row mb-3">
+                <p class="route-seo-lead mb-0">@content.Intro</p>
+                <div class="route-seo-hero-media">
+                    <img src="/cta-taxi.webp"
+                         alt="سواری @route.OriginFa به @route.DestinationFa — ناوگان مستر شوفر"
+                         width="960" height="540"
+                         class="route-seo-hero-img"
+                         loading="lazy" decoding="async" />
+                </div>
             </div>
-            <p class="route-seo-lead mb-0">@content.Intro</p>
             @{
                 var hasTime = route.TravelTimeMins is int;
                 var hasKm = content.ApproxKm is int;

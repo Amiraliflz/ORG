@@ -366,13 +366,28 @@ namespace Application.Areas.AgencyArea
         });
       }
 
-      int traveltime_mins = _travelTimeCalculator.GetTravelMins(originstring, destinationstring);
+      int traveltime_mins = _travelTimeCalculator.GetTravelMins(
+        origin_id > 0 ? origin_id : null,
+        destination_id > 0 ? destination_id : null,
+        originstring,
+        destinationstring);
 
       var end_result = response
         .OrderBy(t => t.startingDateTime)
         .ThenBy(t => t.afterdiscticketprice)
         .Where(t => t.startingDateTime > DateTime.Now.AddMinutes(45))
         .ToList();
+
+      string FormatTravelDuration(int mins)
+      {
+        if (mins <= 0) return string.Empty;
+        if (mins < 60) return $"{mins} دقیقه";
+        var h = mins / 60;
+        var m = mins % 60;
+        return m > 0 ? $"{h} ساعت و {m} دقیقه" : $"{h} ساعت";
+      }
+
+      var travelDuration = FormatTravelDuration(traveltime_mins);
 
       var searchedTripViewModels = end_result.Select(t =>
       {
@@ -390,7 +405,8 @@ namespace Application.Areas.AgencyArea
           taxiSupervisorID = t.taxiSupervisorID,
           tripcode = t.tripPlanCode,
           carModelName = t.carModelName,
-          Image = t.Image
+          Image = t.Image,
+          travelDuration = travelDuration
         };
       }).ToList();
 

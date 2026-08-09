@@ -17,5 +17,7 @@ namespace Application.ViewModels.TaxiTrips
     public string afterdiscount { get; set; }
     public string carModelName { get; set; }
     public string Image { get; set; }
+    /// <summary>Human-readable duration, e.g. «۵ ساعت و ۲۵ دقیقه».</summary>
+    public string travelDuration { get; set; }
   }
 }

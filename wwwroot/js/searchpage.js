@@ -267,12 +267,10 @@ async function refreshRouteSeoUi(origin, destination) {
         `<div class="trips-sticky-bridge">
           <a href="#route-seo" class="trips-sticky-bridge-inner">
             <span class="trips-sticky-bridge-text">
-              <span class="trips-sticky-bridge-top">
-                <span class="trips-sticky-bridge-label">راهنمای مسیر</span>
-                <span class="trips-sticky-bridge-cta">
-                  نکته‌ها و سوالات
-                  <i class="ti ti-chevrons-down" aria-hidden="true"></i>
-                </span>
+              <span class="trips-sticky-bridge-label">راهنمای مسیر</span>
+              <span class="trips-sticky-bridge-cta">
+                نکته‌ها و سوالات
+                <i class="ti ti-chevrons-down" aria-hidden="true"></i>
               </span>
               <span class="trips-sticky-bridge-route"></span>
             </span>

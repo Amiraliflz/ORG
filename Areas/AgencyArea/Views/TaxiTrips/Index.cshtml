@@ -62,7 +62,7 @@
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
 
-	<link href="~/css/TaxiTripsIndex.css?v=38" rel="stylesheet" />
+	<link href="~/css/TaxiTripsIndex.css?v=46" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/spinkit/spinkit.css">
     <style>
       .searchbar .od-pair-col { position: relative; }
@@ -103,7 +103,7 @@
     </style>
     @if (ViewBag.RouteSeo is not null)
     {
-        <link href="~/css/RoutePages.css?v=12" rel="stylesheet" />
+        <link href="~/css/RoutePages.css?v=15" rel="stylesheet" />
     }
 }
 @section VendorScripts {
@@ -142,8 +142,8 @@
         });
       })();
     </script>
-    <script src="~/js/searchpage.js?v=5"></script>
-    <script src="~/js/Trips.js?v=7"></script>
+    <script src="~/js/searchpage.js?v=6"></script>
+    <script src="~/js/Trips.js?v=10"></script>
 }
 
 
@@ -452,12 +452,10 @@
 			<div class="trips-sticky-bridge">
 				<a href="#route-seo" class="trips-sticky-bridge-inner">
 					<span class="trips-sticky-bridge-text">
-						<span class="trips-sticky-bridge-top">
-							<span class="trips-sticky-bridge-label">راهنمای مسیر</span>
-							<span class="trips-sticky-bridge-cta">
-								نکته‌ها و سوالات
-								<i class="ti ti-chevrons-down" aria-hidden="true"></i>
-							</span>
+						<span class="trips-sticky-bridge-label">راهنمای مسیر</span>
+						<span class="trips-sticky-bridge-cta">
+							نکته‌ها و سوالات
+							<i class="ti ti-chevrons-down" aria-hidden="true"></i>
 						</span>
 						<span class="trips-sticky-bridge-route">@ViewBag.origin_city_text ← @ViewBag.dest_city_text</span>
 					</span>

@@ -1,5 +1,7 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using Application.Data;
+using Application.Services.TravelTime;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.MrShooferORS
 {
@@ -28,64 +30,114 @@ namespace Application.Services.MrShooferORS
       {"سنندج", 861 }
     };
 
-
-
     public Dictionary<string, int> GetDirections()
     {
       return DirectionsDictionary;
     }
   }
 
-
+  /// <summary>
+  /// Prefer DB RouteTravelTimes (Neshan), then Directions.json, then 0.
+  /// Scoped so it can use AppDbContext.
+  /// </summary>
   public class DirectionsTravelTimeCalculator
   {
-    private readonly IWebHostEnvironment _env;
+    private readonly AppDbContext _db;
+    private readonly JsonElement _documentRoot;
+    private readonly bool _hasJson;
 
-
-
-    private JsonDocument document { get; set; }
-    private JsonElement documentroot { get; set; }
-
-    public DirectionsTravelTimeCalculator(IWebHostEnvironment env)
+    public DirectionsTravelTimeCalculator(AppDbContext db, IWebHostEnvironment env)
     {
-      _env = env;
-      string jsonFilePath = Path.Combine(_env.WebRootPath, "json", "Directions", "Directions.json");
+      _db = db;
+      _hasJson = false;
+      _documentRoot = default;
 
-      if (!System.IO.File.Exists(jsonFilePath))
+      string jsonFilePath = Path.Combine(env.WebRootPath, "json", "Directions", "Directions.json");
+      if (File.Exists(jsonFilePath))
       {
-        throw new Exception("Directions.json file doesnot exists...");
+        var jsonData = File.ReadAllText(jsonFilePath);
+        var document = JsonDocument.Parse(jsonData);
+        _documentRoot = document.RootElement.Clone();
+        _hasJson = true;
       }
-
-      // Read the JSON file
-      string jsonData = System.IO.File.ReadAllText(jsonFilePath);
-
-      document = JsonDocument.Parse(jsonData);
-      documentroot = document.RootElement;
     }
 
-    public int GetTravelMins(string originCity, string destinationCity)
+    public int GetTravelMins(string originCity, string destinationCity) =>
+      GetTravelMins(null, null, originCity, destinationCity);
+
+    public int GetTravelMins(int? originCityId, int? destinationCityId, string? originCity, string? destinationCity)
     {
+      try
+      {
+        if (originCityId is > 0 && destinationCityId is > 0)
+        {
+          var byId = _db.RouteTravelTimes.AsNoTracking()
+            .Where(r =>
+              (r.OriginCityId == originCityId && r.DestinationCityId == destinationCityId) ||
+              (r.OriginCityId == destinationCityId && r.DestinationCityId == originCityId))
+            .Select(r => (int?)r.TravelTimeMins)
+            .FirstOrDefault();
+          if (byId is > 0)
+            return byId.Value;
+        }
+
+        var oName = (originCity ?? string.Empty).Trim();
+        var dName = (destinationCity ?? string.Empty).Trim();
+        if (!string.IsNullOrEmpty(oName) && !string.IsNullOrEmpty(dName))
+        {
+          var byExactName = _db.RouteTravelTimes.AsNoTracking()
+            .Where(r =>
+              (r.OriginNameFa == oName && r.DestinationNameFa == dName) ||
+              (r.OriginNameFa == dName && r.DestinationNameFa == oName))
+            .Select(r => (int?)r.TravelTimeMins)
+            .FirstOrDefault();
+          if (byExactName is > 0)
+            return byExactName.Value;
+
+          // Normalized Persian compare (small set until Neshan fill completes)
+          var oNorm = TravelTimeSyncService.NormalizeCityName(oName);
+          var dNorm = TravelTimeSyncService.NormalizeCityName(dName);
+          var nameHit = _db.RouteTravelTimes.AsNoTracking()
+            .Select(r => new { r.OriginNameFa, r.DestinationNameFa, r.TravelTimeMins })
+            .AsEnumerable()
+            .FirstOrDefault(r =>
+            {
+              var a = TravelTimeSyncService.NormalizeCityName(r.OriginNameFa);
+              var b = TravelTimeSyncService.NormalizeCityName(r.DestinationNameFa);
+              return (a == oNorm && b == dNorm) || (a == dNorm && b == oNorm);
+            });
+          if (nameHit != null && nameHit.TravelTimeMins > 0)
+            return nameHit.TravelTimeMins;
+        }
+
+        return GetFromJson(originCity, destinationCity);
+      }
+      catch
+      {
+        return GetFromJson(originCity, destinationCity);
+      }
+    }
+
+    private int GetFromJson(string? originCity, string? destinationCity)
+    {
+      if (!_hasJson || string.IsNullOrWhiteSpace(originCity) || string.IsNullOrWhiteSpace(destinationCity))
+        return 0;
 
       try
       {
-
-        var match = documentroot.EnumerateArray()
-
-              .FirstOrDefault(element => (
-                  element.GetProperty("Cityone").GetString() == originCity &&
-                  element.GetProperty("Citytwo").GetString() == destinationCity) ||
-
-                  (element.GetProperty("Citytwo").GetString() == originCity &&
-                  element.GetProperty("Cityone").GetString() == destinationCity));
+        var match = _documentRoot.EnumerateArray()
+          .FirstOrDefault(element =>
+            (element.GetProperty("Cityone").GetString() == originCity &&
+             element.GetProperty("Citytwo").GetString() == destinationCity) ||
+            (element.GetProperty("Citytwo").GetString() == originCity &&
+             element.GetProperty("Cityone").GetString() == destinationCity));
 
         if (match.ValueKind == JsonValueKind.Undefined)
-        {
           return 0;
-        }
 
         return match.GetProperty("TravelTime_mins").GetInt32();
       }
-      catch (Exception ex)
+      catch
       {
         return 0;
       }
