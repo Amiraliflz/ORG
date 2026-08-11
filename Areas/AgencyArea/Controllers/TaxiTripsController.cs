@@ -67,11 +67,8 @@ namespace Application.Areas.AgencyArea
     {
       if (string.IsNullOrWhiteSpace(originstring) || string.IsNullOrWhiteSpace(destinationstring))
       {
-        ModelState.AddModelError(string.Empty, "لطفا شهر مبدا و مقصد را وارد کنید.");
-        ViewBag.origin_city_text = originstring;
-        ViewBag.dest_city_text = destinationstring;
-        ViewBag.searchdate = searchdate;
-        return View();
+        // Bare /TaxiTrips is not a landing page — avoid soft/500 empty results for crawlers.
+        return RedirectPermanent("/");
       }
 
       var allDirections = directionsRepository.GetDirections();
@@ -144,15 +141,17 @@ namespace Application.Areas.AgencyArea
             : new PersianDate(searchdate.Replace('-', '/'));
           ViewBag.searchpdate = fallbackPd;
           ViewBag.selecteddate = fallbackPd.ToDateTime();
+          ViewBag.ShowNorthPriceNotice = NorthRoutePriceNotice.ShouldShow(originstring, destinationstring, fallbackPd.ToDateTime());
         }
         catch
         {
           var nowPd = DateTime.Now.ToPersianDate();
           ViewBag.searchpdate = nowPd;
           ViewBag.selecteddate = DateTime.Now.Date;
+          ViewBag.ShowNorthPriceNotice = NorthRoutePriceNotice.ShouldShow(originstring, destinationstring, DateTime.Now.Date);
         }
         AttachRouteSeoIfCatalogMatch(originstring, destinationstring);
-        return View();
+        return View(new List<SearchedTrip>());
       }
 
       PersianDate pd = new PersianDate(searchdate?.Replace('-', '/') ?? string.Empty);
@@ -163,12 +162,13 @@ namespace Application.Areas.AgencyArea
       ViewBag.searchdate = searchdate;
       ViewBag.selecteddate = searchedDatetime;
       ViewBag.searchpdate = pd;
+      ViewBag.ShowNorthPriceNotice = NorthRoutePriceNotice.ShouldShow(originstring, destinationstring, searchedDatetime);
 
       // Same SEO bottom + sticky bridge as /routes/{slug} when OD is in the catalog.
       // Keep IsSeoRouteLanding=false so querystring URLs stay noindex (canonical → /routes/...).
       AttachRouteSeoIfCatalogMatch(originstring, destinationstring);
 
-      return View();
+      return View(new List<SearchedTrip>());
     }
 
     private void AttachRouteSeoIfCatalogMatch(string originstring, string destinationstring)
@@ -392,6 +392,10 @@ namespace Application.Areas.AgencyArea
       var searchedTripViewModels = end_result.Select(t =>
       {
         var arrival = t.startingDateTime.AddMinutes(traveltime_mins);
+        var image = t.Image?.Trim();
+        if (!string.IsNullOrWhiteSpace(image) && image.StartsWith('/'))
+          image = "https://ors.shoofer.taxi" + image;
+
         return new SearchedTripViewModel
         {
           startingDateTime = t.startingDateTime.ToString("HH:mm"),
@@ -405,7 +409,7 @@ namespace Application.Areas.AgencyArea
           taxiSupervisorID = t.taxiSupervisorID,
           tripcode = t.tripPlanCode,
           carModelName = t.carModelName,
-          Image = t.Image,
+          Image = image,
           travelDuration = travelDuration
         };
       }).ToList();

@@ -62,7 +62,7 @@
     <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
 
-	<link href="~/css/TaxiTripsIndex.css?v=46" rel="stylesheet" />
+	<link href="~/css/TaxiTripsIndex.css?v=50" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/spinkit/spinkit.css">
     <style>
       .searchbar .od-pair-col { position: relative; }
@@ -143,7 +143,7 @@
       })();
     </script>
     <script src="~/js/searchpage.js?v=6"></script>
-    <script src="~/js/Trips.js?v=10"></script>
+    <script src="~/js/Trips.js?v=13"></script>
 }
 
 
@@ -555,6 +555,8 @@
 					</div>
 
                             <div class="col-12 col-md-9 px-1">
+
+                                @await Html.PartialAsync("~/Areas/AgencyArea/Views/Shared/_NorthRoutePriceNotice.cshtml")
 
                                 @await Html.PartialAsync("~/Areas/AgencyArea/Views/TaxiTrips/TimelinePartial.cshtml", DateTime.Now)
 

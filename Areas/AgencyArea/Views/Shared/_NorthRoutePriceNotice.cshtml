@@ -1,0 +1,95 @@
+@using Application.Services
+@{
+    // Prefer explicit flag from controller (avoids ViewBag dynamic cast issues).
+    bool show = false;
+    bool hasFlag = false;
+    try
+    {
+        if (ViewBag.ShowNorthPriceNotice != null)
+        {
+            show = Convert.ToBoolean(ViewBag.ShowNorthPriceNotice);
+            hasFlag = true;
+        }
+    }
+    catch { /* fall through */ }
+
+    if (!hasFlag)
+    {
+        var origin = ViewData["NorthNoticeOrigin"] as string
+            ?? ViewBag.origin_city_text as string
+            ?? "";
+        var destination = ViewData["NorthNoticeDestination"] as string
+            ?? ViewBag.dest_city_text as string
+            ?? "";
+
+        DateTime? travelDate = null;
+        if (ViewData["NorthNoticeDate"] is DateTime vdDate)
+            travelDate = vdDate;
+        else if (ViewBag.selecteddate != null)
+        {
+            try { travelDate = Convert.ToDateTime(ViewBag.selecteddate); }
+            catch { /* ignore */ }
+        }
+        if (travelDate is null && ViewBag.searchpdate is PersianDate pd)
+            travelDate = pd.ToDateTime();
+
+        show = travelDate.HasValue
+            && NorthRoutePriceNotice.ShouldShow(origin, destination, travelDate.Value);
+    }
+}
+
+@if (show)
+{
+    <style>
+        .north-price-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .9rem 1rem;
+            border-radius: .85rem;
+            border: 1px solid #f0d9a8;
+            background: linear-gradient(135deg, #fff9eb 0%, #fff4d6 100%);
+            color: #5c4813;
+            box-shadow: 0 1px 2px rgba(92, 72, 19, 0.06);
+        }
+        .north-price-notice__icon {
+            flex-shrink: 0;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffe8b0;
+            color: #b7791f;
+            margin-top: .1rem;
+        }
+        .north-price-notice__icon .ti { font-size: 1.05rem; line-height: 1; }
+        .north-price-notice__text {
+            font-size: .875rem;
+            line-height: 1.85;
+            text-align: justify;
+        }
+        .north-price-notice__phone {
+            font-weight: 700;
+            color: #0b5fb3;
+            text-decoration: none;
+            white-space: nowrap;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+        .north-price-notice__phone:hover { text-decoration: underline; }
+    </style>
+    <div class="north-price-notice mb-3" role="note" aria-label="اطلاعیه قیمت مسیر شمال">
+        <div class="north-price-notice__icon" aria-hidden="true">
+            <i class="ti ti-info-circle"></i>
+        </div>
+        <div class="north-price-notice__body">
+            <p class="north-price-notice__text mb-0">
+                مسافر گرامی با توجه به شلوغی و ترافیک سنگین در ایام تعطیلات و آخر هفته ممکن است هزینه سفر مقداری با قیمت درج شده تفاوت ایجاد شود لذا خواهشمند است قبل از رزرو سفر خود جهت استعلام قیمت دقیق سفر با پشتیبانی سفرها به شماره
+                <a class="north-price-notice__phone" href="tel:@NorthRoutePriceNotice.SupportPhoneTel" dir="ltr">@NorthRoutePriceNotice.SupportPhoneDisplay</a>
+                تماس فرمایید
+            </p>
+        </div>
+    </div>
+}

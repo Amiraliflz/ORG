@@ -126,6 +126,11 @@ namespace Application.Areas.AgencyArea
         return RedirectToAction("Index", "Home", new { area = "AgencyArea" });
       }
 
+      ViewBag.ShowNorthPriceNotice = NorthRoutePriceNotice.ShouldShow(
+        trip.originCityName,
+        trip.destinationCityName,
+        trip.startingDateTime);
+
       // Check if there's saved form data from TempData (after login redirect)
       if (TempData.ContainsKey("SavedReserveData"))
       {
@@ -250,6 +255,10 @@ namespace Application.Areas.AgencyArea
       ViewBag.reserveviewmodel = viewmodel;
       ViewBag.IsCustomer = isCustomer;
       ViewBag.CustomerBalance = customerBalance;
+      ViewBag.ShowNorthPriceNotice = NorthRoutePriceNotice.ShouldShow(
+        trip.originCityName,
+        trip.destinationCityName,
+        trip.startingDateTime);
       return View("ConfirmInfo");
     }
 

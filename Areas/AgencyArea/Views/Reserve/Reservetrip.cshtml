@@ -958,6 +958,15 @@
             </span>
         </div>
 
+        @{
+            ViewData["NorthNoticeOrigin"] = trip.originCityName;
+            ViewData["NorthNoticeDestination"] = trip.destinationCityName;
+            ViewData["NorthNoticeDate"] = trip.startingDateTime;
+        }
+        <div class="col-12">
+            @await Html.PartialAsync("~/Areas/AgencyArea/Views/Shared/_NorthRoutePriceNotice.cshtml")
+        </div>
+
         <aside class="col-md-4 col-12">
             <div class="trip_info bg-white rounded-5 border-1 border-divider shadow-7.5__13__5__gray30 p-3 ">
                 <!-- ...existing trip info HTML... -->

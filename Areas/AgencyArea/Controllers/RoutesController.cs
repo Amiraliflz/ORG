@@ -84,6 +84,10 @@ public class RoutesController : Controller
     ViewBag.searchdate = today;
     ViewBag.selecteddate = DateTime.Now.Date;
     ViewBag.searchpdate = DateTime.Now.ToPersianDate();
+    ViewBag.ShowNorthPriceNotice = NorthRoutePriceNotice.ShouldShow(
+      route.OriginFa,
+      route.DestinationFa,
+      DateTime.Now.Date);
 
     ViewBag.RouteSeo = content;
     ViewBag.RoutePage = route;

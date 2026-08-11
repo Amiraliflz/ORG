@@ -360,6 +360,16 @@
 
     </div>
 
+    @{
+        ViewData["NorthNoticeOrigin"] = trip?.originCityName;
+        ViewData["NorthNoticeDestination"] = trip?.destinationCityName;
+        if (trip is not null)
+            ViewData["NorthNoticeDate"] = trip.startingDateTime;
+    }
+    <div class="mt-4">
+        @await Html.PartialAsync("~/Areas/AgencyArea/Views/Shared/_NorthRoutePriceNotice.cshtml")
+    </div>
+
     <div class="downside-contaner mt-5">
         <div class="mb-4 confirm-header">
 
