@@ -75,14 +75,47 @@
 
     .success-payment {
         background-color: RGBA(var(--bs-success-rgb), .25) !important;
+        align-items: center !important;
     }
 
-    .not_enough_payment {
-        background-color: RGBA(var(--bs-secondary-rgb), .25) !important;
+    .success-payment .status-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        min-width: 0;
+        text-align: right;
     }
 
     .guest-login-required {
         background-color: RGBA(var(--bs-warning-rgb), .25) !important;
+        align-items: center !important;
+    }
+
+    .guest-login-required .status-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        min-width: 0;
+        text-align: right;
+    }
+
+    .input-forms .form-control {
+        border-radius: 1.6rem;
+    }
+
+    .input-forms .custom-option {
+        border-radius: 1.6rem;
+        overflow: hidden;
+    }
+
+    .input-forms .custom-option .custom-option-content {
+        border-radius: 1.6rem;
+    }
+
+    .not_enough_payment {
+        background-color: RGBA(var(--bs-secondary-rgb), .25) !important;
     }
 
     .form-control {
@@ -1070,12 +1103,12 @@
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                 </svg>
                             </span>
-                            <div class="ms-2 mt-0 p-0" style="text-align: right;">
+                            <div class="ms-2 mt-0 p-0 status-copy">
                                 <h6 class="mb-0 mt-0 p-0">
                                     ورود به حساب کاربری
                                     <i class="ti ti-login"></i>
                                 </h6>
-                                <small class=" text-muted pb-1">برای رزرو بلیط باید وارد شوید</small>
+                                <small class="text-muted pb-1">برای رزرو بلیط باید وارد شوید</small>
                             </div>
                         </div>
                     }
@@ -1096,12 +1129,9 @@
                                     <path d="M9 12l2 2l4 -4" />
                                 </svg>
                             </span>
-                            <div class="ms-2 mt-0 p-0" style="text-align: right;">
-                                <h6 class="mb-0 mt-0 p-0">
-                                    آماده پرداخت
-                                    <i class="ti ti-credit-card"></i>
-                                </h6>
-                                <small class=" text-muted pb-1">پرداخت آنلاین از طریق درگاه امن</small>
+                            <div class="ms-2 mt-0 p-0 status-copy">
+                                <h6 class="mb-0 mt-0 p-0">آماده رزرو</h6>
+                                <small class="text-muted pb-1">پرداخت امن</small>
                             </div>
                         </div>
                     }
