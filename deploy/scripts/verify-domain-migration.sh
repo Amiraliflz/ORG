@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Verify mrshoofer.ir → mrshoofer.com migration (run after deploy + CDN/nginx).
+set -euo pipefail
+
+CANONICAL="${CANONICAL_ORIGIN:-https://mrshoofer.com}"
+LEGACY="${LEGACY_ORIGIN:-https://mrshoofer.ir}"
+
+pass=0
+fail=0
+
+check_redirect() {
+  local from="$1"
+  local expect_prefix="$2"
+  local loc
+  loc="$(curl -sI -m 25 "$from" | tr -d '\r' | awk 'tolower($1)=="location:"{print $2; exit}')"
+  local code
+  code="$(curl -sI -m 25 "$from" | tr -d '\r' | head -1 | awk '{print $2}')"
+  if [[ "$code" == "301" || "$code" == "308" ]] && [[ "$loc" == "$expect_prefix"* ]]; then
+    echo "OK  $from → $loc"
+    pass=$((pass + 1))
+  else
+    echo "FAIL $from (HTTP $code, Location: ${loc:-none}, want prefix $expect_prefix)"
+    fail=$((fail + 1))
+  fi
+}
+
+check_200_canonical() {
+  local url="$1"
+  local code canon
+  code="$(curl -sI -m 25 "$url" | tr -d '\r' | head -1 | awk '{print $2}')"
+  canon="$(curl -sL -m 25 "$url" | grep -o 'rel="canonical" href="[^"]*"' | head -1 | sed 's/.*href="//;s/"//')"
+  if [[ "$code" == "200" && "$canon" == "$CANONICAL/" || "$canon" == "$CANONICAL"/* ]]; then
+    echo "OK  $url canonical=$canon"
+    pass=$((pass + 1))
+  else
+    echo "FAIL $url (HTTP $code, canonical=${canon:-none})"
+    fail=$((fail + 1))
+  fi
+}
+
+echo "=== Redirects (legacy → $CANONICAL) ==="
+check_redirect "$LEGACY/" "$CANONICAL/"
+check_redirect "$LEGACY/routes/tehran-isfahan" "$CANONICAL/routes/tehran-isfahan"
+check_redirect "https://www.mrshoofer.ir/" "$CANONICAL/"
+check_redirect "https://www.mrshoofer.com/" "$CANONICAL/"
+check_redirect "$LEGACY/otapanel/Auth/Login" "$CANONICAL/Auth/Login"
+
+echo "=== Canonical site ==="
+check_200_canonical "$CANONICAL/"
+check_200_canonical "$CANONICAL/routes/tehran-isfahan"
+
+echo "=== Sitemap ==="
+if curl -sL -m 25 "$CANONICAL/sitemap.xml" | head -5 | grep -q "$CANONICAL"; then
+  echo "OK  sitemap uses $CANONICAL"
+  pass=$((pass + 1))
+else
+  echo "FAIL sitemap missing $CANONICAL URLs"
+  fail=$((fail + 1))
+fi
+
+echo "=== Summary: $pass passed, $fail failed ==="
+[[ "$fail" -eq 0 ]]

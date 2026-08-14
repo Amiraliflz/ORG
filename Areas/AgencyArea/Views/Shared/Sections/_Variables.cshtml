@@ -1,10 +1,11 @@
+@using Application.Services.Seo
 @{
   TempData["appName"] = "مسترشوفر";
-  TempData["appUrl"] = "https://sale.shoofer.taxi";
-  TempData["productPage"] = "https://sale.shoofer.taxi/";
+  TempData["appUrl"] = SeoDefaults.PreferredOrigin;
+  TempData["productPage"] = SeoDefaults.BuildCanonical("/");
   @* Footer & Misc urls *@
   TempData["authorName"] = "مسترشوفر";
-  TempData["authorUrl"] = "https://sale.shoofer.taxi/";
+  TempData["authorUrl"] = SeoDefaults.BuildCanonical("/");
   TempData["support"] = "";
   TempData["documentation"] = "";
 }

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Humanizer;
 using Application.Data;
 using System.Security.Claims;
+using Application.Services.Homepage;
+using Application.Services.Seo;
 
 namespace Application.Areas.AgencyArea
 {
@@ -30,8 +32,11 @@ namespace Application.Areas.AgencyArea
     }
 
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index(
+      [FromServices] IHomepageCatalogCache homepageCatalogCache,
+      CancellationToken cancellationToken)
     {
+      await homepageCatalogCache.EnsureFreshAsync(cancellationToken);
       return View();
     }
     
@@ -58,6 +63,9 @@ namespace Application.Areas.AgencyArea
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
+      ViewData["Robots"] = "noindex, nofollow";
+      ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/");
+      Response.StatusCode = StatusCodes.Status500InternalServerError;
       return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
   }

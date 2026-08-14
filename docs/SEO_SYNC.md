@@ -42,13 +42,13 @@ Unresolved transliterations are printed and listed under `unresolvedSlugs` in th
 
 ## Google Search Console checklist
 
-Property: `sale.shoofer.taxi` (must be verified).
+Property: `mrshoofer.com` (must be verified). Keep `mrshoofer.ir` verified for Change of address.
 
 ### Submit sitemap
 
 1. Open [Search Console → Sitemaps](https://search.google.com/search-console).
-2. Submit **only** the index:
-   - `https://sale.shoofer.taxi/sitemap.xml`
+2. Submit **only** the index on the **.com** property:
+   - `https://mrshoofer.com/sitemap.xml`
 3. Do **not** also submit `sitemap-pages.xml` / `sitemap-routes.xml` / `sitemap-cities.xml` — they are already linked from the index.
 4. Wait until status is **Success**. “Couldn’t fetch” usually means CDN/cache or a transient 5xx — retest after deploy settles.
 
@@ -58,9 +58,9 @@ Property: `sale.shoofer.taxi` (must be verified).
 
 Request indexing for a few money pages so Google doesn’t wait only on discovery:
 
-- `https://sale.shoofer.taxi/`
-- One primary route, e.g. `https://sale.shoofer.taxi/routes/tehran-isfahan`
-- One city hub, e.g. `https://sale.shoofer.taxi/cities/tehran`
+- `https://mrshoofer.com/`
+- One primary route, e.g. `https://mrshoofer.com/routes/tehran-isfahan`
+- One city hub, e.g. `https://mrshoofer.com/cities/tehran`
 
 Do not mass-request every route URL (quota-limited). Let the sitemap cover the long tail.
 
@@ -75,6 +75,18 @@ Do not mass-request every route URL (quota-limited). Let the sitemap cover the l
 ### HEAD probes
 
 Sitemap and SEO pages accept **GET and HEAD**. If HEAD previously returned 500, that was a method-constraint + missing error view issue — fixed in app; redeploy for production.
+
+## Domain migration (.ir → .com)
+
+Config: `appsettings.json` → `Seo:PreferredOrigin` = `https://mrshoofer.com`, `Seo:LegacyHosts` lists hosts that 301 to `.com`.
+
+After deploy:
+
+1. **ArvanCloud / nginx** — `mrshoofer.com` must return **200** (not 504). Legacy hosts 301 to `.com`. See `deploy/nginx/mrshoofer-public.conf`.
+2. **Verify** — `./deploy/scripts/verify-domain-migration.sh` (all checks green).
+3. **GSC** — Submit `https://mrshoofer.com/sitemap.xml` on the `.com` property.
+4. **Change of address** — GSC → Settings → Change of address on **`.ir` property** → select `.com` (only after step 2 passes).
+5. Keep `.ir` redirects live for **12+ months**.
 
 ## Runtime behavior
 

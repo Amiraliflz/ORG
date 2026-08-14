@@ -197,7 +197,7 @@
         if (expiry) lines.push('تاریخ انقضا: ' + expiry);
         lines.push('');
         lines.push('برای رزرو سفر از این کد استفاده کنید.');
-        lines.push('mrshoofer.ir');
+        lines.push('@Application.Services.Seo.SeoDefaults.PublicSiteHost');
 
         var msg = lines.join('\n');
         var ta  = document.getElementById('smsMessageTextarea');

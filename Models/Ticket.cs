@@ -20,6 +20,7 @@ namespace Application.Models
     public string TripDestination { get; set; }
     public DateTime RegisteredAt { get; set; }
     public bool IsCancelled { get; set; }
+    public string? CancelReason { get; set; }
 
     public string ServiceName { set; get; }
     public string CarName { get; set; }

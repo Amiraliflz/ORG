@@ -2,11 +2,11 @@
     Layout = "_AgencySideLayout";
     ViewData["Title"] = "ارتباط با ما";
     ViewData["MetaDescription"] = "ارتباط با پشتیبانی مسترشوفر — پیام بگذارید یا از طریق ایمیل و راه‌های ارتباطی سایت با ما در تماس باشید.";
-    ViewData["CanonicalUrl"] = "https://sale.shoofer.taxi/Home/ContactUs";
+    ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/Home/ContactUs");
     ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
     {
-      ("صفحه اصلی", "https://sale.shoofer.taxi/"),
-      ("ارتباط با ما", "https://sale.shoofer.taxi/Home/ContactUs")
+      ("صفحه اصلی", SeoDefaults.BuildCanonical("/")),
+      ("ارتباط با ما", SeoDefaults.BuildCanonical("/Home/ContactUs"))
     };
 }
 

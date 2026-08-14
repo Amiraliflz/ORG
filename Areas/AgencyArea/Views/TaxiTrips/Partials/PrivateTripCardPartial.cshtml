@@ -1,18 +1,26 @@
 @model Application.Services.MrShooferORS.SearchedTrip
 
 @{
-    bool isVipCar = Model.taxiSupervisorID == 7 ||
-                    (!string.IsNullOrEmpty(Model.carModelName) &&
-                     (Model.carModelName.Contains("VIP", StringComparison.OrdinalIgnoreCase) ||
-                      Model.carModelName.Contains("تشریفات")));
+    // VIP supervisors: 7 = تشریفات VIP, 8 = سرویس VIP (also match name)
+    var supervisorName = (Model.taxiSupervisorName ?? "")
+        .Replace('\u064A', '\u06CC')
+        .Replace('\u0643', '\u06A9');
+    bool isVipCar = Model.taxiSupervisorID == 7
+                    || Model.taxiSupervisorID == 8
+                    || supervisorName.Contains("VIP", StringComparison.OrdinalIgnoreCase)
+                    || supervisorName.Contains("وی‌آی‌پی", StringComparison.OrdinalIgnoreCase)
+                    || supervisorName.Contains("ویایپی", StringComparison.OrdinalIgnoreCase)
+                    || supervisorName.Contains("تشریفات", StringComparison.OrdinalIgnoreCase);
 
     string imageUrl = "/taxi.webp";
     if (!string.IsNullOrWhiteSpace(Model.Image))
     {
         var imagePath = Model.Image.Trim();
-        imageUrl = imagePath.StartsWith("/")
-            ? "https://mrbilit.mrshoofer.ir" + imagePath
-            : imagePath;
+        imageUrl = imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? imagePath
+            : imagePath.StartsWith("/")
+                ? "https://ors.shoofer.taxi" + imagePath
+                : imagePath;
     }
 
     var travelMins = (int)(ViewBag.traveltime_mins ?? 0);
@@ -38,19 +46,12 @@
     <article class="trip-card card mt-3">
         <div class="trip-card-body">
             <div class="trip-card-meta">
+                <span class="trip-card-type">دربستی</span>
+                <span class="trip-card-car">@Model.carModelName</span>
                 @if (isVipCar)
                 {
                     <span class="trip-card-vip">وی‌آی‌پی</span>
                 }
-                else
-                {
-                    <span class="trip-card-type">دربستی</span>
-                }
-                <span class="trip-card-capacity" title="ظرفیت ۳">
-                    <i class="ti ti-user" aria-hidden="true"></i>
-                    ۳
-                </span>
-                <span class="trip-card-car">@Model.carModelName</span>
             </div>
 
             <div class="trip-card-main">

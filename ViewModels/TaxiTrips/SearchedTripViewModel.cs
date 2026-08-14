@@ -16,6 +16,7 @@ namespace Application.ViewModels.TaxiTrips
     public string originalPrice { get; set; }
     public string afterdiscount { get; set; }
     public string carModelName { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("image")]
     public string Image { get; set; }
     /// <summary>Human-readable duration, e.g. «۵ ساعت و ۲۵ دقیقه».</summary>
     public string travelDuration { get; set; }

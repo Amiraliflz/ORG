@@ -426,6 +426,94 @@ namespace Application.Services.MrShooferORS
       }
     }
 
+    /// <summary>
+    /// Cancels a reserved ticket in ORS. ORS applies the time-based penalty policy and returns the refund amount.
+    /// </summary>
+    public async Task<CancelTicketResult> CancelTicketAsync(string ticketCode, string? reason = null)
+    {
+      if (string.IsNullOrWhiteSpace(ticketCode))
+      {
+        return CancelTicketResult.Fail("کد بلیط نامعتبر است");
+      }
+
+      try
+      {
+        var qs = $"ticketcode={Uri.EscapeDataString(ticketCode.Trim())}";
+        if (!string.IsNullOrWhiteSpace(reason))
+          qs += $"&reason={Uri.EscapeDataString(reason.Trim())}";
+
+        var response = await _client.PostAsync($"/Tickets/cancelTicket?{qs}", null);
+        var body = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+          var message = ExtractErrorMessage(body) ?? body;
+          if (string.IsNullOrWhiteSpace(message))
+            message = $"خطای ORS ({(int)response.StatusCode})";
+          return CancelTicketResult.Fail(TranslateCancelError(message));
+        }
+
+        decimal refund = 0m;
+        try
+        {
+          var node = JsonNode.Parse(body);
+          var refundNode = node?["rerfund"] ?? node?["refund"] ?? node?["RefundedAmount"];
+          if (refundNode != null && decimal.TryParse(refundNode.ToString(), out var parsed))
+            refund = parsed;
+        }
+        catch (JsonException)
+        {
+          // Success without parseable body — treat refund as 0
+        }
+
+        return CancelTicketResult.Ok(refund);
+      }
+      catch (Exception ex)
+      {
+        return CancelTicketResult.Fail(ex.Message);
+      }
+    }
+
+    private static string? ExtractErrorMessage(string body)
+    {
+      if (string.IsNullOrWhiteSpace(body)) return null;
+      try
+      {
+        var node = JsonNode.Parse(body);
+        if (node == null) return body.Trim();
+        return node["error"]?.ToString()
+            ?? node["message"]?.ToString()
+            ?? node["Message"]?.ToString()
+            ?? node["title"]?.ToString()
+            ?? body.Trim();
+      }
+      catch (JsonException)
+      {
+        return body.Trim().Trim('"');
+      }
+    }
+
+    private static string TranslateCancelError(string message)
+    {
+      var m = message ?? string.Empty;
+      if (m.Contains("ALREADY CANCELED", StringComparison.OrdinalIgnoreCase))
+        return "این بلیط قبلاً لغو شده است";
+      if (m.Contains("HAS DONE", StringComparison.OrdinalIgnoreCase))
+        return "سفر این بلیط پایان یافته و قابل لغو نیست";
+      if (m.Contains("CANCELLATION_BLOCKED", StringComparison.OrdinalIgnoreCase))
+        return "امکان لغو به دلیل محدودیت تعداد کنسلی‌های اخیر وجود ندارد. لطفاً با پشتیبانی تماس بگیرید.";
+      if (m.Contains("NOT BEEN SUBMITED", StringComparison.OrdinalIgnoreCase) ||
+          m.Contains("NOT BEEN SUBMITTED", StringComparison.OrdinalIgnoreCase))
+        return "امکان لغو این بلیط از طریق این سامانه وجود ندارد";
+      if (m.Contains("NO SUCH A TICKET", StringComparison.OrdinalIgnoreCase))
+        return "بلیط در سامانه ORS یافت نشد";
+      if (m.Contains("NOT CURRENTLY APPROPRIATE", StringComparison.OrdinalIgnoreCase))
+        return "وضعیت سفر برای لغو مناسب نیست";
+      if (m.Contains("امکان کنسلی وجود ندارد", StringComparison.OrdinalIgnoreCase))
+        return m;
+      return string.IsNullOrWhiteSpace(m) ? "لغو بلیط ناموفق بود" : m;
+    }
+
     public async Task ChargeOTABalanceAsync(int amount)
     {
       var content = new StringContent($"charge_amount={amount}", Encoding.UTF8, "application/x-www-form-urlencoded");

@@ -1,6 +1,8 @@
 @{
   Layout = "_BlankLayout";
   ViewData["Title"] = "404";
+  ViewData["Robots"] = "noindex, nofollow";
+  ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/");
 }
 
 @section PageStyles {

@@ -164,17 +164,56 @@ function FetchDirections() {
   });
 }
 
-function FetchSupportedCities() {
+var most_used_origins = [];
+const SEARCH_HINTS_STORAGE_KEY = 'mrshoofer_search_hints_v1';
+
+function applySearchHints(data) {
+  if (Array.isArray(data.supportedCities)) {
+    supportedKeys = new Set(data.supportedCities.map(c => normalize(c)));
+  }
+  if (Array.isArray(data.popularOrigins) && data.popularOrigins.length) {
+    most_used_origins = data.popularOrigins.slice();
+  }
+}
+
+function readCachedSearchHints(version) {
+  try {
+    const raw = sessionStorage.getItem(SEARCH_HINTS_STORAGE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (!cached || cached.version !== version) return null;
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+function FetchSearchHints() {
   return new Promise((resolve) => {
-    $.getJSON('/TaxiTrips/SupportedCities', function (data) {
-      supportedKeys = new Set((data || []).map(c => normalize(c)));
+    $.getJSON('/TaxiTrips/SearchHints', function (data) {
+      const version = data?.version || '';
+      const cached = readCachedSearchHints(version);
+      if (cached) {
+        applySearchHints(cached);
+        resolve();
+        return;
+      }
+      try {
+        sessionStorage.setItem(SEARCH_HINTS_STORAGE_KEY, JSON.stringify(data));
+      } catch { /* quota / private mode */ }
+      applySearchHints(data);
       resolve();
     }).fail(function (xhr) {
-      console.error('Failed to fetch supported cities.', xhr?.status, xhr?.responseText);
+      console.error('Failed to fetch search hints.', xhr?.status, xhr?.responseText);
+      most_used_origins = ["تهران", "اصفهان", "رشت", "چالوس", "کرمانشاه", "نوشهر"];
       supportedKeys = new Set();
       resolve();
     });
   });
+}
+
+function FetchSupportedCities() {
+  return FetchSearchHints();
 }
 
 function intersectDirectionsWithSupported() {
@@ -357,8 +396,6 @@ async function FetchTrips() {
     trips = [];
   }
 }
-
-var most_used_origins = ["تهران", "اصفهان", "رشت", "چالوس", "کرمانشاه", "نوشهر"];
 
 function keyToDisplay(key) { return displayNameByKey.get(key) || toPersianGuess(key) || key; }
 

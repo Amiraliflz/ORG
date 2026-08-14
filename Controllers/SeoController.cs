@@ -9,7 +9,7 @@ namespace Application.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 public class SeoController : Controller
 {
-  private static readonly string ContentStamp = "2026-08-05";
+  private static readonly string ContentStamp = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
   // Accept HEAD so crawlers / GSC probes don't 405 → broken status-code re-execute.
   [AcceptVerbs("GET", "HEAD")]

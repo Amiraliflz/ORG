@@ -1,4 +1,4 @@
 Contact: mailto:support@mrshoofer.ir
-Contact: tel:+982128422243
+Expires: 2027-08-14T00:00:00z
 Preferred-Languages: fa, en
-Canonical: https://sale.shoofer.taxi/.well-known/security.txt
+Canonical: https://mrshoofer.com/.well-known/security.txt

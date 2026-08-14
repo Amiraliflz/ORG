@@ -5,6 +5,18 @@
     ViewData["title"] = "سفرهای من";
     decimal balance = ViewBag.Balance ?? 0m;
     var phone = (string)(ViewBag.CustomerPhone ?? "");
+    var successMsg = TempData["Success"] as string;
+    var errorMsg = TempData["Error"] as string;
+
+    bool CanCancel(Ticket t)
+    {
+        if (t.IsCancelled) return false;
+        var code = t.TicketCode ?? "";
+        if (string.IsNullOrWhiteSpace(code)) return false;
+        if (code.StartsWith("PENDING-", StringComparison.OrdinalIgnoreCase)) return false;
+        if (code.StartsWith("PAID-NO-RESERVE-", StringComparison.OrdinalIgnoreCase)) return false;
+        return true;
+    }
 
     var ticketsJson = System.Text.Json.JsonSerializer.Serialize(Model.Select(t => new {
         id           = t.Id,
@@ -19,7 +31,9 @@
         carName      = t.CarName         ?? "",
         serviceName  = t.ServiceName     ?? "",
         isCancelled  = t.IsCancelled,
-        isWallet     = t.PaymentRefId == "WALLET"
+        isWallet     = t.PaymentRefId == "WALLET",
+        canCancel    = CanCancel(t),
+        cancelReason = t.CancelReason    ?? ""
     }));
 }
 
@@ -48,6 +62,13 @@
 .rbadge{background:#f0f0ff;color:#696cff;border-radius:2rem;padding:.18rem .7rem;font-size:.75rem;direction:ltr;word-break:break-all}
 .empty-box{text-align:center;padding:3rem 1rem}
 .empty-icon{width:88px;height:88px;background:#f0f0ff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.1rem;font-size:2.2rem;color:#696cff}
+.cancel-policy{background:#fff8f0;border:1px solid #ffe0b8;border-radius:.75rem;padding:.75rem .9rem;font-size:.8rem;color:#6e6b7b;line-height:1.7}
+.cancel-policy ul{margin:0;padding-right:1.1rem}
+.t-toast{position:fixed;top:1.3rem;left:50%;transform:translateX(-50%) translateY(calc(-100% - 2rem));z-index:9999;min-width:280px;max-width:90vw;border-radius:1rem;padding:.75rem 1.2rem;display:flex;align-items:flex-start;gap:.6rem;font-size:.88rem;font-weight:500;transition:transform .38s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.t-toast.show{transform:translateX(-50%) translateY(0);pointer-events:auto}
+.t-toast-success{background:#28c76f;color:#fff;box-shadow:0 4px 20px rgba(40,199,111,.28)}
+.t-toast-error{background:#ff4c51;color:#fff;box-shadow:0 4px 20px rgba(255,76,81,.28)}
+.t-toast-close{background:none;border:none;color:#fff;opacity:.75;cursor:pointer;padding:0;margin-right:auto;font-size:1rem;line-height:1;flex-shrink:0}
 
 /* ── Mobile ── */
 @@media(max-width:575.98px){
@@ -62,6 +83,27 @@
   .mchip{font-size:.72rem}
 }
 </style>
+
+@if (!string.IsNullOrEmpty(successMsg))
+{
+    <div id="tt-ok" class="t-toast t-toast-success">
+        <i class="ti ti-circle-check" style="font-size:1.2rem;flex-shrink:0;margin-top:.1rem"></i>
+        <span style="flex:1">@successMsg</span>
+        <button class="t-toast-close" onclick="this.closest('.t-toast').classList.remove('show')" aria-label="بستن">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div id="tt-err" class="t-toast t-toast-error">
+        <i class="ti ti-alert-circle" style="font-size:1.2rem;flex-shrink:0;margin-top:.1rem"></i>
+        <span style="flex:1">@errorMsg</span>
+        <button class="t-toast-close" onclick="this.closest('.t-toast').classList.remove('show')" aria-label="بستن">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+}
 
 <!-- ── Tickets App ── -->
 <div id="ticketsApp">
@@ -124,6 +166,47 @@
 
 </div>
 
+<!-- Cancel modal -->
+<div class="modal fade" id="cancelTicketModal" tabindex="-1" aria-labelledby="cancelTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:1rem;border:none">
+            <form method="post" asp-area="AgencyArea" asp-controller="Customer" asp-action="CancelTicket" id="cancelTicketForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ticketId" id="cancelTicketId" value="" />
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="cancelTicketModalLabel">لغو بلیط</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-2" style="font-size:.88rem">
+                        مسیر: <strong id="cancelRouteLabel"></strong>
+                        <br />کد بلیط: <span id="cancelCodeLabel" class="font-monospace" dir="ltr"></span>
+                    </p>
+                    <div class="cancel-policy mb-3">
+                        <div class="fw-semibold mb-1" style="color:#29263d"><i class="ti ti-info-circle me-1"></i>شرایط کنسلی</div>
+                        <ul>
+                            <li>تا ۱ ساعت پس از خرید: بدون جریمه</li>
+                            <li>بیش از ۱۲ ساعت تا سفر: ۲۰٪ جریمه</li>
+                            <li>بین ۳ تا ۱۲ ساعت تا سفر: ۵۰٪ جریمه</li>
+                        </ul>
+                        <div class="mt-1">مبلغ بازگشتی پس از لغو به کیف پول شما واریز می‌شود.</div>
+                    </div>
+                    <label for="cancelReason" class="form-label fw-semibold">دلیل لغو <span class="text-danger">*</span></label>
+                    <textarea id="cancelReason" name="reason" class="form-control" rows="3" maxlength="500"
+                              placeholder="لطفاً دلیل لغو بلیط را بنویسید..." required></textarea>
+                    <div class="form-text">حداقل ۳ کاراکتر — حداکثر ۵۰۰ کاراکتر</div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-label-secondary rounded-pill" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-danger rounded-pill" id="cancelSubmitBtn">
+                        <i class="ti ti-x me-1"></i>تأیید لغو بلیط
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Inline script — runs after DOM is rendered -->
 <script>
 (function () {
@@ -132,17 +215,32 @@
 
     function fmt(n) { return Number(n).toLocaleString('en-US'); }
 
+    function esc(s) {
+        return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     function buildCard(t) {
         const statusBadge = t.isCancelled
             ? '<span class="badge bg-label-danger rounded-pill px-3 py-1">لغو شده</span>'
             : '<span class="badge bg-label-success rounded-pill px-3 py-1">فعال</span>';
 
-        const carChip  = t.carName     ? `<span class="mchip"><i class="ti ti-car"></i>${t.carName}</span>` : '';
-        const svcChip  = t.serviceName ? `<span class="mchip"><i class="ti ti-building"></i>${t.serviceName}</span>` : '';
+        const carChip  = t.carName     ? `<span class="mchip"><i class="ti ti-car"></i>${esc(t.carName)}</span>` : '';
+        const svcChip  = t.serviceName ? `<span class="mchip"><i class="ti ti-building"></i>${esc(t.serviceName)}</span>` : '';
 
         let payBadge = '';
         if (t.isWallet) payBadge = '<span class="wbadge"><i class="ti ti-wallet me-1"></i>کیف پول</span>';
-        else if (t.paymentRef) payBadge = `<span class="rbadge">شناسه پرداخت: ${t.paymentRef}</span>`;
+        else if (t.paymentRef) payBadge = `<span class="rbadge">شناسه پرداخت: ${esc(t.paymentRef)}</span>`;
+
+        const cancelBtn = t.canCancel
+            ? `<button type="button" class="btn btn-sm btn-label-danger rounded-pill"
+                       onclick="openCancelModal(${t.id})" title="لغو بلیط">
+                 <i class="ti ti-x"></i> لغو
+               </button>`
+            : '';
+
+        const reasonNote = (t.isCancelled && t.cancelReason)
+            ? `<div class="text-muted mt-2" style="font-size:.78rem"><i class="ti ti-message me-1"></i>دلیل لغو: ${esc(t.cancelReason)}</div>`
+            : '';
 
         return `
         <div class="col-12 col-lg-6">
@@ -150,24 +248,24 @@
             <div class="troute">
               <div class="d-flex align-items-center justify-content-between mb-2">
                 <div class="d-flex align-items-center gap-2 fw-bold" style="font-size:1rem">
-                  <span>${t.origin}</span>
+                  <span>${esc(t.origin)}</span>
                   <div class="d-flex align-items-center" style="flex:1;min-width:55px">
                     <div class="rdot"></div>
                     <div class="rline"></div>
                     <i class="ti ti-car text-primary" style="font-size:.9rem"></i>
                   </div>
-                  <span>${t.destination}</span>
+                  <span>${esc(t.destination)}</span>
                 </div>
                 ${statusBadge}
               </div>
               <div class="text-muted" style="font-size:.8rem">
-                <i class="ti ti-calendar-event me-1"></i>${t.registeredFa}
+                <i class="ti ti-calendar-event me-1"></i>${esc(t.registeredFa)}
               </div>
             </div>
             <div class="tbody">
               <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
-                  <div class="fw-semibold mb-1">${t.firstName} ${t.lastName}</div>
+                  <div class="fw-semibold mb-1">${esc(t.firstName)} ${esc(t.lastName)}</div>
                   <div class="d-flex flex-wrap gap-1">${carChip}${svcChip}</div>
                 </div>
                 <div class="text-end">
@@ -177,14 +275,18 @@
               </div>
               <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex flex-wrap gap-2">
-                  <span class="mchip"><i class="ti ti-hash"></i>${t.ticketCode}</span>
+                  <span class="mchip"><i class="ti ti-hash"></i>${esc(t.ticketCode)}</span>
                   ${payBadge}
                 </div>
-                <a href="/TripReceiptPdf?reference=${t.ticketCode}" target="_blank"
-                   class="btn btn-sm btn-icon btn-label-primary rounded-pill" title="چاپ بلیط">
-                  <i class="ti ti-printer"></i>
-                </a>
+                <div class="d-flex gap-1">
+                  ${cancelBtn}
+                  <a href="/TripReceiptPdf?reference=${encodeURIComponent(t.ticketCode)}" target="_blank"
+                     class="btn btn-sm btn-icon btn-label-primary rounded-pill" title="چاپ بلیط">
+                    <i class="ti ti-printer"></i>
+                  </a>
+                </div>
               </div>
+              ${reasonNote}
             </div>
           </div>
         </div>`;
@@ -234,6 +336,46 @@
     };
 
     window.applyFilters = applyFilters;
+
+    window.openCancelModal = function (ticketId) {
+        const t = ALL.find(x => x.id === ticketId);
+        if (!t || !t.canCancel) return;
+        document.getElementById('cancelTicketId').value = String(t.id);
+        document.getElementById('cancelRouteLabel').textContent = t.origin + ' ← ' + t.destination;
+        document.getElementById('cancelCodeLabel').textContent = t.ticketCode;
+        document.getElementById('cancelReason').value = '';
+        const modalEl = document.getElementById('cancelTicketModal');
+        if (window.bootstrap && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        } else {
+            modalEl.classList.add('show');
+            modalEl.style.display = 'block';
+        }
+    };
+
+    const form = document.getElementById('cancelTicketForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const btn = document.getElementById('cancelSubmitBtn');
+            const reason = (document.getElementById('cancelReason')?.value || '').trim();
+            if (reason.length < 3) {
+                e.preventDefault();
+                return;
+            }
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>در حال لغو...';
+            }
+        });
+    }
+
+    // Toasts
+    ['tt-ok', 'tt-err'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        requestAnimationFrame(function () { el.classList.add('show'); });
+        setTimeout(function () { el.classList.remove('show'); }, 6000);
+    });
 
     // Initial render
     applyFilters();

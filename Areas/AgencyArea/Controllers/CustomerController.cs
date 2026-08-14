@@ -101,7 +101,8 @@ namespace Application.Areas.AgencyArea
             if (user == null) return Challenge();
 
             // Payment start/callback stay on the user-facing sale domain
-            var paymentServerBase = _configuration["PaymentServer:BaseUrl"] ?? "https://mrshoofer.ir";
+            var paymentServerBase = _configuration["PaymentServer:BaseUrl"]
+                ?? Application.Services.Seo.SeoDefaults.PreferredOrigin;
             var sharedKey = _configuration["PaymentServer:SharedKey"] ?? string.Empty;
             var partnerBrand = Request.Cookies["partner_brand"] ?? string.Empty;
             var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -159,6 +160,83 @@ namespace Application.Areas.AgencyArea
 
             TempData["Success"] = "اطلاعات پروفایل با موفقیت ذخیره شد";
             return RedirectToAction("MyProfile");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelTicket(int ticketId, string? reason)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var trimmedReason = (reason ?? string.Empty).Trim();
+            if (trimmedReason.Length < 3)
+            {
+                TempData["Error"] = "لطفاً دلیل لغو بلیط را وارد کنید";
+                return RedirectToAction(nameof(MyTickets));
+            }
+            if (trimmedReason.Length > 500)
+                trimmedReason = trimmedReason[..500];
+
+            var ticket = await _context.Tickets.FirstOrDefaultAsync(t =>
+                t.Id == ticketId &&
+                t.PhoneNumber == user.UserName &&
+                t.IsPaid);
+
+            if (ticket == null)
+            {
+                TempData["Error"] = "بلیط یافت نشد";
+                return RedirectToAction(nameof(MyTickets));
+            }
+
+            if (ticket.IsCancelled)
+            {
+                TempData["Error"] = "این بلیط قبلاً لغو شده است";
+                return RedirectToAction(nameof(MyTickets));
+            }
+
+            var code = ticket.TicketCode ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(code) ||
+                code.StartsWith("PENDING-", StringComparison.OrdinalIgnoreCase) ||
+                code.StartsWith("PAID-NO-RESERVE-", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "این بلیط در سامانه ORS ثبت نشده و قابل لغو نیست. لطفاً با پشتیبانی تماس بگیرید.";
+                return RedirectToAction(nameof(MyTickets));
+            }
+
+            var sellerToken = _configuration["MrShoofer:SellerToken"];
+            if (string.IsNullOrWhiteSpace(sellerToken))
+            {
+                TempData["Error"] = "سرویس لغو بلیط در دسترس نیست. لطفاً بعداً تلاش کنید.";
+                return RedirectToAction(nameof(MyTickets));
+            }
+
+            _apiClient.SetSellerApiKey(sellerToken);
+            var result = await _apiClient.CancelTicketAsync(code, trimmedReason);
+            if (!result.Success)
+            {
+                _logger.LogWarning("Passenger cancel failed. TicketId={TicketId} Code={Code} Error={Error}",
+                    ticket.Id, code, result.ErrorMessage);
+                TempData["Error"] = result.ErrorMessage ?? "لغو بلیط ناموفق بود";
+                return RedirectToAction(nameof(MyTickets));
+            }
+
+            ticket.IsCancelled = true;
+            ticket.CancelReason = trimmedReason;
+            await _context.SaveChangesAsync();
+
+            if (result.RefundAmount > 0)
+            {
+                await _balanceSvc.AddBalance(user.Id, result.RefundAmount);
+                TempData["Success"] =
+                    $"بلیط با موفقیت لغو شد. مبلغ {result.RefundAmount:N0} تومان به کیف پول شما بازگردانده شد.";
+            }
+            else
+            {
+                TempData["Success"] = "بلیط با موفقیت لغو شد.";
+            }
+
+            return RedirectToAction(nameof(MyTickets));
         }
     }
 }

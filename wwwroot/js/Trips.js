@@ -1,39 +1,50 @@
-function generateTripCard(Model) {
-  const isVipCar = Model.taxiSupervisorID === 7 ||
-    (Model.carModelName && (
-      Model.carModelName.includes('VIP') ||
-      Model.carModelName.includes('vip') ||
-      Model.carModelName.includes('تشریفات') ||
-      Model.carModelName.includes('آریو') ||
-      Model.carModelName.includes('اکسنت') ||
-      Model.carModelName.includes('جیلی') ||
-      Model.carModelName.includes('کمری') ||
-      Model.carModelName.includes('سفران') ||
-      Model.carModelName.includes('سوناتا')
-    ));
+function isVipTrip(Model) {
+  const id = Number(Model.taxiSupervisorID);
+  if (id === 7 || id === 8) return true;
 
+  const normalize = (s) => String(s || '')
+    .replace(/\u064A/g, '\u06CC') // Arabic Yeh → Persian Yeh
+    .replace(/\u0643/g, '\u06A9'); // Arabic Kaf → Persian Kaf
+
+  const supervisor = normalize(Model.taxiSupervisorName);
+  const car = normalize(Model.carModelName);
+  const hay = `${supervisor} ${car}`.toLowerCase();
+
+  return /vip|وی[\u200c\s]*آی[\u200c\s]*پی|ویایپی|تشریفات/.test(hay);
+}
+
+function resolveTripImageUrl(Model) {
   let imageUrl = '/taxi.webp';
   const imageValue = Model.Image || Model.image;
   if (imageValue && typeof imageValue === 'string' && imageValue.trim() !== '') {
     const imagePath = imageValue.trim();
-    imageUrl = imagePath.startsWith('/')
-      ? 'https://mrbilit.mrshoofer.ir' + imagePath
-      : imagePath;
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      imageUrl = imagePath;
+    } else if (imagePath.startsWith('/')) {
+      imageUrl = 'https://ors.shoofer.taxi' + imagePath;
+    } else {
+      imageUrl = imagePath;
+    }
   }
+  return imageUrl;
+}
+
+function generateTripCard(Model) {
+  const isVipCar = isVipTrip(Model);
+  const imageUrl = resolveTripImageUrl(Model);
 
   const showOrgPrice = Model.originalPrice && Model.afterdiscount &&
     String(Model.originalPrice) !== String(Model.afterdiscount);
+
+  const vipLabel = isVipCar ? '<span class="trip-card-vip">وی‌آی‌پی</span>' : '';
 
   return `
     <article class="trip-card card mt-3">
       <div class="trip-card-body">
         <div class="trip-card-meta">
-          ${isVipCar ? '<span class="trip-card-vip">وی‌آی‌پی</span>' : '<span class="trip-card-type">دربستی</span>'}
-          <span class="trip-card-capacity" title="ظرفیت ۳">
-            <i class="ti ti-user" aria-hidden="true"></i>
-            ۳
-          </span>
+          <span class="trip-card-type">دربستی</span>
           <span class="trip-card-car">${Model.carModelName || ''}</span>
+          ${vipLabel}
         </div>
 
         <div class="trip-card-main">
@@ -43,7 +54,7 @@ function generateTripCard(Model) {
                  width="44" height="44"
                  alt="${Model.taxiSupervisorName || ''}"
                  loading="lazy" decoding="async"
-                 onerror="this.src='/taxi.webp'" />
+                 onerror="this.onerror=null;this.src='/taxi.webp'" />
             <span class="trip-card-provider-name">${Model.taxiSupervisorName || ''}</span>
           </div>
 
@@ -175,10 +186,8 @@ function GenerateCarModelsFilter(carmodels) {
 
   carmodels.forEach(c => {
     const safeText = String(c).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const isVipCar = c && (c.includes('VIP') || c.includes('vip') || c.includes('تشریفات') ||
-      c.includes('آریو') || c.includes('اکسنت') || c.includes('جیلی') ||
-      c.includes('کمری') || c.includes('سفران') || c.includes('سوناتا'));
-    const vipBadge = isVipCar ? '<img src="/vip_badge.png" style="height:16px;" class="ms-1" alt="" />' : '';
+    const isVipCar = isVipTrip({ carModelName: c, taxiSupervisorName: c, taxiSupervisorID: 0 });
+    const vipBadge = isVipCar ? '<span class="trip-card-vip trip-card-vip--inline">وی‌آی‌پی</span>' : '';
     $container.append(
       `<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill car-chip" data-carmodel="${safeText}">${safeText}${vipBadge}</button>`
     );

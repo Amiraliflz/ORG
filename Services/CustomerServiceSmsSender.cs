@@ -95,7 +95,7 @@ namespace Application.Services
 
         public string BuildDiscountMessage(string discountCode, int percent)
         {
-            return $"کد تخفیف اختصاصی شما از مستر‌شوفر:\n{discountCode}\n\nمیزان تخفیف: {percent}٪\n\nبرای رزرو سفر از این کد استفاده کنید.\nmrshoofer.ir";
+            return $"کد تخفیف اختصاصی شما از مستر‌شوفر:\n{discountCode}\n\nمیزان تخفیف: {percent}٪\n\nبرای رزرو سفر از این کد استفاده کنید.\n{Application.Services.Seo.SeoDefaults.PublicSiteHost}";
         }
 
         public async Task SendDiscountCode(string discountCode, int percent, IEnumerable<string> mobiles)

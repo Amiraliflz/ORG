@@ -6,6 +6,7 @@ using Application.Services.Payment;
 using Application.Services.Seo;
 using Kavenegar;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -36,7 +37,18 @@ builder.Services.AddResponseCompression(options =>
 builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
 builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = CompressionLevel.Fastest);
 
+// Trust reverse-proxy proto/host so HTTPS redirects + HSTS see the public scheme.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+  options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+  options.KnownNetworks.Clear();
+  options.KnownProxies.Clear();
+});
+
 // Add services to the container.
+builder.Services.Configure<Application.Services.Seo.SeoOptions>(
+  builder.Configuration.GetSection(Application.Services.Seo.SeoOptions.SectionName));
+
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
 builder.Services.AddScoped<DirectionsTravelTimeCalculator>();
@@ -58,6 +70,9 @@ builder.Services.AddHttpClient<Application.Services.Neshan.NeshanApiClient>((sp,
 
 builder.Services.AddScoped<Application.Services.TravelTime.ITravelTimeSyncService, Application.Services.TravelTime.TravelTimeSyncService>();
 builder.Services.AddHostedService<Application.Services.TravelTime.TravelTimeSyncHostedService>();
+
+builder.Services.AddSingleton<Application.Services.Homepage.IHomepageCatalogCache, Application.Services.Homepage.HomepageCatalogCache>();
+builder.Services.AddHostedService<Application.Services.Homepage.HomepageCatalogSyncHostedService>();
 
 // Configure MrShooferAPIClient via IHttpClientFactory — connection pooling prevents socket exhaustion
 // UseCookies=false avoids CookieContainer domain lookup crashes on some macOS/dev hosts (GetDomainName: -1)
@@ -172,10 +187,15 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+SeoDefaults.Configure(app.Configuration);
+
 // SEO generated catalogs resolve against wwwroot/json/Seo/
 SeoDataPaths.Configure(app.Environment.WebRootPath);
 
+app.UseForwardedHeaders();
 app.UseRateLimiter();
+
+app.UseMiddleware<Application.Services.Seo.CanonicalHostMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -216,7 +236,26 @@ app.Use(async (context, next) =>
 
 app.UseHttpsRedirection();
 app.UseResponseCompression();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+  OnPrepareResponse = ctx =>
+  {
+    var path = ctx.Context.Request.Path.Value ?? "";
+    var hasVersion = ctx.Context.Request.QueryString.HasValue;
+    if (hasVersion || path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".woff2", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+        || path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase))
+    {
+      ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+    }
+    else if (path.EndsWith(".css", StringComparison.OrdinalIgnoreCase)
+             || path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+    {
+      ctx.Context.Response.Headers.CacheControl = "public,max-age=86400";
+    }
+  }
+});
 
 app.UseRouting();
 

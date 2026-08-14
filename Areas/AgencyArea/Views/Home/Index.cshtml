@@ -1,3 +1,4 @@
+@inject IHomepageCatalogCache HomepageCatalog
 @{
     Layout = "_FrontLayout";
 
@@ -7,19 +8,20 @@
     ViewData["OgDescription"] = (string)ViewData["MetaDescription"]!;
     ViewData["OgImage"] = Application.Services.Seo.SeoDefaults.DefaultOgImageUrl;
     ViewData["OgImageAlt"] = "مستر شوفر — رزرو آنلاین تاکسی بین شهری و سواری دربستی";
-    ViewData["CanonicalUrl"] = "https://sale.shoofer.taxi/";
+    ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/");
     ViewData["IncludeHomeFaqs"] = true;
     ViewData["DateModified"] = "2026-08-09";
     ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
     {
-      ("صفحه اصلی", "https://sale.shoofer.taxi/")
+      ("صفحه اصلی", SeoDefaults.BuildCanonical("/"))
     };
 }
 
 @section VendorStyles {
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link href="~/css/IndexPage.css?v=33" rel="stylesheet" />
+    <link href="~/css/IndexPage.css?v=34" rel="stylesheet" />
+    <link rel="preload" href="/mrshoofer_cars_banner.webp" as="image" type="image/webp" fetchpriority="high" />
     @* Critical: swap control + field gutters (survive stale/CDN-cached IndexPage.css) *@
     <style>
       .landing-hero .od-pair-col { position: relative; }
@@ -67,7 +69,7 @@
     <script src="~/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
     <script src="~/vendor/libs/flatpickr/l10n/fa.js"></script>
     <script src="~/js/IndexPage.js?v=2"></script>
-    <script src="~/js/searchpage.js?v=5"></script>
+    <script src="~/js/searchpage.js?v=6"></script>
 }
 
 
@@ -219,6 +221,71 @@
         </div>
     </section>
     <!-- Hero: End -->
+    <!-- Popular routes (SEO internal links) -->
+    <section id="landingRoutes" class="section-py landing-routes">
+        <div class="container landing-routes-inner">
+            <div class="text-center mb-3 pb-1">
+                <span class="badge bg-label-primary">مسیرهای پرتردد</span>
+            </div>
+            <h3 class="text-center mb-1 fw-medium">
+                رزرو سواری در <span class="section-title">مسیرهای محبوب</span>
+            </h3>
+            <p class="text-center mb-4 mb-md-5 text-muted landing-routes-lead">
+                صفحه اختصاصی هر مسیر را ببینید و همان‌جا جستجو را شروع کنید
+            </p>
+            @{
+                var popularRoutes = SeoDefaults.HomepagePopularRoutes();
+                var popularCities = SeoDefaults.HomepagePopularCities();
+            }
+            <ul class="landing-routes-grid">
+                @foreach (var r in popularRoutes)
+                {
+                    var startPrice = HomepageCatalog.GetRouteStartingPrice(r.Slug);
+                    <li>
+                        <a class="landing-route-link" href="/routes/@r.Slug">
+                            <span class="landing-route-od">
+                                <span class="landing-route-city">@r.OriginFa</span>
+                                <span class="landing-route-arrow" aria-hidden="true">←</span>
+                                <span class="landing-route-city">@r.DestinationFa</span>
+                            </span>
+                            <span class="landing-route-meta">
+                                @if (startPrice is long price)
+                                {
+                                    <span class="landing-route-price">
+                                        <span class="landing-route-price-label">شروع قیمت</span>
+                                        <span class="landing-route-price-value">@price.ToString("N0") تومان</span>
+                                    </span>
+                                }
+                                <span class="landing-route-hint">مشاهده و رزرو</span>
+                            </span>
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            @if (popularCities.Count > 0)
+            {
+                <div class="landing-routes-cities-wrap">
+                    <p class="landing-routes-cities-label">کاوش بر اساس شهر</p>
+                    <ul class="landing-routes-cities">
+                        @foreach (var c in popularCities)
+                        {
+                            <li>
+                                <a href="/cities/@c.Slug">@c.NameFa</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="landing-routes-actions">
+                <a href="/routes" class="btn btn-outline-primary">مشاهده همه مسیرها</a>
+                <a href="/cities" class="btn btn-outline-secondary">همه شهرها</a>
+            </div>
+        </div>
+    </section>
+    <!-- Popular routes: End -->
+
     <!-- Useful features: Start -->
     <section id="landingFeatures" class="section-py landing-features">
         <div class="container">
@@ -279,71 +346,6 @@
         </div>
     </section>
     <!-- Useful features: End -->
-
-    <!-- Popular routes (SEO internal links) -->
-    <section id="landingRoutes" class="section-py landing-routes">
-        <div class="container landing-routes-inner">
-            <div class="text-center mb-3 pb-1">
-                <span class="badge bg-label-primary">مسیرهای پرتردد</span>
-            </div>
-            <h3 class="text-center mb-1 fw-medium">
-                رزرو سواری در <span class="section-title">مسیرهای محبوب</span>
-            </h3>
-            <p class="text-center mb-4 mb-md-5 text-muted landing-routes-lead">
-                صفحه اختصاصی هر مسیر را ببینید و همان‌جا جستجو را شروع کنید
-            </p>
-            @{
-                var popularRoutes = Application.Services.Seo.SeoDefaults.HomepagePopularRoutes();
-                var popularCities = Application.Services.Seo.SeoDefaults.HomepagePopularCities();
-            }
-            <ul class="landing-routes-grid">
-                @foreach (var r in popularRoutes)
-                {
-                    var startPrice = Application.Services.Seo.SeoDefaults.HomepageRouteStartingPrice(r.Slug);
-                    <li>
-                        <a class="landing-route-link" href="/routes/@r.Slug">
-                            <span class="landing-route-od">
-                                <span class="landing-route-city">@r.OriginFa</span>
-                                <span class="landing-route-arrow" aria-hidden="true">←</span>
-                                <span class="landing-route-city">@r.DestinationFa</span>
-                            </span>
-                            <span class="landing-route-meta">
-                                @if (startPrice is long price)
-                                {
-                                    <span class="landing-route-price">
-                                        <span class="landing-route-price-label">شروع قیمت</span>
-                                        <span class="landing-route-price-value">@price.ToString("N0") تومان</span>
-                                    </span>
-                                }
-                                <span class="landing-route-hint">مشاهده و رزرو</span>
-                            </span>
-                        </a>
-                    </li>
-                }
-            </ul>
-
-            @if (popularCities.Count > 0)
-            {
-                <div class="landing-routes-cities-wrap">
-                    <p class="landing-routes-cities-label">کاوش بر اساس شهر</p>
-                    <ul class="landing-routes-cities">
-                        @foreach (var c in popularCities)
-                        {
-                            <li>
-                                <a href="/cities/@c.Slug">@c.NameFa</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            }
-
-            <div class="landing-routes-actions">
-                <a href="/routes" class="btn btn-outline-primary">مشاهده همه مسیرها</a>
-                <a href="/cities" class="btn btn-outline-secondary">همه شهرها</a>
-            </div>
-        </div>
-    </section>
-    <!-- Popular routes: End -->
     <!-- Real customers reviews: Start -->
     <!-- Real customers reviews: End -->
     <!-- Our great team: Start -->

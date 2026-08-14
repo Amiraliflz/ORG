@@ -1,12 +1,29 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace Application.Services.Seo;
 
-/// <summary>Global-class SEO defaults for sale.shoofer.taxi (meta, robots helpers, JSON-LD graph).</summary>
+/// <summary>Global-class SEO defaults (meta, robots helpers, JSON-LD graph).</summary>
 public static class SeoDefaults
 {
-  public const string PreferredOrigin = "https://sale.shoofer.taxi";
+  public static string PreferredOrigin { get; private set; } = "https://mrshoofer.com";
+  public static string PublicSiteHost { get; private set; } = "mrshoofer.com";
+
+  public static void Configure(IConfiguration configuration)
+  {
+    var section = configuration.GetSection(SeoOptions.SectionName);
+    var origin = section["PreferredOrigin"];
+    if (!string.IsNullOrWhiteSpace(origin))
+      PreferredOrigin = origin.Trim().TrimEnd('/');
+
+    var host = section["PublicSiteHost"];
+    if (!string.IsNullOrWhiteSpace(host))
+      PublicSiteHost = host.Trim();
+  }
+
+  public static string DefaultOgImageUrl => PreferredOrigin + DefaultOgImagePath + "?v=1";
+
   public const string SiteName = "مسترشوفر";
   /// <summary>Spaced brand spelling people type in search («مستر شوفر»).</summary>
   public const string SiteNameSpaced = "مستر شوفر";
@@ -27,8 +44,6 @@ public static class SeoDefaults
     "mr shoofer"
   ];
   public const string DefaultOgImagePath = "/og-home.jpg";
-  /// <summary>Cache-busted absolute OG image (shared brand asset; titles/descriptions stay per-page).</summary>
-  public const string DefaultOgImageUrl = PreferredOrigin + DefaultOgImagePath + "?v=1";
   public const int OgImageWidth = 1200;
   public const int OgImageHeight = 630;
   public const string SupportPhone = "+982128422243";
@@ -88,6 +103,17 @@ public static class SeoDefaults
     ("دریافت بلیط", "بلیط را دریافت کنید و منتظر هماهنگی پشتیبانی بمانید.")
   ];
 
+  /// <summary>Hero search dropdown «شهرهای پرتردد» — filtered against live ORS cities.</summary>
+  public static readonly string[] HomepagePopularOriginCities =
+  [
+    "تهران",
+    "اصفهان",
+    "رشت",
+    "چالوس",
+    "کرمانشاه",
+    "نوشهر",
+  ];
+
   /// <summary>Curated homepage internal links (money routes) — not sync IsPrimary order.</summary>
   public static readonly string[] HomepagePopularRouteSlugs =
   [
@@ -106,7 +132,8 @@ public static class SeoDefaults
   ];
 
   /// <summary>
-  /// Approximate starting ticket prices (تومان) for homepage route cards — marketing floor, not live ORS quotes.
+  /// Static fallback starting prices (تومان) when live ORS quotes are unavailable.
+  /// Live ECO prices come from <see cref="Homepage.IHomepageCatalogCache"/>.
   /// </summary>
   private static readonly Dictionary<string, long> HomepageRouteStartingPriceToman = new(StringComparer.OrdinalIgnoreCase)
   {
@@ -209,14 +236,19 @@ public static class SeoDefaults
   {
     path = (path ?? "").ToLowerInvariant();
     return path.Contains("/auth", StringComparison.Ordinal)
+      || path.Contains("/otapanel", StringComparison.Ordinal)
       || path.Contains("/admin", StringComparison.Ordinal)
       || path.Contains("/payment", StringComparison.Ordinal)
       || path.Contains("/agency", StringComparison.Ordinal)
+      || path.Contains("/customer/", StringComparison.Ordinal)
       || path.Contains("/customerservice", StringComparison.Ordinal)
       || path.Contains("/reserveinfo", StringComparison.Ordinal)
       || path.Contains("/tripreceipt", StringComparison.Ordinal)
       || path.Contains("/partner", StringComparison.Ordinal)
-      || path.Contains("/taxitrips", StringComparison.Ordinal);
+      || path.Contains("/taxitrips", StringComparison.Ordinal)
+      || path.Contains("/error", StringComparison.Ordinal)
+      || path.EndsWith("/home/error", StringComparison.Ordinal)
+      || path == "/home/error";
   }
 
   public sealed class JsonLdOptions

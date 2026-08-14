@@ -1,6 +1,7 @@
 using Application.Data;
 using Application.Migrations;
 using Application.Services;
+using Application.Services.Homepage;
 using Application.Services.MrShooferORS;
 using Application.Services.Seo;
 using Microsoft.AspNetCore.Identity;
@@ -27,6 +28,7 @@ namespace Application.Areas.AgencyArea
     private readonly DirectionsTravelTimeCalculator _travelTimeCalculator;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _env;
+    private readonly IHomepageCatalogCache _homepageCatalogCache;
 
     private Agency agency;
 
@@ -38,7 +40,8 @@ namespace Application.Areas.AgencyArea
       AppDbContext context,
       DirectionsTravelTimeCalculator calculator,
       IConfiguration configuration,
-      IWebHostEnvironment env)
+      IWebHostEnvironment env,
+      IHomepageCatalogCache homepageCatalogCache)
     {
       this.context = context;
       _userManager = userManager;
@@ -47,6 +50,7 @@ namespace Application.Areas.AgencyArea
       this._travelTimeCalculator = calculator;
       _configuration = configuration;
       _env = env;
+      _homepageCatalogCache = homepageCatalogCache;
     }
 
     private static string NormalizeCity(string? s)
@@ -240,7 +244,26 @@ namespace Application.Areas.AgencyArea
     [HttpGet]
     [AllowAnonymous]
     [Route("/TaxiTrips/SupportedCities")]
-    public IActionResult SupportedCities() => Json(directionsRepository.GetDirections().Keys.ToList());
+    public async Task<IActionResult> SupportedCities(CancellationToken cancellationToken)
+    {
+      await _homepageCatalogCache.EnsureFreshAsync(cancellationToken);
+      return Json(_homepageCatalogCache.GetSupportedCities());
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/TaxiTrips/SearchHints")]
+    [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
+    public async Task<IActionResult> SearchHints(CancellationToken cancellationToken)
+    {
+      await _homepageCatalogCache.EnsureFreshAsync(cancellationToken);
+      return Json(new
+      {
+        supportedCities = _homepageCatalogCache.GetSupportedCities(),
+        popularOrigins = _homepageCatalogCache.GetPopularOrigins(),
+        version = _homepageCatalogCache.GetVersionToken()
+      });
+    }
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {

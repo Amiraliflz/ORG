@@ -1,4 +1,4 @@
-# MrShoofer sale — sale.shoofer.taxi
+# MrShoofer sale — mrshoofer.com (canonical)
 # Public booking surface. Private/app surfaces stay Disallow.
 
 User-agent: *
@@ -9,11 +9,16 @@ Allow: /cities
 Allow: /cities/
 Disallow: /Admin/
 Disallow: /Auth/
+Disallow: /otapanel/
 Disallow: /Payment/
 Disallow: /Partner/
+Disallow: /Agency/
+Disallow: /Customer/
+Disallow: /CustomerService/
 Disallow: /ReserveInfo
 Disallow: /TripReceiptPdf
 Disallow: /Error/
+Disallow: /Home/Error
 Disallow: /TaxiTrips
 Disallow: /TaxiTrips?
 
@@ -47,4 +52,4 @@ User-agent: CCBot
 Disallow: /
 
 # Sitemap index (child sitemaps linked inside)
-Sitemap: https://sale.shoofer.taxi/sitemap.xml
+Sitemap: https://mrshoofer.com/sitemap.xml

@@ -1,10 +1,149 @@
 @{
-    Layout = "_BlankLayout";
+    Layout = "_AgencySideLayout";
     ViewData["Title"] = "حریم شخصی";
-    ViewData["MetaDescription"] = "سیاست حریم شخصی مسترشوفر — نحوه جمع‌آوری و استفاده از اطلاعات کاربران در سامانه رزرو سواری.";
-    ViewData["CanonicalUrl"] = "https://sale.shoofer.taxi/Home/Privacy";
+    ViewData["MetaDescription"] = "سیاست حریم شخصی مسترشوفر — نحوه جمع‌آوری، نگهداری و استفاده از اطلاعات کاربران در سامانه رزرو سواری بین‌شهری.";
+    ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/Home/Privacy");
     ViewData["Robots"] = "index, follow";
+    ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
+    {
+      ("صفحه اصلی", SeoDefaults.BuildCanonical("/")),
+      ("حریم شخصی", SeoDefaults.BuildCanonical("/Home/Privacy"))
+    };
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>از این صفحه برای نمایش قوانین و شرایط استفاده سامانه استفاده کنید</p>
+<style>
+    .policy-hero {
+        background: linear-gradient(135deg, #696cff 0%, #9e6bfa 100%);
+        border-radius: 1.5rem;
+        color: #fff;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
+    }
+    .policy-card {
+        background: #fff;
+        border: 1.5px solid #e8e8f0;
+        border-radius: 1.25rem;
+        padding: 1.75rem;
+        margin-bottom: 1.25rem;
+    }
+    .policy-card h6 {
+        font-weight: 700;
+        color: #3d3a4e;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .policy-card p, .policy-card li {
+        font-size: .88rem;
+        color: #6f6b7d;
+        line-height: 1.9;
+    }
+    .policy-card ul {
+        padding-right: 1.25rem;
+        margin-bottom: 0;
+    }
+</style>
+
+<div class="container py-4" style="max-width:760px">
+
+    <div class="policy-hero text-center">
+        <i class="ti ti-shield-lock" style="font-size:2.5rem;margin-bottom:.5rem;display:block"></i>
+        <h1 class="fw-bold mb-1 h4">حریم شخصی</h1>
+        <p class="mb-0 opacity-75" style="font-size:.9rem">سیاست حفظ حریم خصوصی کاربران مسترشوفر</p>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-info-circle text-primary"></i> مقدمه</h6>
+        <p class="mb-0">
+            مسترشوفر به حفظ حریم خصوصی شما متعهد است. این صفحه توضیح می‌دهد چه اطلاعاتی هنگام استفاده از
+            سامانه رزرو سواری بین‌شهری جمع‌آوری می‌شود، چگونه استفاده می‌شود و چه حقوقی دارید.
+            با استفاده از خدمات ما، این سیاست را می‌پذیرید.
+        </p>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-database text-primary"></i> اطلاعاتی که جمع‌آوری می‌کنیم</h6>
+        <ul>
+            <li>اطلاعات هویتی و تماس مسافر: نام، نام خانوادگی، شماره موبایل، کد ملی و در صورت نیاز تاریخ تولد.</li>
+            <li>اطلاعات سفر: مبدأ، مقصد، تاریخ/ساعت سفر و جزئیات بلیط.</li>
+            <li>اطلاعات پرداخت: نتیجه تراکنش و شناسه پرداخت (جزئیات کارت بانکی نزد درگاه پرداخت نگهداری می‌شود).</li>
+            <li>اطلاعات فنی حداقلی برای امنیت و بهبود سرویس: مانند نشانی IP، نوع مرورگر و زمان درخواست.</li>
+        </ul>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-settings text-primary"></i> نحوه استفاده از اطلاعات</h6>
+        <ul>
+            <li>صدور بلیط، هماهنگی سفر با راننده و پشتیبانی مسافر.</li>
+            <li>ارسال پیامک یا تماس ضروری مربوط به رزرو، تغییرات سفر یا وضعیت پرداخت.</li>
+            <li>پیشگیری از سوءاستفاده، تقلب و رعایت الزامات قانونی.</li>
+            <li>بهبود کیفیت خدمات و تجربه رزرو (به‌صورت تجمیعی و در حد امکان بدون شناسایی مستقیم).</li>
+        </ul>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-share text-primary"></i> اشتراک‌گذاری اطلاعات</h6>
+        <p>
+            اطلاعات شما فقط در حد لازم برای انجام سفر و پشتیبانی با طرف‌های مرتبط (مانند راننده، اپراتور هماهنگی،
+            درگاه پرداخت و سامانه‌های پیامکی) به اشتراک گذاشته می‌شود.
+        </p>
+        <p class="mb-0">
+            اطلاعات شخصی شما را به اشخاص ثالث برای مقاصد تبلیغاتی نمی‌فروشیم. در صورت الزام قانونی، ممکن است
+            اطلاعات به مراجع ذی‌صلاح ارائه شود.
+        </p>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-lock text-primary"></i> نگهداری و امنیت</h6>
+        <p>
+            اطلاعات برای مدت لازم جهت ارائه خدمات، پیگیری مالی و الزامات قانونی نگهداری می‌شود.
+            دسترسی به اطلاعات محدود به افراد مجاز است و از تدابیر متعارف امنیتی برای حفاظت از داده‌ها استفاده می‌شود.
+        </p>
+        <p class="mb-0">
+            ارتباط با سامانه از طریق HTTPS انجام می‌شود تا انتقال داده بین مرورگر شما و سرور محافظت شود.
+        </p>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-cookie text-primary"></i> کوکی و فناوری‌های مشابه</h6>
+        <p class="mb-0">
+            برای حفظ نشست ورود، ترجیحات ضروری و عملکرد صحیح سایت ممکن است از کوکی استفاده شود.
+            می‌توانید کوکی‌ها را در تنظیمات مرورگر مدیریت کنید؛ غیرفعال‌کردن برخی کوکی‌ها ممکن است بخش‌هایی از سامانه را مختل کند.
+        </p>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-user-check text-primary"></i> حقوق شما</h6>
+        <ul>
+            <li>درخواست مشاهده یا اصلاح اطلاعات پروفایل از طریق حساب کاربری یا پشتیبانی.</li>
+            <li>درخواست راهنمایی درباره داده‌های مرتبط با رزروهای شما.</li>
+            <li>انصراف از پیام‌های غیرضروری بازاریابی (پیام‌های ضروری سفر همچنان ارسال می‌شود).</li>
+        </ul>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-refresh text-primary"></i> به‌روزرسانی این سیاست</h6>
+        <p class="mb-0">
+            ممکن است این صفحه گاه‌به‌گاه به‌روز شود. نسخه جدید از طریق همین آدرس در دسترس خواهد بود.
+            ادامه استفاده از خدمات پس از انتشار تغییرات به‌معنای آگاهی از نسخه به‌روز است.
+        </p>
+    </div>
+
+    <div class="policy-card">
+        <h6><i class="ti ti-headset text-primary"></i> تماس</h6>
+        <p class="mb-0">
+            برای سوال درباره حریم شخصی با پشتیبانی مسترشوفر در ارتباط باشید:
+            تلفن <a href="tel:+982128422243" dir="ltr">۰۲۱-۲۸۴۲۲۲۴۳</a>
+            یا ایمیل <a href="mailto:support@mrshoofer.ir">support@mrshoofer.ir</a>
+            و صفحه <a href="/Home/ContactUs">ارتباط با ما</a>.
+        </p>
+    </div>
+
+    <div class="text-center mt-4">
+        <a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="ti ti-headset me-1"></i>ارتباط با پشتیبانی
+        </a>
+    </div>
+
+</div>
