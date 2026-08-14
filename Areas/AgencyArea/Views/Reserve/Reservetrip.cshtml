@@ -101,17 +101,15 @@
         text-align: right;
     }
 
+    .input-forms {
+        --bs-gutter-x: 0 !important;
+        --bs-gutter-y: 0;
+        /* Match .custom-option on this page (site.css pill inputs must not apply here). */
+        --reserve-field-radius: 0.375rem;
+    }
+
     .input-forms .form-control {
-        border-radius: 1.6rem;
-    }
-
-    .input-forms .custom-option {
-        border-radius: 1.6rem;
-        overflow: hidden;
-    }
-
-    .input-forms .custom-option .custom-option-content {
-        border-radius: 1.6rem;
+        border-radius: var(--reserve-field-radius) !important;
     }
 
     .not_enough_payment {
@@ -130,11 +128,6 @@
     .border-divider, .border-gray-75 {
         --tw-border-opacity: 1;
         border-color: rgb(230 232 238 / var(--tw-border-opacity));
-    }
-
-    .input-forms {
-        --bs-gutter-x: 0 !important;
-        --bs-gutter-y: 0;
     }
 
     .border-1 {
