@@ -11,6 +11,7 @@ using System.Globalization;
 using Application.Models;
 using Microsoft.AspNetCore.Authorization;
 using Application.ViewModels.TaxiTrips;
+using Application.Services.TravelTime;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +27,7 @@ namespace Application.Areas.AgencyArea
     private readonly UserManager<IdentityUser> _userManager;
     private readonly AppDbContext context;
     private readonly DirectionsTravelTimeCalculator _travelTimeCalculator;
+    private readonly ITravelTimeSyncService _travelTimeSync;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _env;
     private readonly IHomepageCatalogCache _homepageCatalogCache;
@@ -39,6 +41,7 @@ namespace Application.Areas.AgencyArea
       UserManager<IdentityUser> userManager,
       AppDbContext context,
       DirectionsTravelTimeCalculator calculator,
+      ITravelTimeSyncService travelTimeSync,
       IConfiguration configuration,
       IWebHostEnvironment env,
       IHomepageCatalogCache homepageCatalogCache)
@@ -48,6 +51,7 @@ namespace Application.Areas.AgencyArea
       _mrShooferAPIClient = mrShooferAPIClient;
       this.directionsRepository = directionsRepository;
       this._travelTimeCalculator = calculator;
+      _travelTimeSync = travelTimeSync;
       _configuration = configuration;
       _env = env;
       _homepageCatalogCache = homepageCatalogCache;
@@ -394,6 +398,25 @@ namespace Application.Areas.AgencyArea
         destination_id > 0 ? destination_id : null,
         originstring,
         destinationstring);
+
+      if (traveltime_mins <= 0)
+      {
+        try
+        {
+          using var etaCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted);
+          etaCts.CancelAfter(TimeSpan.FromSeconds(8));
+          traveltime_mins = await _travelTimeSync.EnsureRouteTravelTimeAsync(
+            origin_id, destination_id, originstring, destinationstring, etaCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+          // Search still returns; ETA fills on next search after Neshan responds.
+        }
+        catch
+        {
+          // Keep 0 — duration/arrival stay hidden rather than blocking results.
+        }
+      }
 
       var end_result = response
         .OrderBy(t => t.startingDateTime)

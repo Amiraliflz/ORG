@@ -1,0 +1,537 @@
+/* ─────────────────────────────────────────────
+   Front / AgencyArea palette — Shoofer-style ink
+   Reference: https://shoofer.taxi/  (black CTAs, white surfaces)
+   Loaded only from AgencyArea styles, not Admin.
+   ───────────────────────────────────────────── */
+
+:root,
+[data-bs-theme="light"] {
+  --brand-ink: #000000;
+  --brand-ink-rgb: 0, 0, 0;
+  --brand-ink-inverse: #ffffff;
+  --brand-muted: #5e5e5e;
+  --brand-surface: #ffffff;
+  --brand-bg: #ffffff;
+  --brand-bg-muted: #f3f3f3;
+  --brand-border: rgba(0, 0, 0, 0.12);
+  --brand-focus: #276ef1;
+  --box-shadow-lift:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 10px 24px rgba(0, 0, 0, 0.1),
+    0 22px 48px rgba(0, 0, 0, 0.08);
+
+  --bs-primary: #000000;
+  --bs-primary-rgb: 0, 0, 0;
+  --bs-primary-text-emphasis: #000000;
+  --bs-primary-bg-subtle: #f3f3f3;
+  --bs-primary-border-subtle: #d9d9d9;
+  --bs-link-color: #000000;
+  --bs-link-color-rgb: 0, 0, 0;
+  --bs-link-hover-color: #333333;
+  --bs-link-hover-color-rgb: 51, 51, 51;
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #000000;
+  --bs-heading-color: #000000;
+  --bs-border-color: #e5e5e5;
+  --bs-focus-ring-color: rgba(39, 110, 241, 0.4);
+}
+
+html.light-style body,
+.light-style body {
+  background: var(--brand-bg) !important;
+  color: var(--brand-ink);
+}
+
+/* Vuexy utilities (they use !important) */
+.text-primary {
+  color: var(--brand-ink) !important;
+}
+
+.bg-primary {
+  background-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+
+a.bg-primary:hover,
+a.bg-primary:focus {
+  background-color: #1a1a1a !important;
+}
+
+.bg-label-primary,
+.bg-label-hover-primary,
+.light-style .bg-label-primary {
+  background-color: var(--brand-bg-muted) !important;
+  color: var(--brand-ink) !important;
+}
+
+.light-style .landing-hero,
+.landing-hero {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%) !important;
+}
+.light-style .landing-hero::after,
+.landing-hero::after {
+  background: transparent !important;
+}
+
+a {
+  color: var(--brand-ink);
+}
+a:hover {
+  color: #333333;
+}
+
+.dropdown-menu {
+  --bs-dropdown-link-hover-color: #000000;
+  --bs-dropdown-link-hover-bg: #f3f3f3;
+  --bs-dropdown-link-active-color: #ffffff;
+  --bs-dropdown-link-active-bg: #000000;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  color: #000000 !important;
+  background-color: #f3f3f3 !important;
+}
+
+.bg-label-hover-primary:hover {
+  background-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+
+.bg-gradient-primary {
+  background-image: none !important;
+  background-color: var(--brand-ink) !important;
+}
+
+.bg-primary.bg-glow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+.btn-primary {
+  color: var(--brand-ink-inverse) !important;
+  background-color: var(--brand-ink) !important;
+  border-color: var(--brand-ink) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  color: var(--brand-ink-inverse) !important;
+  background-color: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28) !important;
+  opacity: 1;
+}
+
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+  color: var(--brand-ink-inverse) !important;
+  background-color: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  box-shadow: 0 0 0 2px var(--brand-focus) !important;
+}
+
+.btn-outline-primary {
+  color: var(--brand-ink) !important;
+  border-color: var(--brand-border) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  color: var(--brand-ink-inverse) !important;
+  background-color: var(--brand-ink) !important;
+  border-color: var(--brand-ink) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22) !important;
+}
+
+.btn-label-primary {
+  color: var(--brand-ink) !important;
+  background: var(--brand-bg-muted) !important;
+  border-color: transparent !important;
+}
+
+.btn-label-primary:hover,
+.btn-label-primary:focus,
+.btn-label-primary:active {
+  color: var(--brand-ink) !important;
+  background: #eeeeee !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--brand-ink) !important;
+  box-shadow: 0 0 0 2px rgba(39, 110, 241, 0.28) !important;
+}
+
+.form-check-input:checked {
+  background-color: var(--brand-ink) !important;
+  border-color: var(--brand-ink) !important;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--brand-ink) !important;
+  border-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+
+.page-link {
+  color: var(--brand-ink);
+}
+
+.page-link:hover {
+  color: var(--brand-ink);
+  background-color: var(--brand-bg-muted);
+}
+
+.badge.bg-primary {
+  background-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+
+.progress-bar {
+  background-color: var(--brand-ink) !important;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):not(.footer-link) {
+  --bs-link-color-rgb: var(--brand-ink-rgb);
+}
+
+.text-muted {
+  color: var(--brand-muted) !important;
+}
+
+.section-title {
+  color: var(--brand-ink);
+}
+
+.section-title::after {
+  filter: grayscale(1) contrast(1.6) brightness(0.55);
+  opacity: 0.28;
+}
+
+/* Navbar: black active, no Vuexy purple */
+.light-style .layout-navbar .navbar.landing-navbar .navbar-nav .show > .nav-link,
+.light-style .layout-navbar .navbar.landing-navbar .navbar-nav .active > .nav-link,
+.light-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.show,
+.light-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.active {
+  color: var(--brand-ink) !important;
+}
+
+.light-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link {
+  color: var(--brand-muted);
+}
+
+.navbar.landing-navbar {
+  border-color: var(--brand-border) !important;
+}
+
+.footer-link:hover,
+.footer-title {
+  color: var(--brand-ink);
+}
+
+.accordion-button:not(.collapsed) {
+  color: var(--brand-ink) !important;
+  background-color: var(--brand-bg-muted) !important;
+  box-shadow: none !important;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 2px rgba(39, 110, 241, 0.28) !important;
+  border-color: var(--brand-ink) !important;
+}
+
+/* Logo + navbar scale */
+.landing-navbar .app-brand-link > img:first-of-type {
+  width: 136px;
+  height: auto;
+}
+.navbar.landing-navbar {
+  padding-top: 0.45rem !important;
+  padding-bottom: 0.45rem !important;
+  margin-top: 0.7rem;
+}
+.landing-navbar .navbar-nav .nav-link {
+  font-size: 0.92rem;
+  padding-block: 0.4rem;
+}
+@media (max-width: 767.98px) {
+  .landing-navbar .app-brand-link > img:first-of-type {
+    width: 121px;
+  }
+  .navbar.landing-navbar {
+    padding-block: 0.32rem !important;
+    margin-top: 0.45rem;
+  }
+}
+
+.navbar-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-ink-inverse);
+}
+
+/* Feature icons — grayscale so they sit in the ink palette */
+.features-icon-box img,
+.landing-features img,
+.contact-border-img {
+  filter: grayscale(1) contrast(1.12);
+}
+
+/* CTA band — no purple mesh */
+.light-style .landing-cta,
+#landingCTA.landing-cta,
+.landing-cta-band {
+  background-image: none !important;
+  background: linear-gradient(180deg, #f3f3f3 0%, #ffffff 72%) !important;
+  color: var(--brand-ink);
+}
+#landingCTA .text-primary,
+#landingCTA .h2,
+#landingCTA p {
+  color: var(--brand-ink) !important;
+}
+
+/* Footer — solid ink, no purple artwork */
+.light-style .landing-footer .footer-top,
+.landing-footer .footer-top {
+  background-image: none !important;
+  background: #111111 !important;
+}
+.light-style .landing-footer .footer-bottom {
+  background-color: #000000 !important;
+}
+.light-style .landing-footer .footer-link,
+.light-style .landing-footer .footer-text {
+  color: #c8c8c8 !important;
+}
+.light-style .landing-footer .footer-title {
+  color: #ffffff !important;
+}
+
+.rf-link:hover {
+  color: var(--brand-ink) !important;
+}
+
+/* Datepicker / Flatpickr outline */
+.flatpickr-calendar {
+  border: 1px solid var(--brand-border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected:hover,
+span.flatpickr-day.selected {
+  background: var(--brand-ink) !important;
+  border-color: var(--brand-ink) !important;
+  color: var(--brand-ink-inverse) !important;
+}
+.flatpickr-day.today {
+  border-color: var(--brand-ink) !important;
+}
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+  color: var(--brand-ink) !important;
+}
+
+/* Trip VIP chip */
+.trip-card-vip {
+  border-color: #d4d4d4 !important;
+  background: #f3f3f3 !important;
+  color: #3d3d3d !important;
+}
+
+/* Reserve stepper — active step is ink */
+.step.selected,
+.selected .step-title,
+.step.selected .step-title,
+.selected {
+  color: var(--brand-ink) !important;
+}
+
+.success-payment,
+.success-payment.text-bg-success {
+  background-color: #5e5e5e !important;
+  color: #ffffff !important;
+}
+
+.success-payment h6,
+.success-payment small,
+.success-payment .status-copy,
+.success-payment .text-muted {
+  color: #ffffff !important;
+}
+
+.success-payment svg {
+  color: #22c55e !important;
+  stroke: #22c55e !important;
+}
+
+/* Payment method cards */
+.pm-card.pm-sel-purple {
+  border-color: var(--brand-ink) !important;
+  background: #f3f3f3 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+}
+.pm-card-icon.purple {
+  background: #f3f3f3 !important;
+  color: var(--brand-ink) !important;
+}
+.pm-sel-purple .pm-radio-dot {
+  border-color: var(--brand-ink) !important;
+}
+.pm-sel-purple .pm-radio-dot::after {
+  background: var(--brand-ink) !important;
+}
+
+.layout-navbar .navbar.landing-navbar .navbar-nav .show > .nav-link,
+.layout-navbar .navbar.landing-navbar .navbar-nav .active > .nav-link,
+.layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.active {
+  color: var(--brand-ink) !important;
+}
+
+/* Lifted cards */
+.hero-zone-card,
+.hero-definition-card,
+.search-card,
+.searchbar,
+.trip-card,
+.pm-card,
+.landing-howto-step,
+.landing-classes-card,
+.landing-contact .card,
+.landing-contact .contact-img-box,
+.trips-sidebar .card,
+.trips-sticky-bridge-inner,
+.route-seo-card,
+.rf-panel,
+.trip_info,
+.confirm-passenger,
+.confirm-trip,
+.confirm-payment,
+.main_container .card.rounded-5,
+.shadow-1__2__gray\/75,
+.shadow-7\.5__13__5__gray30 {
+  box-shadow: var(--box-shadow-lift) !important;
+}
+
+.landing-navbar {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.08) !important;
+}
+
+.landing-navbar,
+.landing-navbar .navbar-collapse,
+.landing-navbar .navbar-nav {
+  align-items: center !important;
+}
+
+.landing-navbar .navbar-nav > .nav-item {
+  display: flex;
+  align-items: center;
+}
+
+/* Compact navbar buttons — white fill, black type, hover lift */
+.landing-navbar .navbar-nav-btn,
+.landing-navbar .navbar-newtrip-btn,
+.landing-navbar .btn.btn-sm {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.3rem;
+  height: 1.85rem !important;
+  min-height: 1.85rem !important;
+  max-height: 1.85rem !important;
+  font-size: 0.78rem !important;
+  padding: 0 0.72rem !important;
+  line-height: 1 !important;
+  border-radius: 0.55rem !important;
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: box-shadow 0.18s ease, transform 0.12s ease, background 0.18s ease;
+}
+
+.landing-navbar .navbar-nav-btn span,
+.landing-navbar .navbar-nav-btn > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.28rem;
+  line-height: 1;
+  color: inherit !important;
+}
+
+.landing-navbar .navbar-nav-btn .ti,
+.landing-navbar .navbar-nav-btn i {
+  font-size: 0.95rem;
+  line-height: 1;
+  margin: 0 !important;
+  color: #000000 !important;
+}
+
+.landing-navbar .navbar-nav-btn:hover,
+.landing-navbar .navbar-nav-btn:focus,
+.landing-navbar .btn.btn-sm:hover,
+.landing-navbar .btn.btn-sm:focus,
+.landing-navbar .btn.btn-primary.navbar-nav-btn:hover:not(:disabled),
+.landing-navbar .btn.btn-primary.navbar-nav-btn:focus:not(:disabled) {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28) !important;
+  transform: translateY(-1px);
+  opacity: 1 !important;
+}
+
+/* Compact footer share buttons */
+.landing-footer .btn {
+  font-size: 0.72rem !important;
+  padding: 0.28rem 0.65rem !important;
+  line-height: 1.3 !important;
+  min-height: 0 !important;
+  border-radius: 0.5rem !important;
+  transition: box-shadow 0.18s ease, transform 0.12s ease, background 0.18s ease;
+}
+
+.landing-footer .btn:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28) !important;
+  transform: translateY(-1px);
+}
+
+/* Trip search spinner — ink, not Vuexy purple */
+.sk-primary.sk-plane,
+.sk-primary .sk-chase-dot:before,
+.sk-primary .sk-bounce-dot,
+.sk-primary .sk-wave-rect,
+.sk-primary.sk-pulse,
+.sk-primary .sk-swing-dot,
+.sk-primary .sk-circle-dot:before,
+.sk-primary .sk-circle-fade-dot:before,
+.sk-primary .sk-grid-cube,
+.sk-primary .sk-fold-cube:before {
+  background-color: #000000 !important;
+}

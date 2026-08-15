@@ -45,7 +45,7 @@ function showTripInfoModal() {
                                 <!-- Animated Route Path -->
                                 <path d="M 35 170 Q 65 130, 100 105 T 165 35" 
                                       fill="none" 
-                                      stroke="#5B8DEE" 
+                                      stroke="#111111" 
                                       stroke-width="6" 
                                       stroke-linecap="round"
                                       stroke-linejoin="round"
@@ -343,7 +343,7 @@ function showTripInfoModal() {
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="trip-info-feature trip-info-feature--origin">
-                                    <i class="ti ti-map-2 text-primary mb-1"></i>
+                                    <i class="ti ti-map-2 mb-1"></i>
                                     <small class="d-block text-muted">انتخاب دقیق</small>
                                     <strong class="d-block">مبدا</strong>
                                 </div>

@@ -7,7 +7,35 @@
 }
 
 @section PageStyles {
-    <link href="~/css/TripInfoModal.css?v=1" rel="stylesheet" />
+    <link href="~/css/TripInfoModal.css?v=2" rel="stylesheet" />
+    <style>
+        .reserve-terms-note {
+            margin-top: 1.25rem;
+            margin-bottom: 0.25rem;
+            padding: 0.85rem 1rem;
+            background: #f6f7fb;
+            border: 1px solid #e6e8ee;
+            border-radius: 1rem;
+        }
+        .reserve-terms-note__text {
+            margin: 0;
+            font-size: 0.82rem;
+            line-height: 1.8;
+            letter-spacing: 0;
+            color: #5d596c;
+        }
+        .reserve-terms-note__link {
+            font-size: inherit;
+            line-height: inherit;
+            letter-spacing: 0;
+            color: #276ef1 !important;
+            text-decoration: underline;
+            text-underline-offset: 0.12em;
+        }
+        .reserve-terms-note__link:hover {
+            color: #1a56c4 !important;
+        }
+    </style>
 }
 
 @section PageScripts {
@@ -23,7 +51,7 @@
     <script src="/libs/validation/jquery.validate.unobtrusive.min.js"></script>
     <script src="/vendor/libs/bootstrap-select/bootstrap-select.js"></script>
     <script src="/vendor/libs/bootstrap-select/i18n/defaults-fa_IR.js"></script>
-    <script src="~/js/reserve-trip-modals.js"></script>
+    <script src="~/js/reserve-trip-modals.js?v=2"></script>
 
     <script>
         // Normalize Persian/Arabic-Indic digits to ASCII on any numeric input
@@ -74,8 +102,20 @@
     }
 
     .success-payment {
-        background-color: RGBA(var(--bs-success-rgb), .25) !important;
+        background-color: #5e5e5e !important;
+        color: #fff !important;
         align-items: center !important;
+    }
+
+    .success-payment h6,
+    .success-payment small,
+    .success-payment .text-muted {
+        color: #fff !important;
+    }
+
+    .success-payment svg {
+        color: #22c55e !important;
+        stroke: #22c55e !important;
     }
 
     .success-payment .status-copy {
@@ -206,7 +246,7 @@
     }
 
     .selected {
-        color: #7367f0;
+        color: #000000;
     }
 
 
@@ -230,8 +270,8 @@
     }
 
     .shadow-1__2__gray\/75 {
-        --tw-shadow: 0px 2px 8px 0px rgba(38,50,80,.07);
-        --tw-shadow-colored: 0px 2px 8px 0px var(--tw-shadow-color);
+        --tw-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 10px 24px rgba(0, 0, 0, 0.1), 0 22px 48px rgba(0, 0, 0, 0.08);
+        --tw-shadow-colored: 0 10px 24px rgba(0, 0, 0, 0.1);
     }
 
     .px-14 {
@@ -795,7 +835,7 @@
         }
 
     .bootstrap-select .dropdown-menu a:not([href]):not(.active):not(:active):not(.selected):hover {
-        color: #7367f0 !important;
+        color: #000000 !important;
     }
 
     .bootstrap-select .btn[class*=btn-]:active,
@@ -1109,8 +1149,8 @@
                     {
                         // Everyone can now reserve - show success badge for all users
                         <div class="d-flex badge btn-lg text-bg-success w-100 waves-effect waves-light mt-2 success-payment" style="height: 3.5rem !important;border-radius: 1.6rem !important;">
-                            <span class="text-blck bg-success rounded-pill p-1 bg-opacity-75" style="align-self: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-check text-white">
+                            <span class="rounded-pill p-1" style="align-self: center; background: transparent;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-check">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                     <path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95" />
                                     <path d="M3.69 8.56a9 9 0 0 0 -.69 3.44" />
@@ -1278,19 +1318,22 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 row mx-0 px-0">
-                        <div class="col-12 col-md-6 ps-0">
-                            <button type="submit" class="btn btn-lg btn-primary w-100 " style="height: 3.5rem !important;border-radius: 1.6rem !important;">
-                                ادامه و رزور
-                            </button>
-                        </div>
+                    <div class="reserve-terms-note">
+                        <p class="reserve-terms-note__text">با رفتن به صفحه بعد با <a asp-area="AgencyArea" asp-controller="Home" asp-action="TravelPolicy" class="reserve-terms-note__link" target="_blank" rel="noopener noreferrer">قوانین و مقررات مسترشوفر</a> موافقت می‌کنید.</p>
+                    </div>
 
+                    <div class="mt-3 row mx-0 px-0">
                         <div class="col-12 col-md-6 mt-2 mt-md-0">
                             <p class="text-muted" style="line-height: 1.42rem !important;">
                                 بعد از ثبت بلیط برای مسافر، هماهنگی با راننده، پشتیبانی و خدمات مورد نیاز مسافر توسط مسترشوفر با
                                 <strong class="text-blck">شماره فوق</strong>
                                 انجام می‌شود.
                             </p>
+                        </div>
+                        <div class="col-12 col-md-6 ps-md-0">
+                            <button type="submit" class="btn btn-lg btn-primary w-100 " style="height: 3.5rem !important;border-radius: 1.6rem !important;">
+                                ادامه و رزور
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -1335,5 +1378,3 @@
     }
 
 </style>
-
-@await Html.PartialAsync("../Shared/Sections/Footer/_ReserveFooter")

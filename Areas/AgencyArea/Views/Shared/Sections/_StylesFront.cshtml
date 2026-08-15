@@ -12,21 +12,25 @@
   <!-- Application stylesheets -->
   <link rel="stylesheet" href="~/css/site.css" />
   <link rel="stylesheet" href="~/css/rtl.css" />
+  <link rel="stylesheet" href="~/css/front-palette.css" />
 
 </environment>
 
 <environment exclude="Development">
   <link rel="preload" href="~/vendor/fonts/tabler-front/tabler-icons-front.woff2" as="font" type="font/woff2" crossorigin="anonymous" asp-append-version="true" />
+  <link rel="preload" href="~/farsi-fonts/woff2/iransansx-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
   <link rel="stylesheet" href="~/vendor/fonts/tabler-icons-front.css" asp-append-version="true" />
 
   <!-- Core CSS (RTL build — matches fa-IR UI without TemplateCustomizer) -->
   <link rel="stylesheet" href="~/vendor/css/rtl/core.css" class="template-customizer-core-css" asp-append-version="true" />
   <link rel="stylesheet" href="~/vendor/css/rtl/theme-default.css" class="template-customizer-theme-css" asp-append-version="true" />
-  <link rel="stylesheet" href="~/vendor/libs/node-waves/node-waves.css" asp-append-version="true" />
+  <link rel="stylesheet" href="~/vendor/libs/node-waves/node-waves.css" asp-append-version="true" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="~/vendor/libs/node-waves/node-waves.css" asp-append-version="true" /></noscript>
 
   <link rel="stylesheet" href="~/vendor/css/pages/front-page.css" asp-append-version="true" />
 
   <!-- Application stylesheets -->
   <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
   <link rel="stylesheet" href="~/css/rtl.css" asp-append-version="true" />
+  <link rel="stylesheet" href="~/css/front-palette.css" asp-append-version="true" />
 </environment>

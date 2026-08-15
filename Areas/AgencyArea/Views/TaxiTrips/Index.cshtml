@@ -4,6 +4,7 @@
 @{
 
     Layout = "_FrontLayout";
+    ViewData["HideFrontFooter"] = true;
 
     var isSeoLanding = ViewBag.IsSeoRouteLanding is bool seoFlag && seoFlag;
     var hasSeoContent = ViewBag.RouteSeo is RouteContent.Bundle;
@@ -56,54 +57,10 @@
 
 @section VendorStyles {
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link rel="stylesheet" href="~/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css" />
-    <link rel="stylesheet" href="~/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css" />
-    <link rel="stylesheet" href="~/vendor/libs/jquery-timepicker/jquery-timepicker.css" />
-    <link rel="stylesheet" href="~/vendor/libs/pickr/pickr-themes.css" />
-    <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
-
-	<link href="~/css/TaxiTripsIndex.css?v=50" rel="stylesheet" />
-    <link rel="stylesheet" href="~/vendor/libs/spinkit/spinkit.css">
-    <style>
-      .searchbar .od-pair-col { position: relative; }
-      .searchbar .od-pair { --od-swap-gutter: 2.75rem; }
-      .searchbar .od-pair > .inputcel:first-child {
-        padding-inline-end: calc(var(--od-swap-gutter) / 2) !important;
-      }
-      .searchbar .od-pair > .inputcel:last-of-type {
-        padding-inline-start: calc(var(--od-swap-gutter) / 2) !important;
-      }
-      .searchbar .od-swap-btn {
-        --od-swap-size: 2rem;
-        position: absolute !important;
-        left: 50%;
-        bottom: 0.35rem;
-        transform: translateX(-50%);
-        z-index: 5;
-        width: var(--od-swap-size) !important;
-        max-width: var(--od-swap-size) !important;
-        height: var(--od-swap-size) !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        border-radius: 0.75rem;
-        border: 1px solid #d9dee3;
-        background: #fff;
-        color: #8592a3;
-        line-height: 1;
-        box-shadow: 0 0 0 4px #fff, 0 1px 2px rgba(47, 43, 61, 0.06);
-        cursor: pointer;
-      }
-      .searchbar .od-swap-btn .ti { font-size: 1rem; margin: 0; line-height: 1; }
-      @@media (max-width: 767.98px) {
-        .searchbar .od-pair { --od-swap-gutter: 2.35rem; }
-      }
-    </style>
+    <link href="~/css/TaxiTripsIndex.css?v=63" rel="stylesheet" />
     @if (ViewBag.RouteSeo is not null)
     {
-        <link href="~/css/RoutePages.css?v=15" rel="stylesheet" />
+        <link href="~/css/RoutePages.css?v=20" rel="stylesheet" />
     }
 }
 @section VendorScripts {
@@ -111,13 +68,9 @@
     <script src="~/vendor/libs/jdate/jdate.min.js"></script>
     <script src="~/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
     <script src="~/vendor/libs/flatpickr/l10n/fa.js"></script>
-    <script src="~/vendor/js/dropdown-hover.js"></script>
-    <script src="~/vendor/js/dropdown-hover.js"></script>
-
 }
 @section PageScripts {
     <script src="~/js/cards-actions.js"></script>
-    <script src="~/js/front-page-landing.js"></script>
     @* Do not load IndexPage.js here — it remaps window.Date and reinits #starttime without preserving value. *@
     <script>
       (function () {
@@ -143,7 +96,7 @@
       })();
     </script>
     <script src="~/js/searchpage.js?v=6"></script>
-    <script src="~/js/Trips.js?v=13"></script>
+    <script src="~/js/Trips.js?v=14"></script>
 }
 
 
@@ -352,20 +305,6 @@
         justify-content: start;
     }
 
-	/* Single shared page gradient — children stay transparent */
-	.trips-page-shell {
-		background-color: hsla(213.08823529411762, 0%, 93%, 1);
-		background-image:
-			radial-gradient(circle at 83% 22%, hsla(35.735294117647136, 82%, 87%, 1) 0%, transparent 50%),
-			radial-gradient(circle at 0% 50%, hsla(194.5588235294118, 37%, 91%, 1) 0%, transparent 50%),
-			radial-gradient(circle at 21% 21%, hsla(27.999999999999577, 0%, 86%, 1) 0%, transparent 50%),
-			radial-gradient(circle at 54% 77%, hsla(193.2352941176474, 100%, 95%, 1) 0%, transparent 50%),
-			radial-gradient(circle at 30% 75%, hsla(197.87234042553195, 25%, 35%, 1) 0%, transparent 20%);
-		background-blend-mode: normal, normal, normal, normal, normal;
-		background-attachment: scroll;
-		min-height: 100vh;
-	}
-
 	.trips-page-shell .landing-hero,
 	.trips-page-shell .trips-results,
 	.trips-page-shell .page-bottom-shell {
@@ -387,6 +326,10 @@
 
 <div class="landing-hero px-lg-5 px-0 pb-md-3" style="padding-top: 7.5rem !important;">
 	<div class="container px-lg-6 px-0">
+	@if (isSeoLanding && routePage is not null)
+	{
+		<h1 class="h5 fw-bold text-center mb-3 px-2">سواری @routePage.OriginFa به @routePage.DestinationFa</h1>
+	}
 
 	<div class="searchbar card shadow">
 		<form asp-controller="TaxiTrips" method="get" asp-action="Index" id="tripForm"

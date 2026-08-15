@@ -42,21 +42,25 @@ namespace Application.Areas.AgencyArea
     
     public IActionResult Privacy()
     {
+      Response.Headers.CacheControl = "public,max-age=300";
       return View();
     }
 
     public IActionResult FAQ()
     {
+      Response.Headers.CacheControl = "public,max-age=300";
       return View();
     }
 
     public IActionResult ContactUs()
     {
+      Response.Headers.CacheControl = "public,max-age=300";
       return View();
     }
 
     public IActionResult TravelPolicy()
     {
+      Response.Headers.CacheControl = "public,max-age=300";
       return View();
     }
 

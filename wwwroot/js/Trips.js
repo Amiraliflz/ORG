@@ -42,7 +42,7 @@ function generateTripCard(Model) {
     <article class="trip-card card mt-3">
       <div class="trip-card-body">
         <div class="trip-card-meta">
-          <span class="trip-card-type">دربستی</span>
+          <span class="trip-card-type trip-card-type--private">دربستی</span>
           <span class="trip-card-car">${Model.carModelName || ''}</span>
           ${vipLabel}
         </div>

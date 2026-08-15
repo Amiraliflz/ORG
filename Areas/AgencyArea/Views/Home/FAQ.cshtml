@@ -1,9 +1,11 @@
 @{
     Layout = "_AgencySideLayout";
+    ViewData["UseFullTabler"] = false;
     ViewData["Title"] = "سوالات متداول";
     ViewData["MetaDescription"] = "پاسخ سوالات پرتکرار درباره رزرو سواری بین‌شهری، بلیط، کلاس سفر، ترانسفر فرودگاهی و پشتیبانی مسترشوفر.";
     ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/Home/FAQ");
-    ViewData["IncludeHomeFaqs"] = true;
+    ViewData["RouteFaqs"] = SeoDefaults.FaqPageItems();
+    ViewData["DateModified"] = "2026-08-14";
     ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
     {
       ("صفحه اصلی", SeoDefaults.BuildCanonical("/")),
@@ -13,22 +15,25 @@
 
 <style>
     .faq-hero {
-        background: linear-gradient(135deg, #696cff 0%, #9e6bfa 100%);
+        background: linear-gradient(135deg, #111111 0%, #2a2a2a 100%);
         border-radius: 1.5rem;
         color: #fff;
         padding: 2.5rem 2rem;
         margin-bottom: 2rem;
     }
     .faq-accordion .accordion-button {
-        font-weight: 600;
+        font-family: font-demi-bold, "tahoma", sans-serif;
+        font-weight: normal;
         font-size: .95rem;
         color: #444;
         background: #fff;
         border-radius: .75rem !important;
         box-shadow: none !important;
+        line-height: 1.6;
+        letter-spacing: 0;
     }
     .faq-accordion .accordion-button:not(.collapsed) {
-        color: #696cff;
+        color: #000000;
         background: #f4f4ff;
     }
     .faq-accordion .accordion-button::after {
@@ -43,17 +48,21 @@
     }
     .faq-accordion .accordion-body {
         color: #555;
-        line-height: 1.8;
+        line-height: 1.85;
         font-size: .9rem;
+        letter-spacing: 0;
     }
     .faq-section-title {
+        font-family: font-bold, "tahoma", sans-serif;
         font-size: 1rem;
-        font-weight: 700;
-        color: #696cff;
+        font-weight: normal;
+        color: #000000;
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: .5rem;
+        line-height: 1.5;
+        letter-spacing: 0;
     }
 </style>
 
@@ -61,133 +70,50 @@
 
     <div class="faq-hero text-center">
         <i class="ti ti-help-circle" style="font-size:2.5rem;margin-bottom:.5rem;display:block"></i>
-        <h4 class="fw-bold mb-1">سوالات متداول</h4>
-        <p class="mb-0 opacity-75" style="font-size:.9rem">پاسخ سوال‌های رایج درباره خرید بلیط و خدمات مسترشوفر</p>
+        <h1 class="fw-bold mb-1 h4">سوالات متداول</h1>
+        <p class="mb-0 opacity-75" style="font-size:.9rem;line-height:1.8">پاسخ سوال‌های رایج درباره خرید بلیط، کنسلی، پرداخت و ترانسفر فرودگاهی</p>
     </div>
 
-    <div class="faq-section-title"><i class="ti ti-ticket"></i> خرید و رزرو بلیط</div>
-    <div class="accordion faq-accordion mb-4" id="faqBooking">
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                    چطور بلیط بخرم؟
-                </button>
-            </h2>
-            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqBooking">
-                <div class="accordion-body">
-                    از صفحه اصلی، مبدا، مقصد و تاریخ سفر را انتخاب کنید. سپس از لیست سفرهای موجود، سفر موردنظرتان را انتخاب کرده و مشخصات مسافر را وارد کنید. پس از تایید و پرداخت، بلیط شما صادر خواهد شد.
-                </div>
+    @{
+        var faqGroups = SeoDefaults.FaqPageSections;
+        for (var s = 0; s < faqGroups.Length; s++)
+        {
+            var group = faqGroups[s];
+            var accordionId = $"faqSection{s}";
+            <h2 class="faq-section-title">@group.Heading</h2>
+            <div class="accordion faq-accordion mb-4" id="@accordionId">
+                @for (var i = 0; i < group.Items.Length; i++)
+                {
+                    var item = group.Items[i];
+                    var collapseId = $"faq{s}_{i}";
+                    var isFirst = s == 0 && i == 0;
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button @(isFirst ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(isFirst ? "true" : "false")">
+                                @item.Question
+                            </button>
+                        </h3>
+                        <div id="@collapseId" class="accordion-collapse collapse @(isFirst ? "show" : "")" data-bs-parent="#@accordionId">
+                            <div class="accordion-body">
+                                @item.Answer
+                                @if (item.Question.Contains("کنسل"))
+                                {
+                                    <p class="mb-0 mt-2">
+                                        <a asp-area="AgencyArea" asp-controller="Home" asp-action="TravelPolicy">مشاهده جدول قوانین کنسلی</a>
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
-        </div>
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                    آیا می‌توانم بلیط را کنسل کنم؟
-                </button>
-            </h2>
-            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqBooking">
-                <div class="accordion-body">
-                    امکان کنسلی بلیط وجود دارد، اما شرایط استرداد وجه بستگی به قوانین اپراتور سفر دارد. برای اطلاعات دقیق‌تر با پشتیبانی مسترشوفر تماس بگیرید.
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                    کد تخفیف چگونه اعمال می‌شود؟
-                </button>
-            </h2>
-            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqBooking">
-                <div class="accordion-body">
-                    در صفحه تایید بلیط، در بخش «کد تخفیف» کد خود را وارد کرده و دکمه «اعمال» را بزنید. مبلغ تخفیف بلافاصله از قیمت نهایی کسر می‌شود.
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                    بلیطم کجا ارسال می‌شود؟
-                </button>
-            </h2>
-            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqBooking">
-                <div class="accordion-body">
-                    پس از صدور بلیط، لینک اطلاعات سفر و فایل بلیط به شماره موبایل مسافر پیامک می‌شود.
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="faq-section-title"><i class="ti ti-credit-card"></i> پرداخت و کیف پول</div>
-    <div class="accordion faq-accordion mb-4" id="faqPayment">
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
-                    چه روش‌های پرداختی پشتیبانی می‌شود؟
-                </button>
-            </h2>
-            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqPayment">
-                <div class="accordion-body">
-                    در حال حاضر پرداخت از طریق درگاه اینترنتی (کارت بانکی) و کیف پول مسترشوفر پشتیبانی می‌شود.
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
-                    کیف پول مسترشوفر چیست؟
-                </button>
-            </h2>
-            <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqPayment">
-                <div class="accordion-body">
-                    کیف پول یک حساب اعتباری داخلی است که می‌توانید آن را شارژ کرده و برای خرید بلیط استفاده کنید. برای استفاده از کیف پول باید وارد حساب کاربری خود شوید.
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="faq-section-title"><i class="ti ti-map-pin"></i> سفر و جابجایی</div>
-    <div class="accordion faq-accordion mb-5" id="faqTrip">
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7">
-                    مبدا و مقصد دقیق چطور مشخص می‌شود؟
-                </button>
-            </h2>
-            <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqTrip">
-                <div class="accordion-body">
-                    پس از ثبت و تایید بلیط، مکان دقیق مبدا و مقصد توسط تیم مسترشوفر با مسافر هماهنگ خواهد شد.
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8">
-                    آیا امکان رزرو برای چند نفر وجود دارد؟
-                </button>
-            </h2>
-            <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqTrip">
-                <div class="accordion-body">
-                    در حال حاضر هر بار رزرو برای یک مسافر انجام می‌شود. برای رزرو چند مسافر، فرآیند را چندین بار تکرار کنید.
-                </div>
-            </div>
-        </div>
-
-    </div>
+        }
+    }
 
     <div class="card rounded-4 p-4 text-center" style="background:#f4f4ff;border:1.5px solid #dcdcff">
-        <i class="ti ti-headset" style="font-size:2rem;color:#696cff;margin-bottom:.5rem;display:block"></i>
-        <h6 class="fw-bold mb-1">سوالتان اینجا نبود؟</h6>
-        <p class="text-muted mb-3" style="font-size:.88rem">تیم پشتیبانی ما آماده پاسخگویی به شماست</p>
+        <i class="ti ti-headset" style="font-size:2rem;color:#000;margin-bottom:.5rem;display:block"></i>
+        <p class="fw-bold mb-1">سوالتان اینجا نبود؟</p>
+        <p class="text-muted mb-3" style="font-size:.88rem;line-height:1.8">تیم پشتیبانی ۲۴ ساعته آماده پاسخگویی است</p>
         <a asp-controller="Home" asp-action="ContactUs" class="btn btn-primary rounded-pill px-4">ارتباط با ما</a>
     </div>
 

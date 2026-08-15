@@ -27,5 +27,8 @@
 @RenderBody()
 
 <!-- Footer -->
-@* @await Html.PartialAsync("Sections/Footer/_FooterFront") *@
+@if (ViewData["HideFrontFooter"] is not true)
+{
+  @await Html.PartialAsync("Sections/Footer/_FooterFront")
+}
 <!-- / Footer -->

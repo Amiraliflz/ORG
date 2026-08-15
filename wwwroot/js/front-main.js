@@ -3,8 +3,8 @@
  */
 'use strict';
 
-let isRtl = window.Helpers.isRtl(),
-  isDarkStyle = window.Helpers.isDarkStyle();
+let isRtl = window.Helpers && typeof window.Helpers.isRtl === 'function' ? window.Helpers.isRtl() : true,
+  isDarkStyle = window.Helpers && typeof window.Helpers.isDarkStyle === 'function' ? window.Helpers.isDarkStyle() : false;
 
 (function () {
   const menu = document.getElementById('navbarSupportedContent'),
@@ -13,7 +13,9 @@ let isRtl = window.Helpers.isRtl(),
 
   // Initialised custom options if checked
   setTimeout(function () {
-    window.Helpers.initCustomOptionCheck();
+    if (window.Helpers && typeof window.Helpers.initCustomOptionCheck === 'function') {
+      window.Helpers.initCustomOptionCheck();
+    }
   }, 1000);
 
   if (typeof Waves !== 'undefined') {
@@ -30,9 +32,17 @@ let isRtl = window.Helpers.isRtl(),
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
 
+  function addClass(cls, nodes) {
+    if (window.Helpers && typeof window.Helpers._addClass === 'function') {
+      window.Helpers._addClass(cls, nodes);
+      return;
+    }
+    (nodes || []).forEach(function (el) { if (el) el.classList.add(cls); });
+  }
+
   // If layout is RTL add .dropdown-menu-end class to .dropdown-menu
   if (isRtl) {
-    Helpers._addClass('dropdown-menu-end', document.querySelectorAll('#layout-navbar .dropdown-menu'));
+    addClass('dropdown-menu-end', document.querySelectorAll('#layout-navbar .dropdown-menu'));
   }
 
   // Navbar (guard for pages without .layout-navbar)
@@ -73,7 +83,7 @@ let isRtl = window.Helpers.isRtl(),
 
   // If layout is RTL add .dropdown-menu-end class to .dropdown-menu
   if (isRtl) {
-    Helpers._addClass('dropdown-menu-end', document.querySelectorAll('.dropdown-menu'));
+    addClass('dropdown-menu-end', document.querySelectorAll('.dropdown-menu'));
   }
 
   // Mega dropdown

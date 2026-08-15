@@ -1,100 +1,99 @@
-<!-- Footer: Start -->
+@using Application.Services.Seo
+@{
+  var path = Context.Request.Path.Value ?? "/";
+  var shareUrl = ViewData["CanonicalUrl"] as string ?? SeoDefaults.BuildCanonical(path);
+  var shareEnc = Uri.EscapeDataString(shareUrl);
+  var shareText = Uri.EscapeDataString("مسترشوفر — رزرو سواری بین‌شهری و ترانسفر فرودگاهی");
+}
+
 <footer class="landing-footer bg-body footer-text">
   <div class="footer-top">
     <div class="container">
       <div class="row gx-0 gy-4 g-md-5">
         <div class="col-lg-5">
-          <a asp-controller="Dashboards" asp-action="Index" class="app-brand-link mb-4">
-            <span class="app-brand-logo demo">
-              @await Html.PartialAsync("../_Partials/_Macros")
-            </span>
-            <span class="app-brand-text demo footer-link fw-bold ms-2 ps-1">@TempData.Peek("appName")</span>
+          <a asp-area="AgencyArea" asp-controller="Home" asp-action="Index" class="app-brand-link mb-4 d-inline-flex align-items-center">
+            <img src="~/logo_full_b.png" height="36" width="160" alt="مسترشوفر" />
           </a>
-                 <p class="footer-text footer-logo-description mb-4"> برنامه‌نویس ‌پسند ، حرفه‌ای و سفارشی ترین قالب مدیریت از نظر کاربران.</p>
-
-          <form class="footer-form">
-            <label class="small" for="footer-email">مشترک شدن در خبرنامه</label>
-            <div class="d-flex mt-1">
-              <input type="email" class="form-control rounded-0 rounded-start-bottom rounded-start-top" id="footer-email" placeholder="ایمیل شما" />
-              <button type="submit" class="btn btn-primary shadow-none rounded-0 rounded-end-bottom rounded-end-top">
-                عضویت
-              </button>
-            </div>
-          </form>
+          <p class="footer-text footer-logo-description mb-4">
+            رزرو آنلاین تاکسی بین شهری، سواری دربستی و ترانسفر فرودگاهی با ناوگان تأییدشده و پشتیبانی ۲۴ ساعته.
+          </p>
+          <p class="footer-title mb-2">اشتراک‌گذاری این صفحه</p>
+          <div class="d-flex flex-wrap gap-2 mb-3" id="pageShareBar">
+            <a class="btn btn-sm btn-outline-primary"
+               href="https://t.me/share/url?url=@shareEnc&amp;text=@shareText"
+               target="_blank"
+               rel="noopener noreferrer">تلگرام</a>
+            <a class="btn btn-sm btn-outline-success"
+               href="https://api.whatsapp.com/send?text=@(shareText)%20@(shareEnc)"
+               target="_blank"
+               rel="noopener noreferrer">واتساپ</a>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="copyPageLink" data-share-url="@shareUrl">کپی لینک</button>
+            <button type="button" class="btn btn-sm btn-primary d-none" id="nativeShare" data-share-url="@shareUrl" data-share-title="مسترشوفر">اشتراک‌گذاری</button>
+          </div>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-          <h6 class="footer-title mb-4">دموها</h6>
+          <p class="footer-title mb-4">خدمات</p>
           <ul class="list-unstyled">
-            <li class="mb-3">
-              <a href="javascript:void(0);" class="footer-link">طرح منو عمودی</a>
-            </li>
-            <li class="mb-3">
-              <a href="javascript:void(0);" class="footer-link">چیدمان افقی</a>
-            </li>
-            <li class="mb-3">
-              <a href="javascript:void(0);" class="footer-link">طرح کادر حاشیه دار</a>
-            </li>
-            <li class="mb-3">
-              <a href="javascript:void(0);" class="footer-link">طرح نیمه تاریک</a>
-            </li>
-            <li class="mb-3">
-              <a href="javascript:void(0);" class="footer-link">طرح تاریک</a>
-            </li>
+            <li class="mb-3"><a href="/routes" class="footer-link">مسیرهای بین‌شهری</a></li>
+            <li class="mb-3"><a href="/cities" class="footer-link">شهرهای تحت پوشش</a></li>
+            <li class="mb-3"><a href="/#tripForm" class="footer-link">جستجوی سواری</a></li>
           </ul>
         </div>
         <div class="col-lg-2 col-md-4 col-sm-6">
-          <h6 class="footer-title mb-4">صفحات</h6>
+          <p class="footer-title mb-4">پشتیبانی</p>
           <ul class="list-unstyled">
-            <li class="mb-3">
-              <a asp-controller="FrontPages" asp-action="PricingPage" class="footer-link">قیمت گذاری</a>
-            </li>
-            <li class="mb-3">
-              <a asp-controller="FrontPages" asp-action="PaymentPage" class="footer-link">پرداخت<span class="badge rounded bg-primary ms-2">جدید</span></a>
-            </li>
-            <li class="mb-3">
-              <a asp-controller="FrontPages" asp-action="CheckoutPage" class="footer-link">ثبت سفارش</a>
-            </li>
-            <li class="mb-3">
-              <a asp-controller="FrontPages" asp-action="HelpCenterLanding" class="footer-link">مرکز پشتیبانی</a>
-            </li>
-            <li class="mb-3">
-              <a asp-controller="Auth" asp-action="LoginCover" target="_blank" class="footer-link">ورود / ثبت نام</a>
-            </li>
+            <li class="mb-3"><a asp-area="AgencyArea" asp-controller="Home" asp-action="FAQ" class="footer-link">سوالات متداول</a></li>
+            <li class="mb-3"><a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs" class="footer-link">ارتباط با ما</a></li>
+            <li class="mb-3"><a asp-area="AgencyArea" asp-controller="Home" asp-action="TravelPolicy" class="footer-link">قوانین سفر</a></li>
+            <li class="mb-3"><a asp-area="AgencyArea" asp-controller="Home" asp-action="Privacy" class="footer-link">حریم خصوصی</a></li>
           </ul>
         </div>
         <div class="col-lg-3 col-md-4">
-          <h6 class="footer-title mb-4">دانلود اپلیکیشن ها</h6>
-          <a href="javascript:void(0);" class="d-block footer-link mb-3 pb-2"><img src="~/img/front-pages/landing-page/apple-icon.png" alt="apple icon" /></a>
-          <a href="javascript:void(0);" class="d-block footer-link"><img src="~/img/front-pages/landing-page/google-play-icon.png" alt="google play icon" /></a>
+          <p class="footer-title mb-4">منابع</p>
+          <ul class="list-unstyled">
+            <li class="mb-3">
+              <a class="footer-link" href="https://fa.wikipedia.org/wiki/%D8%AA%D8%A7%DA%A9%D8%B3%DB%8C_%D8%A7%DB%8C%D9%86%D8%AA%D8%B1%D9%86%D8%AA%DB%8C" target="_blank" rel="noopener noreferrer">تاکسی اینترنتی — ویکی‌پدیا</a>
+            </li>
+            <li class="mb-3">
+              <a class="footer-link" href="https://www.mrud.ir/" target="_blank" rel="noopener noreferrer">وزارت راه و شهرسازی</a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
   </div>
-    <div class="footer-bottom py-3">
-      <div class="container d-flex flex-wrap justify-content-between flex-md-row flex-column text-center text-md-start">
-        <div class="mb-2 mb-md-0">
-          <span class="footer-text">
-            ©
-            <script>
-              document.write(new Date().getFullYear());
-            </script>
-            , ارائه شده توسط
-            <a href='@TempData.Peek("authorUrl")' class="text-danger byte-hover">@TempData.Peek("authorName")</a>
-            در سایت
-            <a class="fw-medium" href="#support" target="_blank">راستچین</a>
-          </span>
-        </div>
-        <div>
-          <a href='@TempData.Peek("githubFreeUrl")' class="footer-link me-3" target="_blank"><img src="~/img/front-pages/icons/github-light.png" alt="github icon" data-app-light-img="front-pages/icons/github-light.png" data-app-dark-img="front-pages/icons/github-dark.png" /></a>
-
-            <a href='@TempData.Peek("facebookUrl")' class="footer-link me-3" target="_blank"><img src="~/img/front-pages/icons/facebook-light.png" alt="facebook icon" data-app-light-img="front-pages/icons/facebook-light.png" data-app-dark-img="front-pages/icons/facebook-dark.png" /></a>
-
-          <a href='@TempData.Peek("twitterUrl")' class="footer-link me-3" target="_blank"><img src="~/img/front-pages/icons/twitter-light.png" alt="twitter icon" data-app-light-img="front-pages/icons/twitter-light.png" data-app-dark-img="front-pages/icons/twitter-dark.png" /></a>
-
-           <a href='@TempData.Peek("instagramUrl")' class="footer-link" target="_blank"><img src="~/img/front-pages/icons/instagram-light.png" alt="google icon" data-app-light-img="front-pages/icons/instagram-light.png" data-app-dark-img="front-pages/icons/instagram-dark.png" /></a>
-
-        </div>
-      </div>
+  <div class="footer-bottom py-3">
+    <div class="container d-flex flex-wrap justify-content-between flex-md-row flex-column text-center text-md-start">
+      <p class="footer-text mb-2 mb-md-0">© @DateTime.UtcNow.Year مسترشوفر. تمامی حقوق محفوظ است.</p>
+      <p class="footer-text mb-0">
+        <a class="footer-link" href="@SeoDefaults.PreferredOrigin/">mrshoofer.com</a>
+      </p>
     </div>
+  </div>
 </footer>
-<!-- Footer: End -->
+<script>
+(function () {
+  var nativeBtn = document.getElementById('nativeShare');
+  var copyBtn = document.getElementById('copyPageLink');
+  if (nativeBtn && navigator.share) nativeBtn.classList.remove('d-none');
+  if (nativeBtn) {
+    nativeBtn.addEventListener('click', function () {
+      navigator.share({
+        title: nativeBtn.getAttribute('data-share-title') || document.title,
+        url: nativeBtn.getAttribute('data-share-url') || window.location.href
+      }).catch(function () {});
+    });
+  }
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      var url = copyBtn.getAttribute('data-share-url') || window.location.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () {
+          copyBtn.textContent = 'کپی شد';
+          setTimeout(function () { copyBtn.textContent = 'کپی لینک'; }, 1800);
+        }).catch(function () {});
+      }
+    });
+  }
+})();
+</script>

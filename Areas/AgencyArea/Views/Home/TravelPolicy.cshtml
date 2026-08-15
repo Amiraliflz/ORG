@@ -1,8 +1,10 @@
 @{
-    Layout = "_AgencySideLayout";
+    Layout = "_FrontLayout";
+    ViewData["UseFullTabler"] = false;
     ViewData["Title"] = "قوانین سفر";
     ViewData["MetaDescription"] = "قوانین و شرایط سفر، کنسلی و استفاده از خدمات سواری بین‌شهری مسترشوفر را قبل از رزرو مطالعه کنید.";
     ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/Home/TravelPolicy");
+    ViewData["DateModified"] = "2026-08-14";
     ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
     {
       ("صفحه اصلی", SeoDefaults.BuildCanonical("/")),
@@ -10,125 +12,90 @@
     };
 }
 
-<style>
-    .policy-hero {
-        background: linear-gradient(135deg, #696cff 0%, #9e6bfa 100%);
-        border-radius: 1.5rem;
-        color: #fff;
-        padding: 2.5rem 2rem;
-        margin-bottom: 2rem;
-    }
-    .policy-card {
-        background: #fff;
-        border: 1.5px solid #e8e8f0;
-        border-radius: 1.25rem;
-        padding: 1.75rem;
-        margin-bottom: 1.25rem;
-    }
-    .policy-card h6 {
-        font-weight: 700;
-        color: #3d3a4e;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-    }
-    .policy-card p, .policy-card li {
-        font-size: .88rem;
-        color: #6f6b7d;
-        line-height: 1.9;
-    }
-    .policy-card ul {
-        padding-right: 1.25rem;
-        margin-bottom: 0;
-    }
-    .cancel-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 .4rem;
-    }
-    .cancel-table td {
-        padding: .6rem .9rem;
-        font-size: .85rem;
-        background: #f8f8ff;
-        border-radius: .5rem;
-    }
-    .cancel-table td:first-child {
-        color: #3d3a4e;
-        font-weight: 600;
-        width: 55%;
-    }
-    .cancel-table td:last-child {
-        color: #696cff;
-        font-weight: 700;
-        text-align: center;
-    }
-    .cancel-table tr:last-child td:last-child {
-        color: #ff4c51;
-    }
-</style>
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=19" rel="stylesheet" />
+}
 
-<div class="container py-4" style="max-width:760px">
+<section class="section-py route-hub legal-page">
+    <div class="container" style="max-width: 46rem">
+        <nav class="route-breadcrumbs" aria-label="breadcrumb">
+            <ol>
+                <li><a href="/">صفحه اصلی</a></li>
+                <li aria-current="page">قوانین سفر</li>
+            </ol>
+        </nav>
 
-    <div class="policy-hero text-center">
-        <i class="ti ti-file-text" style="font-size:2.5rem;margin-bottom:.5rem;display:block"></i>
-        <h4 class="fw-bold mb-1">قوانین سفر</h4>
-        <p class="mb-0 opacity-75" style="font-size:.9rem">شرایط و ضوابط استفاده از خدمات مسترشوفر</p>
+        <header class="route-hub-header">
+            <h1 class="route-hub-title">قوانین سفر</h1>
+            <p class="route-hub-lead">
+                شرایط رزرو، کنسلی، ظرفیت دربستی و هماهنگی مبدأ و مقصد در مسترشوفر — قبل از خرید بلیط بخوانید.
+            </p>
+        </header>
+
+        <article class="route-hub-panel">
+            <h2 class="route-hub-subtitle route-hub-subtitle--flush">شرایط کلی سفر</h2>
+            <p>
+                این قوانین برای رزرو سواری بین‌شهری، سرویس دربستی و ترانسفر فرودگاهی از طریق مسترشوفر اعمال می‌شود.
+                با تکمیل رزرو، این شرایط را می‌پذیرید.
+            </p>
+            <p>
+                ظرفیت خودرو دربستی ۳ مسافر است. سرویس اشتراکی یعنی رزرو صندلی در خودرویی که ممکن است مسافر دیگر هم داشته باشد.
+            </p>
+            <p>
+                تغییر مبدأ یا مقصد، توقف اضافه، یا مسیر خارج از شهر مبدأ/مقصد فقط با هماهنگی راننده ممکن است و هزینه آن جدا محاسبه می‌شود.
+            </p>
+        </article>
+
+        <article class="route-hub-panel">
+            <h2 class="route-hub-subtitle route-hub-subtitle--flush">قوانین کنسلی</h2>
+            <p>در صورت انصراف، جریمه بر اساس زمان باقی‌مانده تا سفر محاسبه می‌شود:</p>
+            <ul class="legal-cancel-list">
+                <li>
+                    <span class="legal-cancel-when">تا ۱ ساعت بعد از خرید</span>
+                    <span class="legal-cancel-value">بدون جریمه</span>
+                </li>
+                <li>
+                    <span class="legal-cancel-when">تا ۱۲ ساعت مانده به سفر</span>
+                    <span class="legal-cancel-value">۲۰٪ جریمه</span>
+                </li>
+                <li>
+                    <span class="legal-cancel-when">تا ۳ ساعت قبل از سفر</span>
+                    <span class="legal-cancel-value">۵۰٪ جریمه</span>
+                </li>
+                <li class="is-blocked">
+                    <span class="legal-cancel-when">کمتر از ۳ ساعت مانده به سفر</span>
+                    <span class="legal-cancel-value">امکان کنسلی وجود ندارد</span>
+                </li>
+            </ul>
+            <p>
+                استرداد طبق همین فهرست و پس از ثبت درخواست کنسلی انجام می‌شود. اگر کمتر از ۳ ساعت به سفر مانده باشد، امکان کنسلی وجود ندارد.
+            </p>
+        </article>
+
+        <article class="route-hub-panel">
+            <h2 class="route-hub-subtitle route-hub-subtitle--flush">هماهنگی مبدأ و مقصد</h2>
+            <p>
+                پس از تأیید بلیط، مکان دقیق سوار و پیاده شدن را تیم مسترشوفر با مسافر هماهنگ می‌کند. شماره تماس مسافر باید صحیح باشد؛ در غیر این صورت هماهنگی سفر ممکن است با تأخیر یا اختلال روبه‌رو شود.
+            </p>
+            <p>
+                برای ترانسفر فرودگاهی، ساعت پرواز را هنگام هماهنگی اعلام کنید تا زمان حضور در مبدأ با پرواز هم‌خوان باشد.
+            </p>
+        </article>
+
+        <article class="route-hub-panel">
+            <h2 class="route-hub-subtitle route-hub-subtitle--flush">مسئولیت‌ها</h2>
+            <ul>
+                <li>مسافر باید رأس ساعت هماهنگ‌شده در محل مبدأ حاضر باشد.</li>
+                <li>همراه داشتن مدرک شناسایی معتبر هنگام سوار شدن الزامی است.</li>
+                <li>مسترشوفر در قبال تأخیر ناشی از عوامل خارج از کنترل (ترافیک، شرایط جوی، حوادث جاده‌ای) مسئولیتی ندارد.</li>
+                <li>بار همراه باید متناسب با فضای خودرو باشد؛ هماهنگی بار اضافه را قبل از سفر با پشتیبانی مطرح کنید.</li>
+            </ul>
+        </article>
+
+        <div class="legal-page-cta">
+            <a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs" class="btn btn-outline-primary rounded-pill px-4">
+                <i class="ti ti-headset me-1"></i>سوال دارید؟ تماس بگیرید
+            </a>
+        </div>
     </div>
-
-    <div class="policy-card">
-        <h6><i class="ti ti-info-circle text-primary"></i> شرایط کلی سفر</h6>
-        <p>
-            تغییرات مورد نظر شما مانند مبدا و مقصد اضافه یا مسیر خارج از شهر مبدا یا مقصد با هماهنگی راننده امکان‌پذیر می‌باشد و هزینه آن به صورت جداگانه محاسبه می‌شود.
-        </p>
-        <p class="mb-0">
-            ظرفیت خودرو دربستی ۳ مسافر می‌باشد.
-        </p>
-    </div>
-
-    <div class="policy-card">
-        <h6><i class="ti ti-calendar-x text-danger"></i> قوانین کنسلی</h6>
-        <p class="mb-3">در صورت انصراف از سفر، جریمه کنسلی بر اساس زمان باقیمانده به سفر به صورت زیر اعمال می‌گردد:</p>
-        <table class="cancel-table">
-            <tr>
-                <td>تا ۱ ساعت بعد از خرید</td>
-                <td>بدون جریمه</td>
-            </tr>
-            <tr>
-                <td>تا ۱۲ ساعت مانده به سفر</td>
-                <td>۲۰٪ جریمه</td>
-            </tr>
-            <tr>
-                <td>تا ۳ ساعت قبل از سفر</td>
-                <td>۵۰٪ جریمه</td>
-            </tr>
-            <tr>
-                <td>کمتر از ۳ ساعت مانده به سفر</td>
-                <td>امکان کنسلی وجود ندارد</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="policy-card">
-        <h6><i class="ti ti-map-pin text-success"></i> هماهنگی مبدا و مقصد</h6>
-        <p class="mb-0">
-            پس از ثبت و تایید بلیط، مکان دقیق مبدا و مقصد توسط تیم <strong>مسترشوفر</strong> با مسافر هماهنگ خواهد شد. لطفاً اطمینان حاصل کنید که شماره تماس مسافر به درستی وارد شده باشد.
-        </p>
-    </div>
-
-    <div class="policy-card">
-        <h6><i class="ti ti-shield-check text-warning"></i> مسئولیت‌ها</h6>
-        <ul>
-            <li>مسافر موظف است در زمان مقرر در محل مبدا حاضر باشد.</li>
-            <li>مسترشوفر در قبال تأخیر ناشی از عوامل خارج از کنترل (ترافیک، حوادث جاده‌ای و غیره) مسئولیتی ندارد.</li>
-            <li>مدارک شناسایی مسافر هنگام سوار شدن الزامی است.</li>
-        </ul>
-    </div>
-
-    <div class="text-center mt-4">
-        <a asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs" class="btn btn-outline-primary rounded-pill px-4">
-            <i class="ti ti-headset me-1"></i>سوال دارید؟ تماس بگیرید
-        </a>
-    </div>
-
-</div>
+</section>

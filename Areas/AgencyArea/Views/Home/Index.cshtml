@@ -10,7 +10,7 @@
     ViewData["OgImageAlt"] = "مستر شوفر — رزرو آنلاین تاکسی بین شهری و سواری دربستی";
     ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/");
     ViewData["IncludeHomeFaqs"] = true;
-    ViewData["DateModified"] = "2026-08-09";
+    ViewData["DateModified"] = "2026-08-14";
     ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
     {
       ("صفحه اصلی", SeoDefaults.BuildCanonical("/"))
@@ -20,8 +20,8 @@
 @section VendorStyles {
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link href="~/css/IndexPage.css?v=34" rel="stylesheet" />
-    <link rel="preload" href="/mrshoofer_cars_banner.webp" as="image" type="image/webp" fetchpriority="high" />
+    <link href="~/css/IndexPage.css?v=51" rel="stylesheet" />
+    <link rel="preload" href="/img/front-pages/landing-page/hero-travel.webp" as="image" type="image/webp" fetchpriority="high" />
     @* Critical: swap control + field gutters (survive stale/CDN-cached IndexPage.css) *@
     <style>
       .landing-hero .od-pair-col { position: relative; }
@@ -36,7 +36,7 @@
         --od-swap-size: 2rem;
         position: absolute !important;
         left: 50%;
-        top: 0.55rem;
+        top: 0.25rem;
         transform: translateX(-50%);
         z-index: 4;
         width: var(--od-swap-size) !important;
@@ -44,6 +44,8 @@
         height: var(--od-swap-size) !important;
         padding: 0 !important;
         margin: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
@@ -77,35 +79,39 @@
 
     <!-- Hero: Start -->
     <section id="hero-animation">
-        <div id="landingHero" style="" class="section-py landing-hero position-relative">
-            <div class="container">
-                <div class="hero-text-box text-center">
-                    <h1 class="text-center hero-title">
-                        مستر شوفر — راهی مطمئن به همه مقاصد ایران
-                    </h1>
-                    <h2 class="hero-sub-title text-center">
-                        تاکسی آنلاین بین شهری، سواری دربستی و ترانسفر فرودگاهی با رانندگان تأییدشده
-                    </h2>
+        <div id="landingHero" class="landing-hero position-relative">
+            @* Pateh-style: art fills the stage band; search overlaps the bottom edge *@
+            <div class="landing-hero-stage">
+                <div class="landing-hero-stage-art" aria-hidden="true">
+                    <picture>
+                        <source srcset="/img/front-pages/landing-page/hero-travel.webp" type="image/webp" />
+                        <img
+                            src="/img/front-pages/landing-page/hero-travel.jpg"
+                            alt=""
+                            width="1600"
+                            height="800"
+                            class="landing-hero-stage-art-img"
+                            fetchpriority="high"
+                            decoding="async" />
+                    </picture>
                 </div>
-                @*  <div id="heroDashboardAnimation" class="hero-animation-img">
-                <a href="/Apps/Ecommerce/Dashboard" target="_blank">
-                <div id="heroAnimationImg" class="position-relative hero-dashboard-img">
-                <img src="~/img/front-pages/landing-page/hero-dashboard-light.png" alt="hero dashboard" class="animation-img" data-app-light-img="front-pages/landing-page/hero-dashboard-light.png" data-app-dark-img="front-pages/landing-page/hero-dashboard-dark.png" />
-                <img src="~/img/front-pages/landing-page/hero-elements-light.png" alt="hero elements" class="position-absolute hero-elements-img animation-img top-0 start-0" data-app-light-img="front-pages/landing-page/hero-elements-light.png" data-app-dark-img="front-pages/landing-page/hero-elements-dark.png" />
+                <div class="container landing-hero-stage-content">
+                    <h1 class="visually-hidden">مستر شوفر — راهی مطمئن به همه مقاصد ایران</h1>
+                    <div class="hero-text-box text-center">
+                    </div>
                 </div>
-                </a>
-                </div> *@
+            </div>
 
-
+            <div class="container landing-hero-search-wrap">
                 <div class="hero-safezone hero-safezone--form">
-                    <div class="card mb-3 search-card hero-zone-card">
+                    <div class="card mb-0 search-card hero-zone-card">
                             <div class="card-body pb-4">
                                 <div class="card-header d-flex justify-content-between align-items-center p-0 mb-4 border-0 bg-transparent">
                                     <div>
-                                        <h5 class="mb-1 fw-semibold">
+                                        <p class="mb-1 fw-semibold h5">
                                             <i class="ti ti-route me-1 text-primary"></i>
                                             جستجوی سواری
-                                        </h5>
+                                        </p>
                                         <p class="mb-0 text-muted small">
                                             مستر شوفر — سواری بین‌شهری و ترانسفر فرودگاهی با رانندگان تأییدشده
                                             <i class="ti ti-circle-check text-primary ms-1"></i>
@@ -184,14 +190,16 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="container landing-hero-below">
                 <!-- Definition CTA — wide (matches page shell), not constrained like the form -->
                 <div class="hero-safezone hero-safezone--wide">
                     <div class="hero-definition-cta" id="aboutMrShoofer">
                         <div class="card hero-definition-card hero-zone-card">
                             <div class="card-body hero-definition-body-wrap">
                                 <div class="hero-definition-content">
-                                    <h3 class="hero-definition-title">مستر شوفر چیست؟</h3>
+                                    <h2 class="hero-definition-title">مستر شوفر چیست؟</h2>
                                     <p class="hero-definition-body">
                                         مستر شوفر (همان مسترشوفر) سامانه رزرو آنلاین تاکسی بین شهری، سواری دربستی و ترانسفر فرودگاهی با ناوگان سواری است. سفر خود را از بین کلاس‌های متنوع ما انتخاب کنید و بلیط خود را در کمتر از چند دقیقه دریافت کنید. همکاران ما در سریع‌ترین زمان ممکن برای هماهنگی سفر با شما تماس می‌گیرند و تا آخرین لحظه سفر در کنار شما هستند تا تجربه‌ای با آرامش خاطر و امنیت رقم بخورد.
                                     </p>
@@ -221,15 +229,46 @@
         </div>
     </section>
     <!-- Hero: End -->
+    <!-- How to book -->
+    <section id="landingHowTo" class="section-py bg-body landing-howto">
+        <div class="container">
+            <div class="text-center mb-3 pb-1">
+                <span class="badge bg-label-primary">راهنمای رزرو</span>
+            </div>
+            <h2 class="text-center mb-1 fw-medium">
+                رزرو در <span class="section-title">چهار قدم</span>
+            </h2>
+            <p class="text-center mb-4 mb-md-5 text-muted landing-howto-lead">
+                مبدأ و مقصد را جستجو کنید، کلاس را انتخاب کنید و بلیط را در چند دقیقه بگیرید.
+            </p>
+            <ol class="landing-howto-steps">
+                @{
+                    var howToSteps = SeoDefaults.BookingHowToSteps;
+                    var howToNums = new[] { "۱", "۲", "۳", "۴" };
+                    for (var i = 0; i < howToSteps.Length; i++)
+                    {
+                        <li class="landing-howto-step">
+                            <span class="landing-howto-num" aria-hidden="true">@howToNums[i]</span>
+                            <p class="landing-howto-title">@howToSteps[i].Title</p>
+                            <p class="landing-howto-text">@howToSteps[i].Text</p>
+                        </li>
+                    }
+                }
+            </ol>
+            <div class="text-center mt-4">
+                <a href="#tripForm" class="btn btn-primary">شروع جستجو</a>
+            </div>
+        </div>
+    </section>
     <!-- Popular routes (SEO internal links) -->
     <section id="landingRoutes" class="section-py landing-routes">
         <div class="container landing-routes-inner">
             <div class="text-center mb-3 pb-1">
                 <span class="badge bg-label-primary">مسیرهای پرتردد</span>
             </div>
-            <h3 class="text-center mb-1 fw-medium">
+            <h2 class="text-center mb-1 fw-medium">
                 رزرو سواری در <span class="section-title">مسیرهای محبوب</span>
-            </h3>
+            </h2>
             <p class="text-center mb-4 mb-md-5 text-muted landing-routes-lead">
                 صفحه اختصاصی هر مسیر را ببینید و همان‌جا جستجو را شروع کنید
             </p>
@@ -292,9 +331,9 @@
             <div class="text-center mb-3 pb-1">
                 <span class="badge bg-label-primary">تاکسی بین شهری، سواری دربستی و ترانسفر فرودگاهی</span>
             </div>
-            <h3 class="text-center mb-1 fw-medium">
+            <h2 class="text-center mb-1 fw-medium">
                 چرا <span class="section-title">مسترشوفر</span>؟
-            </h3>
+            </h2>
 
             <p class="text-center mb-3 mb-md-5 pb-3 text-muted">
                 رانندگان تأییدشده، خودروهای باکیفیت و پشتیبانی ۲۴ ساعته — همه چیز برای یک سفر بدون دغدغه
@@ -304,48 +343,83 @@
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/laptop.png" alt="رزرو آنلاین سواری از موبایل و لپ‌تاپ" width="64" height="64" />
                     </div>
-                    <h5 class="mb-2">رزرو آسان، هر جا هستید</h5>
+                    <p class="mb-2 fw-semibold">رزرو آسان، هر جا هستید</p>
                     <p class="features-icon-description">از هر دستگاهی در چند ثانیه سواری رزرو کنید — بدون تماس تلفنی و بدون انتظار در صف.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="/taxi.webp" height="66" width="66" alt="ناوگان سواری بین‌شهری مسترشوفر" loading="lazy" decoding="async" />
                     </div>
-                    <h5 class="mb-2">ناوگان گسترده در سراسر ایران</h5>
+                    <p class="mb-2 fw-semibold">ناوگان گسترده در سراسر ایران</p>
                     <p class="features-icon-description">صدها مسیر بین‌شهری و ترانسفر فرودگاهی با ظرفیت بالا؛ همیشه گزینه‌ای برای سفر شما هست.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/paper.png" alt="صدور سریع بلیط سفر" width="64" height="64" />
                     </div>
-                    <h5 class="mb-2">بلیط فوری، تأیید آنی</h5>
+                    <p class="mb-2 fw-semibold">بلیط فوری، تأیید آنی</p>
                     <p class="features-icon-description">پس از رزرو، بلیط تأییدشده را سریع دریافت می‌کنید؛ بدون ابهام و بدون انتظار طولانی.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/check.png" alt="راننده و خودرو تأییدشده" width="64" height="64" />
                     </div>
-                    <h5 class="mb-2">رانندگان و خودروهای تأییدشده</h5>
+                    <p class="mb-2 fw-semibold">رانندگان و خودروهای تأییدشده</p>
                     <p class="features-icon-description">هر راننده پیش از فعالیت احراز هویت می‌شود تا با اطمینان و آرامش سوار شوید.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/user.png" alt="پشتیبانی مشتریان مسترشوفر" width="64" height="64" />
                     </div>
-                    <h5 class="mb-2">پشتیبانی ۲۴ ساعته</h5>
+                    <p class="mb-2 fw-semibold">پشتیبانی ۲۴ ساعته</p>
                     <p class="features-icon-description">تیم پشتیبانی تا آخرین لحظه سفر همراه شماست — حتی در میانه شب یا روز تعطیل.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
                         <img src="~/img/front-pages/icons/keyboard.png" alt="انتخاب کلاس سفر اشتراکی یا دربستی" width="64" height="64" />
                     </div>
-                    <h5 class="mb-2">سفر دربستی یا اشتراکی</h5>
+                    <p class="mb-2 fw-semibold">سفر دربستی یا اشتراکی</p>
                     <p class="features-icon-description">صندلی اشتراکی با قیمت مناسب یا سرویس دربستی اختصاصی — انتخاب کلاس سفر با شماست.</p>
                 </div>
             </div>
         </div>
     </section>
     <!-- Useful features: End -->
+    <!-- Shared vs private -->
+    <section id="landingClasses" class="section-py bg-body landing-classes">
+        <div class="container" style="max-width: 52rem;">
+            <div class="text-center mb-3 pb-1">
+                <span class="badge bg-label-primary">کلاس سفر</span>
+            </div>
+            <h2 class="text-center mb-1 fw-medium">
+                تفاوت سفر <span class="section-title">دربستی و اشتراکی</span>
+            </h2>
+            <p class="text-center mb-4 text-muted landing-classes-lead">
+                بعد از جستجو، کلاس را بر اساس تعداد مسافر و بودجه انتخاب می‌کنید — قیمت همان‌جا مشخص است.
+            </p>
+            <div class="row g-3 g-md-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-none border landing-classes-card">
+                        <div class="card-body">
+                            <p class="fw-semibold mb-2">اشتراکی</p>
+                            <p class="mb-0 landing-classes-text">یک صندلی رزرو می‌کنید و هزینه را با مسافران همان مسیر تقسیم می‌کنید. برای سفر انفرادی یا وقتی قیمت اولویت دارد مناسب است.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-none border landing-classes-card">
+                        <div class="card-body">
+                            <p class="fw-semibold mb-2">دربستی</p>
+                            <p class="mb-0 landing-classes-text">خودرو در اختیار شماست. ظرفیت ۳ مسافر است؛ برای خانواده، فرودگاه، یا وقتی نمی‌خواهید همسفر ناشناس داشته باشید. توقف اضافه فقط با هماهنگی راننده و هزینه جدا.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center mt-4 mb-0">
+                <a asp-area="AgencyArea" asp-controller="Home" asp-action="TravelPolicy">قوانین سفر و کنسلی را بخوانید</a>
+            </p>
+        </div>
+    </section>
     <!-- Real customers reviews: Start -->
     <!-- Real customers reviews: End -->
     <!-- Our great team: Start -->
@@ -418,9 +492,9 @@
             <div class="text-center mb-3 pb-1">
                 <span class="badge bg-label-primary">سوالات</span>
             </div>
-            <h3 class="text-center mb-1">
+            <h2 class="text-center mb-1">
                 <span class="section-title">سوالات پرتکرار</span>
-            </h3>
+            </h2>
             <p class="text-center mb-5 pb-3">پاسخ‌های کوتاه درباره رزرو سواری بین‌شهری و ترانسفر فرودگاهی با مستر شوفر</p>
             <div class="row justify-content-center">
                 <div class="col-lg-10">
@@ -434,7 +508,7 @@
                                 var collapseId = $"faqCollapse{i}";
                                 var isFirst = i == 0;
                                 <div class="card accordion-item @(isFirst ? "active" : "")">
-                                    <h2 class="accordion-header" id="@headingId">
+                                    <h3 class="accordion-header" id="@headingId">
                                         <button type="button"
                                                 class="accordion-button @(isFirst ? "" : "collapsed")"
                                                 data-bs-toggle="collapse"
@@ -443,7 +517,7 @@
                                                 aria-controls="@collapseId">
                                             @item.Question
                                         </button>
-                                    </h2>
+                                    </h3>
                                     <div id="@collapseId"
                                          class="accordion-collapse collapse @(isFirst ? "show" : "")"
                                          aria-labelledby="@headingId"
@@ -464,7 +538,7 @@
         <div class="container">
             <div class="row align-items-center gy-5 gy-lg-0">
                 <div class="col-lg-6 text-center text-lg-start">
-                    <h6 class="h2 text-primary fw-bold mb-3">برای شروع آماده‌اید؟</h6>
+                    <p class="h2 text-primary fw-bold mb-3">برای شروع آماده‌اید؟</p>
                     <p class="fw-medium mb-4 fs-5">مبدأ و مقصد را جستجو کنید و بلیط خود را در کمتر از چند دقیقه بگیرید.</p>
                     <a href="#landingHero" class="btn btn-lg btn-primary">جستجوی سواری</a>
                 </div>
@@ -481,28 +555,29 @@
             <div class="text-center mb-3 pb-1">
                 <span class="badge bg-label-primary">ارتباط با ما</span>
             </div>
-            <h3 class="text-center mb-3 fw-medium">
+            <h2 class="text-center mb-3 fw-medium">
                 <span class="position-relative fw-bold z-1 section-title">
                     ارتباط مستقیم با مسترشوفر
                 </span>
-
-            </h3>
+            </h2>
             <p class="text-center mb-4 mb-lg-5 pb-md-3">برای ارتباط مستقیم با مستر شوفر، از قسمت زیر استفاده کنید</p>
             <div class="row gy-4">
                 <div class="col-lg-5">
                     <div class="contact-img-box position-relative border p-2 h-100">
-                        <img src="~/img/front-pages/icons/contact-border.png" alt="contact border" class="contact-border-img position-absolute d-none d-md-block scaleX-n1-rtl" />
-                        <img src="/callcenter.webp" width="800" height="533" alt="پشتیبانی مشتریان مستر شوفر" class="contact-img w-100 scaleX-n1-rtl" loading="lazy" decoding="async" />
-                        <div class="pt-3 px-4 pb-1">
+                        <img src="~/img/front-pages/icons/contact-border.png" alt="" class="contact-border-img position-absolute d-none d-md-block scaleX-n1-rtl" aria-hidden="true" />
+                        <div class="contact-img-frame">
+                            <img src="/callcenter.webp" width="800" height="533" alt="پشتیبانی مشتریان مستر شوفر" class="contact-img" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="contact-img-meta pt-3 px-4 pb-1">
                             <div class="row gy-3 gx-md-4">
                                 <div class="col-md-6 col-lg-12 col-xl-6">
                                     <div class="d-flex align-items-center">
                                         <div class="badge bg-label-primary rounded p-2 me-2"><i class="ti ti-mail ti-sm"></i></div>
                                         <div>
                                             <p class="mb-1">ایمیل</p>
-                                            <h5 class="mb-0">
+                                            <p class="mb-0 fw-semibold">
                                                 <a href="mailto:info@mrshoofer.ir" class="text-heading">info@mrshoofer.ir</a>
-                                            </h5>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -513,7 +588,7 @@
                                         </div>
                                         <div>
                                             <p class="mb-1">تلفن</p>
-                                            <h5 class="mb-0" dir="ltr"><a href="tel:+989902063015" class="text-heading">09902063015</a></h5>
+                                            <p class="mb-0 fw-semibold" dir="ltr"><a href="tel:+989902063015" class="text-heading">09902063015</a></p>
                                         </div>
                                     </div>
                                 </div>
@@ -524,7 +599,7 @@
                 <div class="col-lg-7">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="mb-2">ارتباط با مسترشوفر</h4>
+                            <p class="h4 mb-2">پیام به پشتیبانی</p>
                             <p class="mb-4">
                                 اگر صحبتی با ما دارید لطفا در باکس زیر بنویسید مثل انتقادات و پیشنهادات ، همکاری،
                                 <br class="d-none d-lg-block" />

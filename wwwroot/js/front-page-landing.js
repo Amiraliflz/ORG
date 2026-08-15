@@ -87,11 +87,11 @@
   // Reviews slider next and previous
   // -----------------------------------
   // Add click event listener to next button
-  ReviewsNextBtn.addEventListener('click', function () {
-    ReviewsSliderNext.click();
+  ReviewsNextBtn?.addEventListener('click', function () {
+    ReviewsSliderNext?.click();
   });
-  ReviewsPreviousBtn.addEventListener('click', function () {
-    ReviewsSliderPrev.click();
+  ReviewsPreviousBtn?.addEventListener('click', function () {
+    ReviewsSliderPrev?.click();
   });
 
   // Review client logo
@@ -117,6 +117,7 @@
   // Pricing Plans
   // -----------------------------------
   document.addEventListener('DOMContentLoaded', function (event) {
+    if (!priceDurationToggler) return;
     function togglePrice() {
       if (priceDurationToggler.checked) {
         // If checked

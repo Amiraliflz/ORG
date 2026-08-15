@@ -58,9 +58,9 @@ need git
 remote() {
   if [[ -n "${DEPLOY_PASS:-}" ]]; then
     need sshpass
-    SSHPASS="$DEPLOY_PASS" sshpass -e ssh -T $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" "$@"
+    SSHPASS="$DEPLOY_PASS" sshpass -e ssh -n -T $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" "$@"
   else
-    ssh -T -o StrictHostKeyChecking=no -o ConnectTimeout=30 "${DEPLOY_USER}@${DEPLOY_HOST}" "$@"
+    ssh -n -T -o StrictHostKeyChecking=no -o ConnectTimeout=30 "${DEPLOY_USER}@${DEPLOY_HOST}" "$@"
   fi
 }
 

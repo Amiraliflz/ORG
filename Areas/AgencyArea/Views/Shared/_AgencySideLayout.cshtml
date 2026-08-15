@@ -7,8 +7,11 @@
 
 
 @section VendorStyles {
-    @* Reserve/booking flows need full Tabler set; front subset is homepage-only. *@
-    <link rel="stylesheet" href="~/vendor/fonts/tabler-icons.css" asp-append-version="true" />
+    @* Full Tabler (~850KB) only on booking/account flows. Public content pages use the front subset. *@
+    @if (ViewData["UseFullTabler"] as bool? != false)
+    {
+      <link rel="stylesheet" href="~/vendor/fonts/tabler-icons.css" asp-append-version="true" />
+    }
     @RenderSection("VendorStyles", required: false)
 }
 
@@ -203,7 +206,7 @@ nav.layout-navbar.navbar-active::after {
 .light-style .layout-navbar .navbar.landing-navbar .navbar-nav .active > .nav-link,
 .light-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.show,
 .light-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.active {
-  color: #7367f0 !important;
+  color: #000000 !important;
 }
 @@media (max-width: 991.98px) {
   .light-style .layout-navbar .navbar.landing-navbar .landing-nav-menu {
@@ -229,7 +232,7 @@ nav.layout-navbar.navbar-active::after {
 .dark-style .layout-navbar .navbar.landing-navbar .navbar-nav .active > .nav-link,
 .dark-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.show,
 .dark-style .layout-navbar .navbar.landing-navbar .navbar-nav .nav-link.active {
-  color: #7367f0 !important;
+  color: #000000 !important;
 }
 @@media (max-width: 991.98px) {
   .dark-style .layout-navbar .navbar.landing-navbar .landing-nav-menu {
@@ -323,9 +326,8 @@ nav.layout-navbar.navbar-active::after {
 
 
 	.landing-hero {
-		background-color: hsla(213.08823529411762, 0%, 93%, 1) !important;
-		background-image: radial-gradient(circle at 83% 22%, hsla(35.735294117647136, 82%, 87%, 1) 0%, transparent 50%), radial-gradient(circle at 0% 50%, hsla(194.5588235294118, 37%, 91%, 1) 0%, transparent 50%), radial-gradient(circle at 21% 21%, hsla(27.999999999999577, 0%, 86%, 1) 0%, transparent 50%), radial-gradient(circle at 54% 77%, hsla(193.2352941176474, 100%, 95%, 1) 0%, transparent 50%), radial-gradient(circle at 30% 75%, hsla(197.87234042553195, 25%, 35%, 1) 0%, transparent 20%) !important;
-		background-blend-mode: normal, normal, normal, normal, normal !important;
+		background-color: #fff !important;
+		background-image: none !important;
 	}
 
 

@@ -11,6 +11,7 @@ public class CitiesController : Controller
   [AcceptVerbs("GET", "HEAD")]
   public IActionResult Index()
   {
+    Response.Headers.CacheControl = "public,max-age=300";
     ViewData["Title"] = "شهرهای تحت پوشش سواری بین‌شهری";
     ViewData["MetaDescription"] =
       "فهرست شهرهای مبدأ و مقصد مسترشوفر برای رزرو آنلاین سواری بین‌شهری — تهران، اصفهان، شمال، غرب و دیگر شهرهای ایران.";

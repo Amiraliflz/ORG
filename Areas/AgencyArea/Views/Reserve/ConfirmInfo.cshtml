@@ -137,7 +137,8 @@
     }
 
     .success-payment {
-        background-color: RGBA(var(--bs-success-rgb), .25) !important;
+        background-color: #5e5e5e !important;
+        color: #fff !important;
     }
 
     .not_enough_payment {
@@ -239,7 +240,7 @@
     }
 
     .selected {
-        color: #7367f0;
+        color: #000000;
     }
 
 
@@ -263,8 +264,8 @@
     }
 
     .shadow-1__2__gray\/75 {
-        --tw-shadow: 0px 2px 8px 0px rgba(38,50,80,.07);
-        --tw-shadow-colored: 0px 2px 8px 0px var(--tw-shadow-color);
+        --tw-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 10px 24px rgba(0, 0, 0, 0.1), 0 22px 48px rgba(0, 0, 0, 0.08);
+        --tw-shadow-colored: 0 10px 24px rgba(0, 0, 0, 0.1);
     }
 
     .px-14 {
@@ -464,17 +465,17 @@
                 }
                 <div class="d-flex flex-column gap-2 px-1">
 
-                    <div class="d-flex justify-content-between align-items-center py-2 px-2 rounded-3" style="background:#f8f8ff">
+                    <div class="d-flex justify-content-between align-items-center py-2 px-2 rounded-3" style="background:#f6f6f6">
                         <small class="text-muted"><i class="ti ti-calendar-event me-1"></i>تاریخ سفر</small>
                         <span class="fw-semibold text-blck">@pdate.Day @monthName[pdate.Month] — @pdate.DayOfWeek</span>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center py-2 px-2 rounded-3" style="background:#f8f8ff">
+                    <div class="d-flex justify-content-between align-items-center py-2 px-2 rounded-3" style="background:#f6f6f6">
                         <small class="text-muted"><i class="ti ti-clock me-1"></i>ساعت حرکت</small>
                         <span class="fw-semibold text-blck">@trip.startingDateTime.ToString("HH:mm") <small class="text-muted">(@timeOfDay)</small></span>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center py-2 px-2 rounded-3" style="background:#f8f8ff">
+                    <div class="d-flex justify-content-between align-items-center py-2 px-2 rounded-3" style="background:#f6f6f6">
                         <small class="text-muted">
                             <i class="ti ti-car me-1"></i>خودرو
                             @if (trip.taxiSupervisorID == 7) { <img src="/vip_badge.png" style="height:18px;vertical-align:middle"> }
@@ -490,8 +491,8 @@
                 </div>
 
                 <!-- Trip feature highlight -->
-                <div class="mt-3 d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:#f4f4ff">
-                    <i class="ti ti-certificate-2" style="color:#696cff;font-size:1.05rem;flex-shrink:0"></i>
+                <div class="mt-3 d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background:#f3f3f3">
+                    <i class="ti ti-certificate-2" style="color:#000000;font-size:1.05rem;flex-shrink:0"></i>
                     <small class="text-muted" style="font-size:.8rem">بلیط رسمی پس از تأیید پرداخت در سامانه مسترشوفر صادر و ثبت می‌گردد</small>
                 </div>
 
@@ -599,7 +600,7 @@
                         <small class="text-muted"><i class="ti ti-phone me-1"></i>شماره تلفن همراه</small>
                         <div class="d-flex align-items-center gap-2">
                             <span class="fw-semibold" dir="ltr" id="numberphone_display">@reserve_viemodel?.NumebrPhone</span>
-                            <a class="link" data-bs-target="#modalCenter" data-bs-toggle="modal" style="color:#7367f0;cursor:pointer;font-size:.8rem">
+                            <a class="link" data-bs-target="#modalCenter" data-bs-toggle="modal" style="color:#000000;cursor:pointer;font-size:.8rem">
                                 <i class="ti ti-pencil"></i>
                             </a>
                         </div>
@@ -624,17 +625,17 @@
             <div class="card rounded-5 p-3 d-none d-md-block confirm-payment">
             <style>
                 .pm-card { border-radius:1rem; border:2px solid #e8e8f0; background:#fff; padding:.85rem .75rem; cursor:pointer; transition:border-color .18s,background .18s,box-shadow .18s; display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
-                .pm-card:hover { border-color:#c5c3f5; box-shadow:0 2px 10px rgba(105,108,255,.1); }
-                .pm-card.pm-sel-purple { border-color:#696cff; background:#f4f4ff; box-shadow:0 2px 12px rgba(105,108,255,.15); }
+                .pm-card:hover { border-color:#d4d4d4; box-shadow:0 2px 10px rgba(0,0,0,.08); }
+                .pm-card.pm-sel-purple { border-color:#000000; background:#f3f3f3; box-shadow:0 2px 12px rgba(0,0,0,.08); }
                 .pm-card.pm-sel-green  { border-color:#28c76f; background:#f0fbf5; box-shadow:0 2px 12px rgba(40,199,111,.13); }
                 .pm-card-icon { width:38px; height:38px; border-radius:.75rem; display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0; }
-                .pm-card-icon.purple { background:#ebebff; color:#696cff; }
+                .pm-card-icon.purple { background:#f3f3f3; color:#000000; }
                 .pm-card-icon.green  { background:#e3f9ec; color:#28c76f; }
                 .pm-card-icon.grey   { background:#f2f2f5; color:#aaa; }
                 .pm-radio-dot { width:18px; height:18px; border-radius:50%; border:2px solid #d0d0e0; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .18s; }
                 .pm-radio-dot::after { content:''; width:8px; height:8px; border-radius:50%; background:transparent; transition:background .18s; }
-                .pm-sel-purple .pm-radio-dot { border-color:#696cff; }
-                .pm-sel-purple .pm-radio-dot::after { background:#696cff; }
+                .pm-sel-purple .pm-radio-dot { border-color:#000000; }
+                .pm-sel-purple .pm-radio-dot::after { background:#000000; }
                 .pm-sel-green  .pm-radio-dot { border-color:#28c76f; }
                 .pm-sel-green  .pm-radio-dot::after { background:#28c76f; }
                 .pm-card-disabled { border-radius:1rem; border:2px solid #f0f0f0; background:#fafafa; padding:.85rem .75rem; opacity:.5; cursor:not-allowed; display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
@@ -689,11 +690,11 @@
                 }
                 @if (!isCustomer)
                 {
-                    <div class="d-flex align-items-center gap-2 mt-2 px-1 py-2 rounded-3" style="background:#f3f2ff">
+                    <div class="d-flex align-items-center gap-2 mt-2 px-1 py-2 rounded-3" style="background:#f3f3f3">
                         <i class="ti ti-info-circle text-primary" style="font-size:1rem;flex-shrink:0"></i>
                         <small class="text-muted" style="line-height:1.5">
                             برای استفاده از اعتبار خود ابتدا
-                            <a href="/CustomerLogin?ReturnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="fw-semibold" style="color:#696cff">وارد حساب کاربری خود شوید</a>
+                            <a href="/CustomerLogin?ReturnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="fw-semibold" style="color:#000000">وارد حساب کاربری خود شوید</a>
                         </small>
                     </div>
                 }
@@ -788,11 +789,11 @@
             }
             @if (!isCustomer)
             {
-                <div class="d-flex align-items-center gap-2 mt-2 px-1 py-2 rounded-3" style="background:#f3f2ff">
+                <div class="d-flex align-items-center gap-2 mt-2 px-1 py-2 rounded-3" style="background:#f3f3f3">
                     <i class="ti ti-info-circle text-primary" style="font-size:1rem;flex-shrink:0"></i>
                     <small class="text-muted" style="line-height:1.5">
                         برای استفاده از اعتبار خود ابتدا
-                        <a href="/CustomerLogin?ReturnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="fw-semibold" style="color:#696cff">وارد حساب کاربری خود شوید</a>
+                        <a href="/CustomerLogin?ReturnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="fw-semibold" style="color:#000000">وارد حساب کاربری خود شوید</a>
                     </small>
                 </div>
             }
@@ -870,7 +871,7 @@
                     </div>
                     <div class="modal-body pt-2 pb-2">
                         <!-- Route pill -->
-                        <div class="d-flex align-items-center justify-content-center gap-2 mb-3 py-2 px-3" style="background:#f3f2ff;border-radius:.75rem">
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-3 py-2 px-3" style="background:#f3f3f3;border-radius:.75rem">
                             <span class="fw-bold" style="font-size:.95rem">@trip.originCityName</span>
                             <i class="ti ti-arrow-left text-primary" style="font-size:.85rem"></i>
                             <span class="fw-bold" style="font-size:.95rem">@trip.destinationCityName</span>
@@ -1043,8 +1044,5 @@
         el.style.display = '';
     }
 </script>
-
-
-@await Html.PartialAsync("../Shared/Sections/Footer/_ReserveFooter")
 
 

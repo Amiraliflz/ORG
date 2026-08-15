@@ -129,6 +129,20 @@
 .ti-info-circle:before {
   content: "\eac5";
 }
+/* Aliases for public content pages (subset font — same glyphs, no extra download) */
+.ti-shield-lock:before { content: "\eb22"; }
+.ti-file-text:before { content: "\eb3d"; }
+.ti-help-circle:before { content: "\eac5"; }
+.ti-messages:before { content: "\eae5"; }
+.ti-phone:before { content: "\eb05"; }
+.ti-database:before { content: "\eb75"; }
+.ti-settings:before { content: "\eaa5"; }
+.ti-share:before { content: "\ea19"; }
+.ti-lock:before { content: "\eb22"; }
+.ti-cookie:before { content: "\eac5"; }
+.ti-refresh:before { content: "\ea63"; }
+.ti-calendar-x:before { content: "\ee20"; }
+.ti-credit-card:before { content: "\eb3d"; }
 .ti-xs {
   font-size: 1.125rem !important;
 }

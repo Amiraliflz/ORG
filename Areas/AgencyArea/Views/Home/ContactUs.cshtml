@@ -1,8 +1,10 @@
 @{
-    Layout = "_AgencySideLayout";
+    Layout = "_FrontLayout";
+    ViewData["UseFullTabler"] = false;
     ViewData["Title"] = "ارتباط با ما";
     ViewData["MetaDescription"] = "ارتباط با پشتیبانی مسترشوفر — پیام بگذارید یا از طریق ایمیل و راه‌های ارتباطی سایت با ما در تماس باشید.";
     ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical("/Home/ContactUs");
+    ViewData["DateModified"] = "2026-08-14";
     ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
     {
       ("صفحه اصلی", SeoDefaults.BuildCanonical("/")),
@@ -10,88 +12,50 @@
     };
 }
 
-<style>
-    .contact-hero {
-        background: linear-gradient(135deg, #28c76f 0%, #20a55a 100%);
-        border-radius: 1.5rem;
-        color: #fff;
-        padding: 2.5rem 2rem;
-        margin-bottom: 2rem;
-    }
-    .contact-info-card {
-        border: 1.5px solid #e8e8f0;
-        border-radius: 1rem;
-        padding: 1.25rem 1rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: .75rem;
-        background: #fff;
-    }
-    .contact-info-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: .85rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        flex-shrink: 0;
-    }
-    .contact-form-card {
-        border: 1.5px solid #e8e8f0;
-        border-radius: 1.25rem;
-        padding: 1.75rem;
-        background: #fff;
-    }
-    #contact-success {
-        display: none;
-        background: #e8fbf1;
-        border: 1.5px solid #28c76f;
-        border-radius: .75rem;
-        padding: 1rem 1.25rem;
-        color: #1a7a4a;
-    }
-</style>
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=19" rel="stylesheet" />
+}
 
-<div class="container py-4" style="max-width:900px">
+<section class="section-py route-hub legal-page">
+    <div class="container" style="max-width: 52rem">
+        <nav class="route-breadcrumbs" aria-label="breadcrumb">
+            <ol>
+                <li><a href="/">صفحه اصلی</a></li>
+                <li aria-current="page">ارتباط با ما</li>
+            </ol>
+        </nav>
 
-    <div class="contact-hero text-center">
-        <i class="ti ti-messages" style="font-size:2.5rem;margin-bottom:.5rem;display:block"></i>
-        <h4 class="fw-bold mb-1">ارتباط با ما</h4>
-        <p class="mb-0 opacity-75" style="font-size:.9rem">در صورت هرگونه سوال یا مشکل، با تیم مسترشوفر در تماس باشید</p>
-    </div>
+        <header class="route-hub-header">
+            <h1 class="route-hub-title">ارتباط با ما</h1>
+            <p class="route-hub-lead">
+                پشتیبانی ۲۴ ساعته برای رزرو، کنسلی، هماهنگی سفر یا همکاری — پیام بگذارید یا تماس بگیرید.
+            </p>
+        </header>
 
-    <div class="row g-4">
-
-        <div class="col-lg-4">
-            <h6 class="fw-bold mb-3" style="color:#444">راه‌های ارتباطی</h6>
-
-            <div class="contact-info-card">
-                <div class="contact-info-icon" style="background:#e3f9ec;color:#28c76f">
-                    <i class="ti ti-phone"></i>
+        <div class="legal-contact-grid">
+            <div>
+                <h2 class="route-hub-subtitle route-hub-subtitle--flush">راه‌های ارتباطی</h2>
+                <div class="legal-contact-channel">
+                    <div class="legal-contact-icon" aria-hidden="true"><i class="ti ti-phone"></i></div>
+                    <div>
+                        <p class="legal-contact-label">تلفن پشتیبانی</p>
+                        <p class="legal-contact-value" dir="ltr"><a href="tel:+982128422243">021-28422243</a></p>
+                    </div>
                 </div>
-                <div>
-                    <div class="fw-semibold" style="font-size:.88rem">تلفن پشتیبانی</div>
-                    <div class="text-muted" style="font-size:.85rem" dir="ltr">021-28422243</div>
+                <div class="legal-contact-channel">
+                    <div class="legal-contact-icon" aria-hidden="true"><i class="ti ti-mail"></i></div>
+                    <div>
+                        <p class="legal-contact-label">ایمیل</p>
+                        <p class="legal-contact-value" dir="ltr"><a href="mailto:support@mrshoofer.ir">support@mrshoofer.ir</a></p>
+                    </div>
                 </div>
             </div>
 
-            <div class="contact-info-card">
-                <div class="contact-info-icon" style="background:#f0f4ff;color:#696cff">
-                    <i class="ti ti-mail"></i>
-                </div>
-                <div>
-                    <div class="fw-semibold" style="font-size:.88rem">ایمیل</div>
-                    <div class="text-muted" style="font-size:.85rem" dir="ltr">support@mrshoofer.ir</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-8">
-            <div class="contact-form-card">
-                <h6 class="fw-bold mb-1">ارسال پیام</h6>
-                <p class="text-muted mb-4" style="font-size:.85rem">پیام خود را برای ما ارسال کنید، در اسرع وقت پاسخ می‌دهیم</p>
+            <article class="route-hub-panel">
+                <h2 class="route-hub-subtitle route-hub-subtitle--flush">ارسال پیام</h2>
+                <p>
+                    برای پیگیری رزرو، کنسلی، پیشنهاد یا همکاری بنویسید. معمولاً در همان روز پاسخ می‌دهیم؛ برای موضوع فوری همان سفر با تلفن تماس بگیرید.
+                </p>
 
                 <div id="contact-success">
                     <i class="ti ti-circle-check me-2"></i>
@@ -100,15 +64,15 @@
 
                 <form id="contact-form" novalidate>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold" style="font-size:.88rem">نام و نام خانوادگی</label>
+                        <label class="form-label" for="contact-name">نام و نام خانوادگی</label>
                         <input type="text" id="contact-name" class="form-control" placeholder="نام شما" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold" style="font-size:.88rem">شماره موبایل</label>
+                        <label class="form-label" for="contact-phone">شماره موبایل</label>
                         <input type="tel" id="contact-phone" class="form-control" placeholder="09xxxxxxxxx" dir="ltr" required />
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fw-semibold" style="font-size:.88rem">پیام</label>
+                        <label class="form-label" for="contact-message">پیام</label>
                         <textarea id="contact-message" class="form-control" rows="5" placeholder="پیام خود را بنویسید..." required style="resize:none"></textarea>
                     </div>
                     <button type="submit" id="contact-submit" class="btn btn-primary w-100 rounded-pill" style="height:3rem">
@@ -116,12 +80,10 @@
                         <span id="contact-submit-spinner" class="spinner-border spinner-border-sm ms-2" style="display:none"></span>
                     </button>
                 </form>
-            </div>
+            </article>
         </div>
-
     </div>
-
-</div>
+</section>
 
 @section PageScripts {
 <script>

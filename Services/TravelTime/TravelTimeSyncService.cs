@@ -28,6 +28,8 @@ public interface ITravelTimeSyncService
   /// <param name="gapsOnly">Only geocode missing cities and fill routes that have no row yet.</param>
   Task<TravelTimeSyncResult> SyncAsync(bool force = false, bool gapsOnly = false, CancellationToken ct = default);
   Task<bool> NeedsSyncAsync(CancellationToken ct = default);
+  /// <summary>Look up or fetch Neshan ETA for one OD and persist it. Returns minutes, or 0.</summary>
+  Task<int> EnsureRouteTravelTimeAsync(int originCityId, int destinationCityId, string? originNameFa, string? destNameFa, CancellationToken ct = default);
 }
 
 public sealed class TravelTimeSyncService : ITravelTimeSyncService
@@ -328,6 +330,123 @@ public sealed class TravelTimeSyncService : ITravelTimeSyncService
     var ms = Math.Max(0, _neshanOptions.DelayMsBetweenCalls);
     if (ms > 0)
       await Task.Delay(ms, ct);
+  }
+
+  public async Task<int> EnsureRouteTravelTimeAsync(
+    int originCityId,
+    int destinationCityId,
+    string? originNameFa,
+    string? destNameFa,
+    CancellationToken ct = default)
+  {
+    if (originCityId <= 0 || destinationCityId <= 0 || originCityId == destinationCityId)
+      return 0;
+
+    var existing = await _db.RouteTravelTimes.AsNoTracking()
+      .Where(r =>
+        (r.OriginCityId == originCityId && r.DestinationCityId == destinationCityId) ||
+        (r.OriginCityId == destinationCityId && r.DestinationCityId == originCityId))
+      .Select(r => (int?)r.TravelTimeMins)
+      .FirstOrDefaultAsync(ct);
+    if (existing is > 0)
+      return existing.Value;
+
+    if (!_neshan.IsConfigured)
+      return 0;
+
+    var originName = string.IsNullOrWhiteSpace(originNameFa) ? originCityId.ToString() : originNameFa.Trim();
+    var destName = string.IsNullOrWhiteSpace(destNameFa) ? destinationCityId.ToString() : destNameFa.Trim();
+
+    var oCoord = await EnsureCityCoordinateAsync(originCityId, originName, ct);
+    var dCoord = await EnsureCityCoordinateAsync(destinationCityId, destName, ct);
+    if (oCoord is null || dCoord is null)
+      return 0;
+
+    try
+    {
+      var dist = await _neshan.GetDistanceAsync(
+        oCoord.Value.Lat, oCoord.Value.Lng, dCoord.Value.Lat, dCoord.Value.Lng, ct);
+      if (dist is null || dist.Value.DurationSeconds <= 0)
+        return 0;
+
+      var mins = (int)Math.Max(1, Math.Round(dist.Value.DurationSeconds / 60.0));
+      var pc = new PersianCalendar();
+      var now = DateTime.Now;
+
+      var row = await _db.RouteTravelTimes.FirstOrDefaultAsync(
+        r => r.OriginCityId == originCityId && r.DestinationCityId == destinationCityId, ct);
+      if (row is null)
+      {
+        row = new RouteTravelTime
+        {
+          OriginCityId = originCityId,
+          DestinationCityId = destinationCityId
+        };
+        _db.RouteTravelTimes.Add(row);
+      }
+
+      row.OriginNameFa = originName;
+      row.DestinationNameFa = destName;
+      row.TravelTimeMins = mins;
+      row.DistanceMeters = dist.Value.DistanceMeters;
+      row.Source = "neshan";
+      row.ShamsiYear = pc.GetYear(now);
+      row.ShamsiMonth = pc.GetMonth(now);
+      row.UpdatedAt = DateTime.UtcNow;
+      await _db.SaveChangesAsync(ct);
+      return mins;
+    }
+    catch (DbUpdateException ex)
+    {
+      _logger.LogWarning(ex, "ETA persist race for {Origin}→{Dest}", originName, destName);
+      foreach (var entry in _db.ChangeTracker.Entries().ToList())
+        entry.State = EntityState.Detached;
+      var retry = await _db.RouteTravelTimes.AsNoTracking()
+        .Where(r => r.OriginCityId == originCityId && r.DestinationCityId == destinationCityId)
+        .Select(r => (int?)r.TravelTimeMins)
+        .FirstOrDefaultAsync(ct);
+      return retry is > 0 ? retry.Value : 0;
+    }
+    catch (Exception ex)
+    {
+      _logger.LogWarning(ex, "On-demand ETA failed {Origin}→{Dest}", originName, destName);
+      return 0;
+    }
+  }
+
+  private async Task<(double Lat, double Lng)?> EnsureCityCoordinateAsync(int cityId, string name, CancellationToken ct)
+  {
+    var existing = await _db.CityCoordinates.AsNoTracking()
+      .FirstOrDefaultAsync(c => c.CityId == cityId, ct);
+    if (existing != null)
+      return (existing.Lat, existing.Lng);
+
+    var geo = await _neshan.GeocodeAsync(name, ct);
+    if (geo is null)
+      geo = await _neshan.GeocodeAsync($"{name} ایران", ct);
+    if (geo is null)
+      return null;
+
+    try
+    {
+      _db.CityCoordinates.Add(new CityCoordinate
+      {
+        CityId = cityId,
+        NameFa = name,
+        Lat = geo.Value.Lat,
+        Lng = geo.Value.Lng,
+        Source = "neshan",
+        UpdatedAt = DateTime.UtcNow
+      });
+      await _db.SaveChangesAsync(ct);
+    }
+    catch (DbUpdateException)
+    {
+      foreach (var entry in _db.ChangeTracker.Entries().ToList())
+        entry.State = EntityState.Detached;
+    }
+
+    return geo;
   }
 
   public static string NormalizeCityName(string? s)

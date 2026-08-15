@@ -25,11 +25,11 @@
 #profileApp .input-group .form-control{border-radius:0 1.5rem 1.5rem 0!important}
 #profileApp .input-group .input-group-text{border-radius:1.5rem 0 0 1.5rem!important}
 #profileApp .input-group{border-radius:1.5rem;overflow:hidden}
-.profile-hero{background:#fff;border-radius:1.25rem;padding:1rem 1.25rem;position:relative;overflow:hidden;border:1.5px solid #e7e7ff;box-shadow:0 2px 12px rgba(105,108,255,.07)}
-.profile-hero::after{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:linear-gradient(180deg,#696cff,#9155fd);border-radius:0 1.25rem 1.25rem 0}
-.avatar-ring{width:64px;height:64px;border-radius:50%;background:#f3f2ff;border:3px solid #c5c3f5;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#696cff;flex-shrink:0}
-.stat-pill{background:#f3f2ff;border-radius:2rem;padding:.35rem .8rem;font-size:.8rem;color:#696cff;font-weight:500;white-space:nowrap;box-shadow:0 1px 4px rgba(105,108,255,.1)}
-.pcard{border-radius:1rem;border:none;box-shadow:0 2px 16px rgba(105,108,255,.08)}
+.profile-hero{background:#fff;border-radius:1.25rem;padding:1rem 1.25rem;position:relative;overflow:hidden;border:1.5px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.profile-hero::after{display:none}
+.avatar-ring{width:64px;height:64px;border-radius:50%;background:#f3f3f3;border:3px solid #d4d4d4;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#000;flex-shrink:0}
+.stat-pill{background:#f3f3f3;border-radius:2rem;padding:.35rem .8rem;font-size:.8rem;color:#000;font-weight:500;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.pcard{border-radius:1rem;border:none;box-shadow:0 2px 16px rgba(0,0,0,.08)}
 .tile-sm{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem}
 .quick-tile{border-radius:.875rem;border:1.5px solid transparent;padding:1.2rem .75rem;text-align:center;text-decoration:none;display:block;transition:all .2s;background:#fff;color:inherit}
 .quick-tile:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);color:inherit}
@@ -83,7 +83,7 @@
         <div class="col-lg-7">
             <div class="card pcard p-4">
                 <h6 class="fw-bold mb-1 d-flex align-items-center gap-2">
-                    <span class="tile-sm" style="background:#f0f0ff;color:#696cff"><i class="ti ti-edit"></i></span>
+                    <span class="tile-sm" style="background:#f3f3f3;color:#000"><i class="ti ti-edit"></i></span>
                     اطلاعات شخصی
                 </h6>
                 <p class="text-muted small mb-4">اطلاعات زیر در بلیط‌های شما استفاده می‌شود</p>
@@ -138,8 +138,8 @@
                 </h6>
                 <div class="row g-2">
                     <div class="col-4">
-                        <a href="/Customer/MyTickets" class="quick-tile" style="border-color:#e7e7ff">
-                            <div class="tile-icon" style="background:#f0f0ff;color:#696cff"><i class="ti ti-ticket"></i></div>
+                        <a href="/Customer/MyTickets" class="quick-tile" style="border-color:#e5e5e5">
+                            <div class="tile-icon" style="background:#f3f3f3;color:#000"><i class="ti ti-ticket"></i></div>
                             <div class="fw-semibold" style="font-size:.8rem">سفرهای من</div>
                             <small class="text-muted">@ticketCount بلیط</small>
                         </a>

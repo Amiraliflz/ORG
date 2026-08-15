@@ -4,7 +4,14 @@
 }
 
 .success-payment {
-  background-color: RGBA(var(--bs-success-rgb), .25) !important;
+  background-color: #5e5e5e !important;
+  color: #fff !important;
+}
+
+.success-payment h6,
+.success-payment small,
+.success-payment .text-muted {
+  color: #fff !important;
 }
 
 .not_enough_payment {
@@ -44,8 +51,8 @@
 }
 
 .shadow-7\.5__13__5__gray30 {
-  --tw-shadow: 0 1.875rem 3.125rem 1.25rem hsla(0,0%,95%,.3);
-  --tw-shadow-colored: 0 1.875rem 3.125rem 1.25rem var(--tw-shadow-color);
+  --tw-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 10px 24px rgba(0, 0, 0, 0.1), 0 22px 48px rgba(0, 0, 0, 0.08);
+  --tw-shadow-colored: 0 10px 24px rgba(0, 0, 0, 0.1);
 }
 
 .shadow-1__4\.5__black\/8, .shadow-7\.5__13__5__gray30 {
@@ -62,7 +69,9 @@
 }
 
 .font-bold {
-  font-weight: 700;
+  font-family: font-bold, "tahoma", sans-serif;
+  font-weight: normal;
+  letter-spacing: 0;
 }
 
 .text-blck {
@@ -106,7 +115,7 @@
 }
 
 .selected {
-  color: #7367f0;
+  color: var(--brand-ink, #000);
 }
 
 
@@ -130,8 +139,8 @@
 }
 
 .shadow-1__2__gray\/75 {
-  --tw-shadow: 0px 2px 8px 0px rgba(38,50,80,.07);
-  --tw-shadow-colored: 0px 2px 8px 0px var(--tw-shadow-color);
+  --tw-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 10px 24px rgba(0, 0, 0, 0.1), 0 22px 48px rgba(0, 0, 0, 0.08);
+  --tw-shadow-colored: 0 10px 24px rgba(0, 0, 0, 0.1);
 }
 
 .px-14 {
@@ -702,7 +711,7 @@ select.selectpicker {
   }
 
 .bootstrap-select .dropdown-menu a:not([href]):not(.active):not(:active):not(.selected):hover {
-  color: #7367f0 !important;
+  color: var(--brand-ink, #000) !important;
 }
 
 .bootstrap-select .btn[class*=btn-]:active,

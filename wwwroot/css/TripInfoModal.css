@@ -8,7 +8,7 @@
   border-radius: 1.35rem;
   border: none;
   overflow: hidden;
-  box-shadow: 0 1rem 2.5rem rgba(47, 43, 61, 0.16);
+  box-shadow: var(--box-shadow-lift, 0 1rem 2.5rem rgba(0, 0, 0, 0.12));
   max-height: min(88dvh, 36rem);
 }
 
@@ -45,7 +45,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
 }
 
 .trip-info-modal-icon .ti {
@@ -54,7 +54,7 @@
 }
 
 .trip-info-modal-title {
-  color: #2f3349;
+  color: #000000;
   font-weight: 600;
   font-size: 1.05rem;
   line-height: 1.4;
@@ -76,6 +76,7 @@
 .trip-info-feature .ti {
   font-size: 1.15rem;
   line-height: 1;
+  color: #000000;
 }
 
 .trip-info-feature strong {
@@ -83,21 +84,21 @@
 }
 
 .trip-info-feature--origin {
-  background: #f0f4ff;
-  border: 1px solid #e0e7ff;
+  background: #f3f3f3;
+  border: 1px solid #e5e5e5;
 }
 
 .trip-info-feature--origin strong {
-  color: #667eea;
+  color: #000000;
 }
 
 .trip-info-feature--dest {
-  background: #fff4f0;
-  border: 1px solid #ffe7e0;
+  background: #f7f7f7;
+  border: 1px solid #e5e5e5;
 }
 
 .trip-info-feature--dest strong {
-  color: #764ba2;
+  color: #000000;
 }
 
 .trip-info-modal-cta {
@@ -109,10 +110,17 @@
   min-height: 2.85rem;
   height: auto !important;
   padding: 0.7rem 1.15rem !important;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background: #000000 !important;
+  color: #ffffff !important;
   border: none !important;
   font-weight: 500;
   font-size: 0.95rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+.trip-info-modal-cta:hover {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
 }
 
 .trip-info-modal-cta .ti {

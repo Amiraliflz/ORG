@@ -20,69 +20,6 @@
 		right: auto !important;
 	}
 
-	.landing-navbar .navbar-login-btn {
-		position: relative;
-		display: inline-flex !important;
-		align-items: center !important;
-		justify-content: center !important;
-		gap: 0.4rem;
-		padding: 0 !important;
-		border-radius: 1.25rem !important;
-		line-height: 1 !important;
-		width: 2.75rem !important;
-		height: 2.75rem !important;
-		min-width: 2.75rem !important;
-		min-height: 2.75rem !important;
-		box-sizing: border-box !important;
-		text-align: center;
-	}
-
-	/* Kill Bootstrap/theme icon side margins that shove the glyph off-center */
-	.landing-navbar .navbar-login-btn .ti,
-	.landing-navbar .navbar-login-btn .tf-icons,
-	.landing-navbar .navbar-login-btn i {
-		position: absolute !important;
-		inset: 0 !important;
-		display: flex !important;
-		align-items: center !important;
-		justify-content: center !important;
-		width: 100% !important;
-		height: 100% !important;
-		margin: 0 !important;
-		padding: 0 !important;
-		font-size: 1.25rem !important;
-		line-height: 1 !important;
-		transform: none !important;
-	}
-
-	/* Optical RTL flip without breaking centering */
-	[dir="rtl"] .landing-navbar .navbar-login-btn .ti::before,
-	html[dir="rtl"] .landing-navbar .navbar-login-btn .ti::before,
-	.landing-navbar .navbar-login-btn .ti.scaleX-n1-rtl::before {
-		display: inline-block;
-		transform: scaleX(-1);
-	}
-
-	@@media (min-width: 768px) {
-		.landing-navbar .navbar-login-btn {
-			width: auto !important;
-			min-width: 0 !important;
-			height: auto !important;
-			min-height: 2.5rem !important;
-			padding: 0.55rem 1.15rem !important;
-		}
-
-		.landing-navbar .navbar-login-btn .ti,
-		.landing-navbar .navbar-login-btn .tf-icons,
-		.landing-navbar .navbar-login-btn i {
-			position: static !important;
-			inset: auto !important;
-			width: 1.15rem !important;
-			height: 1.15rem !important;
-			flex: 0 0 auto;
-		}
-	}
-
 	@@media (max-width: 767.98px) {
 		.layout-navbar .navbar-nav .nav-item.dropdown .dropdown-menu {
 			left: 0.9rem !important;
@@ -99,7 +36,6 @@
 			margin-inline-end: 0.5rem !important;
 		}
 
-		/* Hide text label span so only centered icon remains */
 		.landing-navbar .navbar-login-btn > span {
 			display: none !important;
 		}
@@ -132,10 +68,10 @@
 				<button class="navbar-toggler border-0 text-heading position-absolute end-0 top-0 scaleX-n1-rtl" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<i class="ti ti-x ti-sm"></i>
 				</button>
-				<ul class="navbar-nav me-auto p-3 p-lg-0">
+				<ul class="navbar-nav me-auto p-3 p-lg-0 align-items-center gap-1">
 
 					<li class="nav-item">
-						<a class="fw-medium btn btn-primary " asp-area="AgencyArea" asp-controller="Home" asp-action="Index">
+						<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Home" asp-action="Index">
 							<span>
 								<i class="ti ti-ticket"></i>
 								سفر جدید
@@ -146,20 +82,19 @@
 					<li class="nav-item">
 						@if (User.HasClaim("Role", "Customer"))
 						{
-							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile">
+							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile">
 								<span><i class="ti ti-user-circle"></i> پروفایل من</span>
 							</a>
 						}
 						else if (User.Identity?.IsAuthenticated == true)
 						{
-							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index">
+							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index">
 								<span><i class="ti ti-home"></i> پروفایل من</span>
 							</a>
 						}
 						else
 						{
-							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin"
-							   asp-route-ReturnUrl="/Customer/MyProfile">
+							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" rel="nofollow">
 								<span><i class="ti ti-user-circle"></i> پروفایل من</span>
 							</a>
 						}
@@ -168,19 +103,19 @@
 					<li class="nav-item">
 						@if (User.HasClaim("Role", "Customer"))
 						{
-							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
+							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
 								<span><i class="ti ti-ticket"></i> سفرهای من</span>
 							</a>
 						}
 						else
 						{
-							<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
+							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
 								<span><i class="ti ti-certificate-2"></i> سفرهای من</span>
 							</a>
 						}
 					</li>
 					<li class="nav-item">
-						<a class="nav-link fw-medium" asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs">
+						<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs">
 							<span>
 								<i class="ti ti-heart-handshake"></i>
 								پشتیبانی 24/7
@@ -227,7 +162,7 @@
 						{
 						<li class="nav-item navbar-dropdown dropdown-user dropdown">
 							<a class="nav-link dropdown-toggle hide-arrow show" data-bs-toggle="dropdown" href="javascript:void(0);" aria-expanded="true">
-								<span style="width:36px;height:36px;border-radius:50%;background:#696cff;display:inline-flex;align-items:center;justify-content:center;">
+								<span class="navbar-user-avatar">
 								<i class="ti ti-user" style="color:#fff;font-size:1.1rem;"></i>
 							</span>
 							</a>
@@ -298,7 +233,7 @@
 						else
 
 						{
-						<a asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" class="btn btn-primary navbar-login-btn" aria-label="ورود / ثبت‌نام">
+						<a asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" class="fw-medium btn btn-sm btn-primary navbar-nav-btn navbar-login-btn" aria-label="ورود / ثبت‌نام">
 							<i class="ti ti-login" aria-hidden="true"></i>
 							<span class="d-none d-md-inline navbar-login-label">ورود / ثبت‌نام</span>
 						</a>

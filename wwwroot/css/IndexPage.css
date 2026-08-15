@@ -14,7 +14,7 @@
   -webkit-text-fill-color: unset !important;
   background-clip: unset !important;
   animation: none !important;
-  color: #696cff !important;
+  color: #2f2b3d !important;
   font-family: font-bold, "tahoma", sans-serif !important;
   font-weight: normal !important;        /* weight via font-family, not font-weight */
   font-size: 2rem !important;            /* ~32px — Persian reads larger than Latin */
@@ -33,19 +33,115 @@
   color: #6f6b7d !important;
   font-weight: normal !important;
   text-wrap: balance;
-  margin-bottom: 2rem !important;
+  margin-bottom: 1.25rem !important;
 }
 
-/* Hero section: clear fixed navbar (~4rem) + generous breathing room */
-.landing-hero {
-  padding-top: 6.5rem !important;
-  padding-bottom: 3rem !important;
+/* Hero — Pateh band: full-width art stage + search overlapping bottom */
+.landing-hero,
+.light-style .landing-hero,
+.landing-hero1 {
+  --hero-ink: #000000;
+  --hero-muted: #5e5e5e;
+  --hero-accent: #000000;
+  --hero-sky: #f3f3f3;
+  --hero-ground: #ffffff;
+  padding-top: 0 !important;
+  padding-bottom: 1.5rem !important;
+  isolation: isolate;
+  overflow: visible;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%) !important;
+  background-image: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%) !important;
+  animation: none !important;
 }
 
-/* Text-box: cap measure at ~42rem, centred */
+.light-style .landing-hero::after,
+.landing-hero::after {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.landing-hero-stage {
+  position: relative;
+  min-height: clamp(17rem, 42vw, 26rem);
+  padding-top: 4.25rem;
+  padding-bottom: 6.5rem;
+  background-color: var(--hero-sky);
+  overflow: hidden;
+}
+
+/* Art fills the whole stage (not a floating postcard) */
+.landing-hero-stage-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.landing-hero-stage-art-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Car sits lower-right in the art — crop sky, keep sedan in the band */
+  object-position: 72% 78%;
+  transform: scale(1.28);
+  transform-origin: 72% 78%;
+}
+
+/* Soft wash — original overlay (headline gone, keep first look) */
+.landing-hero-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.42) 0%,
+      rgba(255, 255, 255, 0.12) 32%,
+      rgba(248, 247, 250, 0.45) 72%,
+      var(--hero-ground) 100%
+    );
+}
+
+.landing-hero-stage-content {
+  position: relative;
+  z-index: 2;
+}
+
+.landing-hero-search-wrap {
+  position: relative;
+  z-index: 3;
+  margin-top: -3.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.landing-hero-below {
+  position: relative;
+  z-index: 1;
+}
+
 .landing-hero .hero-text-box {
-  max-width: 42rem !important;
-  margin: 0 auto 2rem !important;
+  max-width: 36rem !important;
+  margin: 0 auto !important;
+  padding-block: 0;
+  min-height: 0;
+}
+
+.landing-hero .hero-title {
+  color: #2f2b3d !important;
+  text-shadow: none;
+}
+
+.landing-hero .hero-sub-title {
+  color: var(--hero-muted) !important;
+}
+
+/* Legacy class aliases (safe if cached markup) */
+.landing-hero-visual,
+.landing-hero-visual-img {
+  display: none;
 }
 
 /*
@@ -86,13 +182,43 @@
 
 .landing-hero .hero-zone-card {
   width: 100%;
-  border: none;
-  border-radius: var(--hz-radius);
-  box-shadow: 0 0.5rem 1.5rem rgba(67, 89, 113, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.1);
+  background: #fff;
 }
 
 .landing-hero .search-card.hero-zone-card {
   margin-bottom: 0 !important;
+}
+
+.landing-hero .hero-safezone--form {
+  width: min(100%, 52rem);
+}
+
+/* Trust chips — quieter, same ink as rest of site */
+.landing-hero .hero-trust-stats {
+  margin-top: 1rem;
+  gap: 0.75rem 1.5rem;
+}
+
+.landing-hero .hero-trust-stat {
+  color: var(--hero-muted);
+  font-size: 0.875rem;
+}
+
+.landing-hero .hero-trust-stat i {
+  color: var(--hero-accent);
+  opacity: 0.85;
+}
+
+.landing-hero .hero-trust-stat strong {
+  color: var(--hero-ink);
+  font-family: font-bold, "tahoma", sans-serif;
+  font-weight: normal;
 }
 
 /* Shared card padding — same pattern for search + definition */
@@ -106,28 +232,39 @@
 /* Laptop: wide shell; search form comfortably fits OD + swap + date + CTA */
 @media (min-width: 992px) {
   .layout-navbar > .container,
-  .landing-hero > .container {
+  .landing-hero-stage-content,
+  .landing-hero-search-wrap,
+  .landing-hero-below {
     max-width: 90% !important;
     width: 90%;
   }
   .landing-hero .hero-safezone--form {
-    max-width: 58rem;
+    max-width: 52rem;
   }
   .landing-hero .hero-safezone--wide {
     max-width: 100%;
   }
   .landing-hero .hero-text-box {
-    max-width: 42rem !important;
+    max-width: 38rem !important;
   }
   .landing-hero .hero-safezone {
     --hz-pad: 1.75rem;
-    --hz-gap: 1.75rem;
+    --hz-gap: 1.5rem;
+  }
+  .landing-hero-stage {
+    min-height: clamp(20rem, 36vw, 28rem);
+    padding-bottom: 7rem;
+  }
+  .landing-hero-search-wrap {
+    margin-top: -3.75rem;
   }
 }
 
 @media (min-width: 1400px) {
   .layout-navbar > .container,
-  .landing-hero > .container {
+  .landing-hero-stage-content,
+  .landing-hero-search-wrap,
+  .landing-hero-below {
     max-width: min(90%, 85rem) !important;
     width: min(90%, 85rem);
   }
@@ -144,14 +281,33 @@
 
 /* Mobile: full screen cards */
 @media (max-width: 767.98px) {
-  .landing-hero > .container {
+  .landing-hero-stage {
+    min-height: 16.5rem;
+    padding-top: 3.75rem;
+    padding-bottom: 5.25rem;
+  }
+  .landing-hero-stage-art-img {
+    object-position: 78% 74%;
+    transform: scale(1.42);
+    transform-origin: 78% 74%;
+  }
+  .landing-hero-stage-content,
+  .landing-hero-search-wrap,
+  .landing-hero-below {
     padding-inline: 0;
     max-width: 100%;
+    width: 100%;
+  }
+  .landing-hero-search-wrap {
+    margin-top: -2.25rem;
+    margin-bottom: 0.75rem;
   }
   .landing-hero .hero-text-box {
     padding-inline: var(--hz-sp-4, 1rem) !important;
     max-width: none !important;
-    margin-bottom: var(--hz-sp-5, 1.5rem) !important;
+  }
+  .landing-hero .hero-safezone--form {
+    width: 100%;
   }
   .landing-hero .hero-safezone {
     width: 100%;
@@ -164,6 +320,7 @@
   .landing-hero .hero-zone-card {
     border-radius: 0;
     box-shadow: none;
+    border-inline: 0;
     border-block: 1px solid rgba(67, 89, 113, 0.08);
   }
   .landing-hero .hero-definition-media {
@@ -187,7 +344,7 @@
   display: flex;
   align-items: center;
   gap: var(--hz-sp-2, 0.5rem);
-  color: #5d596c;
+  color: #000000;
   font-family: font-regular, "tahoma", sans-serif;
   font-size: 0.875rem;
   line-height: 1.6;
@@ -195,12 +352,12 @@
 .hero-trust-stat strong {
   font-family: font-bold, "tahoma", sans-serif;
   font-weight: normal;
-  color: #696cff;
+  color: var(--brand-ink, #000);
   font-size: 1rem;
 }
 .hero-trust-stat i {
   font-size: 1.1rem;
-  color: #696cff;
+  color: var(--brand-ink, #000);
   flex-shrink: 0;
 }
 
@@ -245,9 +402,9 @@
   --hd-sp-5: var(--hz-sp-5, 1.5rem);
   --hd-sp-6: var(--hz-sp-6, 2rem);
   --hd-radius: var(--hz-radius, 1rem);
-  --hd-ink: #5d596c;
-  --hd-muted: #6f6b7d;
-  --hd-accent: #696cff;
+  --hd-ink: #000000;
+  --hd-muted: #5e5e5e;
+  --hd-accent: var(--brand-ink, #000);
   --hd-surface: #fff;
   --hd-photo-w: 14rem;
   --hd-photo-ratio: 16 / 9;
@@ -259,12 +416,18 @@
 .hero-definition-card {
   border: none;
   border-radius: var(--hd-radius);
-  box-shadow: 0 0.5rem 1.5rem rgba(67, 89, 113, 0.08);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 10px 24px rgba(0, 0, 0, 0.1),
+    0 22px 48px rgba(0, 0, 0, 0.08);
   background: var(--hd-surface);
   overflow: hidden;
 }
 .hero-definition-card.hero-zone-card {
-  box-shadow: 0 0.5rem 1.5rem rgba(67, 89, 113, 0.08);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 10px 24px rgba(0, 0, 0, 0.1),
+    0 22px 48px rgba(0, 0, 0, 0.08);
 }
 .hero-definition-body-wrap {
   padding: 0;
@@ -386,7 +549,7 @@
 }
 .hero-definition-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0.35rem 0.85rem rgba(105, 108, 255, 0.28);
+  box-shadow: 0 0.35rem 0.85rem rgba(0, 0, 0, 0.28);
 }
 .hero-definition-btn:focus-visible {
   outline: 2px solid var(--hd-accent);
@@ -502,14 +665,14 @@
 
 /* ── Popular routes — fits landing rhythm (features → routes → CTA) ── */
 .landing-routes {
-  --lr-ink: #5d596c;
+  --lr-ink: #000000;
   --lr-muted: #6f6b7d;
-  --lr-accent: #696cff;
+  --lr-accent: var(--brand-ink, #000);
   --lr-line: rgba(67, 89, 113, 0.1);
   --lr-surface: rgba(255, 255, 255, 0.72);
   position: relative;
   background:
-    linear-gradient(180deg, rgba(105, 108, 255, 0.035) 0%, transparent 42%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.035) 0%, transparent 42%),
     transparent;
 }
 
@@ -554,7 +717,9 @@
   border: 1px solid var(--lr-line);
   color: var(--lr-ink);
   text-decoration: none;
-  box-shadow: 0 0.35rem 1rem rgba(67, 89, 113, 0.04);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 8px 18px rgba(0, 0, 0, 0.08);
   transition:
     border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -624,7 +789,7 @@
 }
 
 .landing-route-link:hover {
-  border-color: rgba(105, 108, 255, 0.45);
+  border-color: rgba(0, 0, 0, 0.45);
   color: var(--lr-accent);
   box-shadow: 0 0.55rem 1.35rem rgba(67, 89, 113, 0.08);
   transform: translateY(-1px);
@@ -686,9 +851,9 @@
 }
 
 .landing-routes-cities a:hover {
-  border-color: rgba(105, 108, 255, 0.45);
+  border-color: rgba(0, 0, 0, 0.45);
   color: var(--lr-accent);
-  background: rgba(105, 108, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .landing-routes-actions {
@@ -734,9 +899,102 @@
   margin-inline: auto;
   border: none;
   border-radius: 15px;
+  background: linear-gradient(180deg, #f3f3f3 0%, #fff 70%);
+  color: #000;
 }
 .landing-cta-img {
   max-height: 250px;
+}
+
+.landing-howto,
+.landing-classes,
+.landing-contact,
+#landingHowTo,
+#landingClasses,
+#landingContact {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%) !important;
+}
+
+.landing-howto-lead,
+.landing-classes-lead {
+  font-family: font-regular, "tahoma", sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0;
+  max-width: 36rem;
+  margin-inline: auto;
+}
+
+.landing-howto-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .landing-howto-steps {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .landing-howto-steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.landing-howto-step {
+  background: #fff;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 1rem;
+  padding: 1.25rem 1.15rem;
+  text-align: start;
+  box-shadow: var(--box-shadow-lift, 0 10px 24px rgba(0, 0, 0, 0.1));
+}
+
+.landing-howto-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  background: #f3f3f3;
+  color: var(--brand-ink, #000);
+  font-family: font-bold, "tahoma", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.landing-howto-title {
+  font-family: font-bold, "tahoma", sans-serif;
+  font-weight: normal;
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: #000000;
+  margin-bottom: 0.4rem;
+}
+
+.landing-howto-text,
+.landing-classes-text {
+  font-family: font-regular, "tahoma", sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.85;
+  letter-spacing: 0;
+  color: #5e5e5e;
+  margin-bottom: 0;
+}
+
+.landing-classes-card {
+  border-color: #e5e5e5 !important;
+  border-radius: 1rem;
+  text-align: start;
+  box-shadow: var(--box-shadow-lift, 0 10px 24px rgba(0, 0, 0, 0.1)) !important;
 }
 
 .landing-faq .accordion-item {
@@ -889,6 +1147,8 @@ body:has(.landing-hero) {
   flex: 0 0 var(--od-swap-size) !important;
   padding: 0 !important;
   margin: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
@@ -909,11 +1169,11 @@ body:has(.landing-hero) {
     transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Pin to vertical center of the input row (not the helper text below) */
+/* Pin to vertical center of the ~40px input row (not the helper text below) */
 .landing-hero #tripForm .od-swap-btn {
-  top: 0.55rem;
-  margin-top: 0;
-  margin-bottom: 0;
+  top: 0.25rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .landing-hero .od-swap-btn:hover,
@@ -988,9 +1248,8 @@ body:has(.landing-hero) {
 
 
 .landing-hero {
-  background-color: hsla(213.08823529411762, 0%, 93%, 1) !important;
-  background-image: radial-gradient(circle at 83% 22%, hsla(35.735294117647136, 82%, 87%, 1) 0%, transparent 50%), radial-gradient(circle at 0% 50%, hsla(194.5588235294118, 37%, 91%, 1) 0%, transparent 50%), radial-gradient(circle at 21% 21%, hsla(27.999999999999577, 0%, 86%, 1) 0%, transparent 50%), radial-gradient(circle at 54% 77%, hsla(193.2352941176474, 100%, 95%, 1) 0%, transparent 50%), radial-gradient(circle at 30% 75%, hsla(197.87234042553195, 25%, 35%, 1) 0%, transparent 20%) !important;
-  background-blend-mode: normal, normal, normal, normal, normal !important;
+  background-color: #fff !important;
+  background-image: none !important;
 }
 .input-icons i {
   position: absolute;
@@ -1234,23 +1493,49 @@ body:has(.landing-hero) {
 }
 
 .landing-hero1 {
-  --c-0: hsla(175, 83%, 69%, 1);
-  --y-0: 78%;
-  --x-0: 31%;
-  --c-1: hsla(101, 68%, 100%, 1);
-  --x-1: 88%;
-  --y-1: 93%;
-  --x-2: 99%;
-  --y-2: 8%;
-  --c-2: hsla(84, 89%, 82%, 1);
-  --c-3: hsla(36, 68%, 82%, 1);
-  --y-3: 0%;
-  --x-3: 41%;
-  --c-4: hsla(189, 63%, 89%, 1);
-  --x-4: 19%;
-  --y-4: 59%;
-  background-color: hsla(52, 73%, 83%, 1) !important;
-  background-image: radial-gradient(circle at var(--x-0) var(--y-0), var(--c-0) var(--s-start-0), transparent var(--s-end-0)), radial-gradient(circle at var(--x-1) var(--y-1), var(--c-1) var(--s-start-1), transparent var(--s-end-1)), radial-gradient(circle at var(--x-2) var(--y-2), var(--c-2) var(--s-start-2), transparent var(--s-end-2)), radial-gradient(circle at var(--x-3) var(--y-3), var(--c-3) var(--s-start-3), transparent var(--s-end-3)), radial-gradient(circle at var(--x-4) var(--y-4), var(--c-4) var(--s-start-4), transparent var(--s-end-4)) !important;
-  animation: hero-gradient-animation 10s linear infinite alternate !important;
-  background-blend-mode: normal, normal, normal, normal, normal !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%) !important;
+  background-image: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%) !important;
+  animation: none !important;
+}
+
+/* ── Contact photo frame (correct aspect, no stretch/mirror) ── */
+.landing-contact .contact-img-box {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.landing-contact .contact-img-frame {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: #ecebf0;
+}
+
+.landing-contact .contact-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  transform: scaleX(-1);
+}
+
+.landing-contact .contact-img-meta {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 992px) {
+  .landing-contact .contact-img-box {
+    min-height: 100%;
+  }
+
+  .landing-contact .contact-img-frame {
+    flex: 1 1 auto;
+    min-height: 14rem;
+    aspect-ratio: auto;
+  }
 }

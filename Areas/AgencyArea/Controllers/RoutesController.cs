@@ -12,6 +12,7 @@ public class RoutesController : Controller
   [AcceptVerbs("GET", "HEAD")]
   public IActionResult Index()
   {
+    Response.Headers.CacheControl = "public,max-age=300";
     ViewData["Title"] = "مسیرهای سواری بین‌شهری";
     ViewData["MetaDescription"] =
       "فهرست مسیرهای پرتردد سواری بین‌شهری مسترشوفر — رزرو آنلاین از تهران و شهرهای ایران با رانندگان تأییدشده. شهر مبدأ را انتخاب کنید یا مسیر دقیق را باز کنید.";

@@ -2,6 +2,19 @@
 
 @import url("../farsi-fonts/font.css");
 
+/*
+  Persian type baseline (IRANSansX is static-per-weight):
+  - Weight via font-family (font-regular / font-bold / …), never font-weight alone
+  - letter-spacing must stay 0 — tracking breaks joined letterforms
+  - Headings ~1.4, body ~1.85 (Latin-tight 1.2 clips Persian ascenders/descenders)
+*/
+:root {
+  --fa-lh-heading: 1.4;
+  --fa-lh-subhead: 1.5;
+  --fa-lh-body: 1.85;
+  --fa-tracking: 0;
+}
+
 *{
     -moz-font-feature-settings: "ss02" ;
     -webkit-font-feature-settings: "ss02" ;
@@ -27,11 +40,12 @@
 }
 
 html body, option, select {
-    font-family: font-primary, "tahoma", serif;
+    font-family: font-primary, "tahoma", sans-serif;
+    letter-spacing: var(--fa-tracking);
 }
 
 .menu-sub {
-    font-family: font-regular, "tahoma", serif;
+    font-family: font-regular, "tahoma", sans-serif;
     line-height: unset !important;
 }
 
@@ -41,17 +55,20 @@ html body, option, select {
 }
 
 p, html table {
-    font-family: font-regular, "tahoma", serif;
-    line-height: 2 !important;
+    font-family: font-regular, "tahoma", sans-serif;
+    line-height: var(--fa-lh-body) !important;
+    letter-spacing: var(--fa-tracking);
 }
 
 h6, .h6, h5, .h5, h4, .h4, .custom-option-icon .custom-option-body .custom-option-title, .timeline-event p,
 small {
-    line-height: 1.6 !important;
+    line-height: var(--fa-lh-subhead) !important;
+    letter-spacing: var(--fa-tracking);
 }
 
 .h3, h3, h2, .h2, h1, .h1 {
-    line-height: 1.2 !important;
+    line-height: var(--fa-lh-heading) !important;
+    letter-spacing: var(--fa-tracking);
 }
 
 html h6,
@@ -485,11 +502,11 @@ ul.nav li.nav-item .nav-link.py-2 {
 }
 
 .custom-option.checked {
-    border: 1px solid #7367f0 !important;
+    border: 1px solid #000000 !important;
 }
 
 .custom-option.checked img {
-    border: 2px solid #7367f0;
+    border: 2px solid #000000;
 }
 
 .custom-option.custom-option-image .custom-option-body img {

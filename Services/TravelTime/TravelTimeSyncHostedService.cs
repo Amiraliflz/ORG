@@ -35,6 +35,11 @@ public sealed class TravelTimeSyncHostedService : BackgroundService
           _logger.LogInformation("TravelTime hosted sync triggered (empty table or new Shamsi month)");
           await sync.SyncAsync(force: true, gapsOnly: false, stoppingToken);
         }
+        else
+        {
+          // New ORS directions added mid-month still get an ETA.
+          await sync.SyncAsync(force: false, gapsOnly: true, stoppingToken);
+        }
       }
       catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
       {
