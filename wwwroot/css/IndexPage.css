@@ -183,11 +183,13 @@
 .landing-hero .hero-search-panel {
   width: 100%;
   margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
+  padding: var(--hz-pad);
+  background: var(--hero-ground, #fff);
+  border: 1px solid rgba(67, 89, 113, 0.1);
+  border-radius: var(--hz-radius);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .landing-hero .hero-safezone--form {
