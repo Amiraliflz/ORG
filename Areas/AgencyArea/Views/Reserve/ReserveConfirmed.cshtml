@@ -68,8 +68,8 @@
 <style>
     @@media only screen and (max-width: 600px) {
         .px-14 {
-            padding-left: .2rem !important;
-            padding-right: .2rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
         }
 
         .step-title {
@@ -262,22 +262,47 @@
         line-height: 1.5rem;
     }
 
-    .selected {
+    .steps .step i.ti {
+        color: #8d8d8d !important;
+    }
+
+    .steps .step-title {
+        color: #8d8d8d;
+    }
+
+    .steps .step.selected,
+    .steps .step.selected .step-title,
+    .steps .step-container.selected,
+    .steps .step-container.selected .step-title,
+    .steps .step.selected i.ti,
+    .steps .step-container.selected i.ti {
+        color: #000000 !important;
+    }
+
+    .steps .step i.ti.ti-checks,
+    .steps .step i.ti.text-success {
+        color: #22c55e !important;
+    }
+
+    .steps .step:has(> i.ti-checks) .step-title,
+    .steps .step:has(> i.text-success) .step-title {
         color: #000000;
+        font-family: font-bold, "tahoma", sans-serif;
+        font-weight: normal;
     }
 
 
     @@media only screen and (min-width: 960px) {
         .px-lg-6 {
-            padding-right: 2.6rem !important;
-            padding-left: 2.6rem !important;
+            padding-right: 1.5rem !important;
+            padding-left: 1.5rem !important;
         }
     }
 
     @@media only screen and (min-width: 1200px) {
         .px-lg-6 {
-            padding-right: 8.8rem !important;
-            padding-left: 8.8rem !important;
+            padding-right: 2rem !important;
+            padding-left: 2rem !important;
         }
     }
 
@@ -641,7 +666,6 @@
                 <div class="ms-4 mt-3">
 
                     <h3 class="mb-0">اطلاعات مسافر</h3>
-                    <small>سرپرست مسافرین</small>
                     <div class=" p-md-3 mt-0">
                         <div class="row">
                             @* <div class="col-2">
@@ -706,14 +730,14 @@
 
                             <small style="font-size: .7rem;" class="text-muted d-block">
                                 <i class="ti ti-info-circle ti-sm"></i>
-                                هماهنگی به منظور شروع سفر، با شماره تلفن مسافر انجام می‌گردد
+                                هماهنگی به منظور شروع سفر، با شماره تلفن شما انجام می‌گردد
                             </small><small style="font-size: .7rem;" class="text-muted d-block">
                                 <i class="ti ti-info-circle ti-sm"></i>
-                                مسافر بعد از ثبت موفقیت آمیر سفر، پیامی حاوی لینک بلیط و جزییات سفر دریافت می‌کند
+                                بعد از ثبت موفق سفر، پیامی حاوی لینک اطلاعات بلیط و جزییات سفر برای شما ارسال خواهد شد
                             </small>
                             <small style="font-size: .7rem;" class="text-muted d-block">
                                 <i class="ti ti-info-circle ti-sm"></i>
-                                کیفیت انجام سفر و رضایت مشتری‌، توسط مسترشوفر بعد از هر سفر با نظر مسافر، ارزیابی خواهد
+                                کیفیت انجام سفر و رضایت مشتری‌، توسط مسترشوفر بعد از هر سفر با نظر شما، ارزیابی خواهد
                                 شد
                             </small>
 
@@ -731,7 +755,7 @@
                             <small style="font-size: .7rem;" class="text-muted d-block">
                                 <i class="ti ti-info-circle ti-sm"></i>
                                 در صورت وجود مبدا یا مقصد اضافه، جزییات و هزینه‌ی کیلومتر ماضاف، توسط همکاران مسترشوفر
-                                با مسافر هماهنگ می‌شود
+                                با شما هماهنگ می‌شود
                             </small>
                         </div>
 
@@ -739,7 +763,7 @@
                             <h6 class="text-blck mt-4">قوانین کنسلی</h6>
                         </span>
                         <p style="line-height:1.2rem !important; ">
-                            در صورت خرید سفر، و کنسل کردن سفر از طرف مسافر، تا 1 ساعت بعد از
+                            در صورت خرید سفر، و کنسل کردن سفر از طرف شما، تا 1 ساعت بعد از
                             ثبت سفر کنسلی
                             بدون جریمه
                             انجام می‌شود در غیر این صورت؛
@@ -797,7 +821,7 @@
                         مسترشوفر
                     </strong>
 
-                    با مسافر هماهنگ خواهد شد.
+                    با شما هماهنگ خواهد شد.
                 </p>
             </div>
         </div>

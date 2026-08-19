@@ -40,7 +40,9 @@ builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = Compre
 // Trust reverse-proxy proto/host so HTTPS redirects + HSTS see the public scheme.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-  options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+  // Do not take X-Forwarded-Host — CDN rewriting Host to .com would hide .ir
+  // and stop the 301 Google needs for the mrshoofer.ir Search Console property.
+  options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
   options.KnownNetworks.Clear();
   options.KnownProxies.Clear();
 });
@@ -234,7 +236,12 @@ app.Use(async (context, next) =>
 });
 
 
-app.UseHttpsRedirection();
+// HTTP→HTTPS is done at Arvan. Origin is HTTP :80/:8080; UseHttpsRedirection
+// would 301 https://mrshoofer.com/ to itself (ERR_TOO_MANY_REDIRECTS).
+if (app.Environment.IsDevelopment())
+{
+  app.UseHttpsRedirection();
+}
 app.UseResponseCompression();
 app.UseStaticFiles(new StaticFileOptions
 {

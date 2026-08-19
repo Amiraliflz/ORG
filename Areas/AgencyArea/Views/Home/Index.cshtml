@@ -19,37 +19,24 @@
 
 @section VendorStyles {
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link href="~/css/IndexPage.css?v=51" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/jalali-datepicker.css?v=2" />
+    <link href="~/css/IndexPage.css?v=55" rel="stylesheet" />
+    <link href="~/css/trip-search.css?v=3" rel="stylesheet" />
     <link rel="preload" href="/img/front-pages/landing-page/hero-travel.webp" as="image" type="image/webp" fetchpriority="high" />
-    @* Critical: swap control + field gutters (survive stale/CDN-cached IndexPage.css) *@
     <style>
       .landing-hero .od-pair-col { position: relative; }
-      .landing-hero #tripForm .od-pair { --od-swap-gutter: 2.75rem; }
-      .landing-hero #tripForm .od-pair > .inputcel:first-child {
-        padding-inline-end: calc(var(--od-swap-gutter) / 2) !important;
-      }
-      .landing-hero #tripForm .od-pair > .inputcel:last-of-type {
-        padding-inline-start: calc(var(--od-swap-gutter) / 2) !important;
-      }
       .landing-hero .od-swap-btn {
         --od-swap-size: 2rem;
         position: absolute !important;
-        left: 50%;
-        top: 0.25rem;
-        transform: translateX(-50%);
         z-index: 4;
         width: var(--od-swap-size) !important;
         max-width: var(--od-swap-size) !important;
         height: var(--od-swap-size) !important;
         padding: 0 !important;
         margin: 0 !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        border-radius: 0.85rem;
         border: 1px solid #d9dee3;
         background: #fff;
         color: #8592a3;
@@ -57,10 +44,30 @@
         box-shadow: 0 0 0 4px #fff, 0 1px 2px rgba(47, 43, 61, 0.06);
         cursor: pointer;
       }
-      .landing-hero .od-swap-btn .ti { font-size: 1rem; margin: 0; line-height: 1; }
       @@media (max-width: 767.98px) {
-        .landing-hero #tripForm .od-pair { --od-swap-gutter: 2.35rem; }
-        .landing-hero .od-swap-btn { top: 1.85rem; --od-swap-size: 1.85rem; }
+        .landing-hero #tripForm .od-pair { --od-swap-gutter: 0 !important; }
+        .landing-hero #tripForm .od-pair > .inputcel:first-child,
+        .landing-hero #tripForm .od-pair > .inputcel:last-of-type {
+          padding-inline: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          flex: 0 0 100% !important;
+        }
+      }
+      @@media (min-width: 768px) {
+        .landing-hero #tripForm .od-pair { --od-swap-gutter: 2.75rem; }
+        .landing-hero #tripForm .od-pair > .inputcel:first-child {
+          padding-inline-end: calc(var(--od-swap-gutter) / 2) !important;
+        }
+        .landing-hero #tripForm .od-pair > .inputcel:last-of-type {
+          padding-inline-start: calc(var(--od-swap-gutter) / 2) !important;
+        }
+        .landing-hero .od-swap-btn {
+          left: 50%;
+          top: 0.25rem;
+          transform: translateX(-50%);
+          border-radius: 0.85rem;
+        }
       }
     </style>
 }
@@ -68,10 +75,9 @@
 @section VendorScripts {
     <script src="~/libs/jquery.js"></script>
     <script src="~/vendor/libs/jdate/jdate.min.js"></script>
-    <script src="~/vendor/libs/flatpickr/flatpickr-jdate.js"></script>
-    <script src="~/vendor/libs/flatpickr/l10n/fa.js"></script>
-    <script src="~/js/IndexPage.js?v=2"></script>
-    <script src="~/js/searchpage.js?v=6"></script>
+    <script src="~/js/jalali-datepicker.js?v=2"></script>
+    <script src="~/js/IndexPage.js?v=3"></script>
+    <script src="~/js/searchpage.js?v=10"></script>
 }
 
 
@@ -104,9 +110,8 @@
 
             <div class="container landing-hero-search-wrap">
                 <div class="hero-safezone hero-safezone--form">
-                    <div class="card mb-0 search-card hero-zone-card">
-                            <div class="card-body pb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center p-0 mb-4 border-0 bg-transparent">
+                    <div class="hero-search-panel">
+                                <div class="hero-search-head d-flex justify-content-between align-items-center">
                                     <div>
                                         <p class="mb-1 fw-semibold h5">
                                             <i class="ti ti-route me-1 text-primary"></i>
@@ -123,20 +128,20 @@
                                 <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row g-3 m-0" id="tripForm">
                                     <div class="col-12 col-md-6 od-pair-col">
                                         <div class="row g-2 g-md-3 od-pair">
-                                            <div class="col-6 inputcel">
+                                            <div class="col-12 col-md-6 inputcel">
                                                 <label class="form-text d-md-none d-block" for="origin_input" id="originHelpMobile">شهر مبدا سفر</label>
                                                 <div class="input-container">
-                                                    <input autocomplete="off" aria-describedby="originHelpDesktop originHelpMobile" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" id="origin_input" placeholder="مبدا" type="text" role="button" name="originstring" />
+                                                    <input autocomplete="off" aria-describedby="originHelpDesktop originHelpMobile" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle hide-arrow" id="origin_input" placeholder="مبدا" type="text" role="button" name="originstring" />
                                                     <i class="ti ti-location mb-2 icon" aria-hidden="true"></i>
                                                     <span class="dropdown-menu dropdown-menu-end origin_location"></span>
                                                 </div>
                                                 <div class="form-text d-md-block d-none" id="originHelpDesktop">شهر مبدا سفر</div>
                                             </div>
 
-                                            <div class="col-6 inputcel">
+                                            <div class="col-12 col-md-6 inputcel">
                                                 <label class="form-text d-block d-md-none" for="destination_input" id="destinationHelpMobile">شهر مقصد سفر</label>
                                                 <div class="input-container">
-                                                    <input data-bs-toggle="dropdown" autocomplete="off" aria-describedby="destinationHelpDesktop destinationHelpMobile" class="form-control destination input-field dropdown-toggle" id="destination_input" placeholder="مقصد" type="text" role="button" name="destinationstring" />
+                                                    <input data-bs-toggle="dropdown" autocomplete="off" aria-describedby="destinationHelpDesktop destinationHelpMobile" class="form-control destination input-field dropdown-toggle hide-arrow" id="destination_input" placeholder="مقصد" type="text" role="button" name="destinationstring" />
                                                     <i class="ti ti-map-pin mb-2 icon" aria-hidden="true"></i>
                                                     <span class="dropdown-menu dropdown-menu-end destination_location"></span>
                                                 </div>
@@ -167,8 +172,7 @@
                                         </div>
                                     </div>
                                 </form>
-                            </div>
-                        </div>
+                    </div>
 
                     <!-- Trust stats -->
                     <div class="hero-trust-stats">
@@ -196,8 +200,6 @@
                 <!-- Definition CTA — wide (matches page shell), not constrained like the form -->
                 <div class="hero-safezone hero-safezone--wide">
                     <div class="hero-definition-cta" id="aboutMrShoofer">
-                        <div class="card hero-definition-card hero-zone-card">
-                            <div class="card-body hero-definition-body-wrap">
                                 <div class="hero-definition-content">
                                     <h2 class="hero-definition-title">مستر شوفر چیست؟</h2>
                                     <p class="hero-definition-body">
@@ -220,8 +222,6 @@
                                         <i class="ti ti-search" aria-hidden="true"></i>
                                     </a>
                                 </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -232,30 +232,34 @@
     <!-- How to book -->
     <section id="landingHowTo" class="section-py bg-body landing-howto">
         <div class="container">
-            <div class="text-center mb-3 pb-1">
+            <header class="landing-section-intro">
                 <span class="badge bg-label-primary">راهنمای رزرو</span>
-            </div>
-            <h2 class="text-center mb-1 fw-medium">
-                رزرو در <span class="section-title">چهار قدم</span>
-            </h2>
-            <p class="text-center mb-4 mb-md-5 text-muted landing-howto-lead">
-                مبدأ و مقصد را جستجو کنید، کلاس را انتخاب کنید و بلیط را در چند دقیقه بگیرید.
-            </p>
+                <h2 class="fw-medium">
+                    رزرو در <span class="section-title">چهار قدم</span>
+                </h2>
+                <p class="landing-section-lead text-muted">
+                    مبدأ و مقصد را جستجو کنید، کلاس را انتخاب کنید و بلیط را در چند دقیقه بگیرید.
+                </p>
+            </header>
             <ol class="landing-howto-steps">
                 @{
                     var howToSteps = SeoDefaults.BookingHowToSteps;
                     var howToNums = new[] { "۱", "۲", "۳", "۴" };
+                    var howToEmojis = new[] { "📍", "📅", "🚗", "🎫" };
                     for (var i = 0; i < howToSteps.Length; i++)
                     {
                         <li class="landing-howto-step">
                             <span class="landing-howto-num" aria-hidden="true">@howToNums[i]</span>
-                            <p class="landing-howto-title">@howToSteps[i].Title</p>
+                            <p class="landing-howto-title">
+                                <span class="landing-howto-emoji" aria-hidden="true">@howToEmojis[i]</span>
+                                @howToSteps[i].Title
+                            </p>
                             <p class="landing-howto-text">@howToSteps[i].Text</p>
                         </li>
                     }
                 }
             </ol>
-            <div class="text-center mt-4">
+            <div class="landing-howto-cta">
                 <a href="#tripForm" class="btn btn-primary">شروع جستجو</a>
             </div>
         </div>
@@ -263,15 +267,15 @@
     <!-- Popular routes (SEO internal links) -->
     <section id="landingRoutes" class="section-py landing-routes">
         <div class="container landing-routes-inner">
-            <div class="text-center mb-3 pb-1">
+            <header class="landing-section-intro">
                 <span class="badge bg-label-primary">مسیرهای پرتردد</span>
-            </div>
-            <h2 class="text-center mb-1 fw-medium">
-                رزرو سواری در <span class="section-title">مسیرهای محبوب</span>
-            </h2>
-            <p class="text-center mb-4 mb-md-5 text-muted landing-routes-lead">
-                صفحه اختصاصی هر مسیر را ببینید و همان‌جا جستجو را شروع کنید
-            </p>
+                <h2 class="fw-medium">
+                    رزرو سواری در <span class="section-title">مسیرهای محبوب</span>
+                </h2>
+                <p class="landing-section-lead text-muted landing-routes-lead">
+                    صفحه اختصاصی هر مسیر را ببینید و همان‌جا جستجو را شروع کنید
+                </p>
+            </header>
             @{
                 var popularRoutes = SeoDefaults.HomepagePopularRoutes();
                 var popularCities = SeoDefaults.HomepagePopularCities();
@@ -328,20 +332,19 @@
     <!-- Useful features: Start -->
     <section id="landingFeatures" class="section-py landing-features">
         <div class="container">
-            <div class="text-center mb-3 pb-1">
+            <header class="landing-section-intro">
                 <span class="badge bg-label-primary">تاکسی بین شهری، سواری دربستی و ترانسفر فرودگاهی</span>
-            </div>
-            <h2 class="text-center mb-1 fw-medium">
-                چرا <span class="section-title">مسترشوفر</span>؟
-            </h2>
-
-            <p class="text-center mb-3 mb-md-5 pb-3 text-muted">
-                رانندگان تأییدشده، خودروهای باکیفیت و پشتیبانی ۲۴ ساعته — همه چیز برای یک سفر بدون دغدغه
-            </p>
-            <div class="features-icon-wrapper row gx-0 gy-4 g-sm-5">
+                <h2 class="fw-medium">
+                    چرا <span class="section-title">مسترشوفر</span>؟
+                </h2>
+                <p class="landing-section-lead text-muted">
+                    رانندگان تأییدشده، خودروهای باکیفیت و پشتیبانی ۲۴ ساعته — همه چیز برای یک سفر بدون دغدغه
+                </p>
+            </header>
+            <div class="features-icon-wrapper row g-4">
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/laptop.png" alt="رزرو آنلاین سواری از موبایل و لپ‌تاپ" width="64" height="64" />
+                        <span class="feature-line-icon feature-line-icon--sky" role="img" aria-label="رزرو آنلاین سواری از موبایل و لپ‌تاپ"></span>
                     </div>
                     <p class="mb-2 fw-semibold">رزرو آسان، هر جا هستید</p>
                     <p class="features-icon-description">از هر دستگاهی در چند ثانیه سواری رزرو کنید — بدون تماس تلفنی و بدون انتظار در صف.</p>
@@ -355,71 +358,36 @@
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/paper.png" alt="صدور سریع بلیط سفر" width="64" height="64" />
+                        <span class="feature-line-icon feature-line-icon--clay" role="img" aria-label="صدور سریع بلیط سفر"></span>
                     </div>
                     <p class="mb-2 fw-semibold">بلیط فوری، تأیید آنی</p>
                     <p class="features-icon-description">پس از رزرو، بلیط تأییدشده را سریع دریافت می‌کنید؛ بدون ابهام و بدون انتظار طولانی.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/check.png" alt="راننده و خودرو تأییدشده" width="64" height="64" />
+                        <span class="feature-line-icon feature-line-icon--sage" role="img" aria-label="راننده و خودرو تأییدشده"></span>
                     </div>
                     <p class="mb-2 fw-semibold">رانندگان و خودروهای تأییدشده</p>
                     <p class="features-icon-description">هر راننده پیش از فعالیت احراز هویت می‌شود تا با اطمینان و آرامش سوار شوید.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/user.png" alt="پشتیبانی مشتریان مسترشوفر" width="64" height="64" />
+                        <span class="feature-line-icon feature-line-icon--mist" role="img" aria-label="پشتیبانی مشتریان مسترشوفر"></span>
                     </div>
                     <p class="mb-2 fw-semibold">پشتیبانی ۲۴ ساعته</p>
                     <p class="features-icon-description">تیم پشتیبانی تا آخرین لحظه سفر همراه شماست — حتی در میانه شب یا روز تعطیل.</p>
                 </div>
                 <div class="col-lg-4 col-sm-6 text-center features-icon-box">
                     <div class="text-center mb-3">
-                        <img src="~/img/front-pages/icons/keyboard.png" alt="انتخاب کلاس سفر اشتراکی یا دربستی" width="64" height="64" />
+                        <span class="feature-line-icon feature-line-icon--sand" role="img" aria-label="سفر دربستی اختصاصی"></span>
                     </div>
-                    <p class="mb-2 fw-semibold">سفر دربستی یا اشتراکی</p>
-                    <p class="features-icon-description">صندلی اشتراکی با قیمت مناسب یا سرویس دربستی اختصاصی — انتخاب کلاس سفر با شماست.</p>
+                    <p class="mb-2 fw-semibold">سفر دربستی</p>
+                    <p class="features-icon-description">خودرو در اختیار شماست — سرویس دربستی اختصاصی، بدون همسفر ناشناس.</p>
                 </div>
             </div>
         </div>
     </section>
     <!-- Useful features: End -->
-    <!-- Shared vs private -->
-    <section id="landingClasses" class="section-py bg-body landing-classes">
-        <div class="container" style="max-width: 52rem;">
-            <div class="text-center mb-3 pb-1">
-                <span class="badge bg-label-primary">کلاس سفر</span>
-            </div>
-            <h2 class="text-center mb-1 fw-medium">
-                تفاوت سفر <span class="section-title">دربستی و اشتراکی</span>
-            </h2>
-            <p class="text-center mb-4 text-muted landing-classes-lead">
-                بعد از جستجو، کلاس را بر اساس تعداد مسافر و بودجه انتخاب می‌کنید — قیمت همان‌جا مشخص است.
-            </p>
-            <div class="row g-3 g-md-4">
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-none border landing-classes-card">
-                        <div class="card-body">
-                            <p class="fw-semibold mb-2">اشتراکی</p>
-                            <p class="mb-0 landing-classes-text">یک صندلی رزرو می‌کنید و هزینه را با مسافران همان مسیر تقسیم می‌کنید. برای سفر انفرادی یا وقتی قیمت اولویت دارد مناسب است.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-none border landing-classes-card">
-                        <div class="card-body">
-                            <p class="fw-semibold mb-2">دربستی</p>
-                            <p class="mb-0 landing-classes-text">خودرو در اختیار شماست. ظرفیت ۳ مسافر است؛ برای خانواده، فرودگاه، یا وقتی نمی‌خواهید همسفر ناشناس داشته باشید. توقف اضافه فقط با هماهنگی راننده و هزینه جدا.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <p class="text-center mt-4 mb-0">
-                <a asp-area="AgencyArea" asp-controller="Home" asp-action="TravelPolicy">قوانین سفر و کنسلی را بخوانید</a>
-            </p>
-        </div>
-    </section>
     <!-- Real customers reviews: Start -->
     <!-- Real customers reviews: End -->
     <!-- Our great team: Start -->
@@ -489,13 +457,13 @@
     <!-- FAQ: Start -->
     <section id="landingFAQ" class="section-py bg-body landing-faq">
         <div class="container">
-            <div class="text-center mb-3 pb-1">
+            <header class="landing-section-intro">
                 <span class="badge bg-label-primary">سوالات</span>
-            </div>
-            <h2 class="text-center mb-1">
-                <span class="section-title">سوالات پرتکرار</span>
-            </h2>
-            <p class="text-center mb-5 pb-3">پاسخ‌های کوتاه درباره رزرو سواری بین‌شهری و ترانسفر فرودگاهی با مستر شوفر</p>
+                <h2 class="fw-medium">
+                    <span class="section-title">سوالات پرتکرار</span>
+                </h2>
+                <p class="landing-section-lead text-muted">پاسخ‌های کوتاه درباره رزرو سواری بین‌شهری و ترانسفر فرودگاهی با مستر شوفر</p>
+            </header>
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     <div class="accordion" id="accordionHomeFaq">
@@ -534,16 +502,18 @@
     </section>
     <!-- FAQ: End -->
     <!-- CTA: Start -->
-    <section id="landingCTA" class="section-py landing-cta position-relative p-lg-0 pb-0 landing-cta-band">
+    <section id="landingCTA" class="section-py landing-cta position-relative">
         <div class="container">
-            <div class="row align-items-center gy-5 gy-lg-0">
-                <div class="col-lg-6 text-center text-lg-start">
-                    <p class="h2 text-primary fw-bold mb-3">برای شروع آماده‌اید؟</p>
-                    <p class="fw-medium mb-4 fs-5">مبدأ و مقصد را جستجو کنید و بلیط خود را در کمتر از چند دقیقه بگیرید.</p>
-                    <a href="#landingHero" class="btn btn-lg btn-primary">جستجوی سواری</a>
-                </div>
-                <div class="col-lg-6 pt-lg-5 text-center text-lg-end">
-                    <img src="/mrshooferserachdemo.webp" width="900" height="431" alt="نمایش جستجوی سواری در مسترشوفر" class="img-fluid landing-cta-img" loading="lazy" decoding="async" />
+            <div class="landing-cta-band">
+                <div class="row align-items-center gy-4">
+                    <div class="col-lg-6 text-center text-lg-start">
+                        <p class="h2 text-primary fw-bold mb-3">برای شروع آماده‌اید؟</p>
+                        <p class="fw-medium mb-4 fs-5">مبدأ و مقصد را جستجو کنید و بلیط خود را در کمتر از چند دقیقه بگیرید.</p>
+                        <a href="#landingHero" class="btn btn-lg btn-primary">جستجوی سواری</a>
+                    </div>
+                    <div class="col-lg-6 text-center text-lg-end">
+                        <img src="/mrshooferserachdemo.webp" width="900" height="431" alt="نمایش جستجوی سواری در مسترشوفر" class="img-fluid landing-cta-img" loading="lazy" decoding="async" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -552,23 +522,21 @@
     <!-- Contact Us: Start -->
     <section id="landingContact" class="section-py bg-body landing-contact">
         <div class="container">
-            <div class="text-center mb-3 pb-1">
+            <header class="landing-section-intro">
                 <span class="badge bg-label-primary">ارتباط با ما</span>
-            </div>
-            <h2 class="text-center mb-3 fw-medium">
-                <span class="position-relative fw-bold z-1 section-title">
-                    ارتباط مستقیم با مسترشوفر
-                </span>
-            </h2>
-            <p class="text-center mb-4 mb-lg-5 pb-md-3">برای ارتباط مستقیم با مستر شوفر، از قسمت زیر استفاده کنید</p>
+                <h2 class="fw-medium">
+                    <span class="section-title">ارتباط مستقیم با مسترشوفر</span>
+                </h2>
+                <p class="landing-section-lead text-muted">برای ارتباط مستقیم با مستر شوفر، از قسمت زیر استفاده کنید</p>
+            </header>
             <div class="row gy-4">
                 <div class="col-lg-5">
-                    <div class="contact-img-box position-relative border p-2 h-100">
+                    <div class="contact-img-box position-relative border h-100">
                         <img src="~/img/front-pages/icons/contact-border.png" alt="" class="contact-border-img position-absolute d-none d-md-block scaleX-n1-rtl" aria-hidden="true" />
                         <div class="contact-img-frame">
                             <img src="/callcenter.webp" width="800" height="533" alt="پشتیبانی مشتریان مستر شوفر" class="contact-img" loading="lazy" decoding="async" />
                         </div>
-                        <div class="contact-img-meta pt-3 px-4 pb-1">
+                        <div class="contact-img-meta">
                             <div class="row gy-3 gx-md-4">
                                 <div class="col-md-6 col-lg-12 col-xl-6">
                                     <div class="d-flex align-items-center">

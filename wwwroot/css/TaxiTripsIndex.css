@@ -171,13 +171,21 @@
 }
 
 .trips-page-shell .landing-hero {
-  max-width: 100%;
-  box-sizing: border-box;
+  padding-top: 5.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+@media (min-width: 992px) {
+  .trips-page-shell .landing-hero {
+    padding-top: 7.5rem !important;
+  }
 }
 
 .trips-page-shell .landing-hero > .container {
   max-width: 100%;
   box-sizing: border-box;
+  padding-top: 10px;
+  padding-bottom: 0;
 }
 
 @media (max-width: 767.98px) {
@@ -191,16 +199,16 @@
   }
 
   .searchbar-body {
-    padding: 1rem !important;
+    padding: 0.9rem !important;
   }
 
   .searchbar-body > .row {
-    --bs-gutter-x: 0.75rem;
-    --bs-gutter-y: 0.75rem;
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0.5rem;
   }
 
   .searchbar .inputcel {
-    padding-inline: 0.2rem !important;
+    padding-inline: 0 !important;
   }
 
   .searchbar-field-label {
@@ -441,15 +449,9 @@
   }
 }
 
-@media (max-width: 767.98px) {
+@media (min-width: 768px) {
   .searchbar .od-pair {
     --od-swap-gutter: 2.35rem;
-  }
-
-  .od-swap-btn {
-    bottom: 0.4rem;
-    --od-swap-size: 1.85rem;
-    border-radius: 0.65rem;
   }
 }
 
@@ -1301,18 +1303,6 @@
     padding-inline: 1rem;
     margin-inline: auto;
   }
-}
-
-/* Navbar width matches trips safezone (navbar sits outside .trips-page-shell) */
-body:has(.trips-page-shell) .layout-navbar > .container {
-  max-width: 64rem !important;
-  width: 100% !important;
-  padding-inline: 1rem !important;
-  margin-inline: auto;
-}
-
-body:has(.trips-page-shell) .layout-navbar > .container > .landing-navbar {
-  width: 100%;
 }
 
 .trips-container {

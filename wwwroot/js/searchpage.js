@@ -18,70 +18,96 @@ function decodeUnicodeEscapes(str) {
   } catch { return str; }
 }
 
-// Map common latin spellings to Persian city names
-function toPersianGuess(str) {
-  const s = (str || '').trim().toLowerCase();
-  switch (s) {
-    case 'tehran':
-    case 'teh':
-      return 'تهران';
-    case 'isfahan':
-    case 'esfahan':
-      return 'اصفهان';
-    case 'rasht':
-      return 'رشت';
-    case 'chalus':
-    case 'chaloos':
-    case 'chalous':
-      return 'چالوس';
-    case 'kermanshah':
-      return 'کرمانشاه';
-    case 'noushahr':
-    case 'nowshahr':
-    case 'noshahr':
-      return 'نوشهر';
-    case 'tabriz':
-      return 'تبریز';
-    case 'qom':
-    case 'ghom':
-      return 'قم';
-    case 'hamedan':
-    case 'hamadan':
-      return 'همدان';
-    case 'sari':
-      return 'ساری';
-    case 'shiraz':
-      return 'شیراز';
-    case 'mashhad':
-    case 'mashad':
-      return 'مشهد';
-    case 'karaj':
-      return 'کرج';
-    case 'qazvin':
-    case 'ghazvin':
-      return 'قزوین';
-    case 'kerman':
-      return 'کرمان';
-    case 'yazd':
-      return 'یزد';
-    case 'gorgan':
-      return 'گرگان';
-    case 'zanjan':
-      return 'زنجان';
-    case 'kashan':
-      return 'کاشان';
-    case 'sanandaj':
-      return 'سنندج';
-    case 'shahrekord':
-    case 'shahr-e-kord':
-      return 'شهرکرد';
-    case 'lahijan':
-      return 'لاهیجان';
-    case 'ramsar':
-      return 'رامسر';
-    default:
-      return str;
+// Latin spellings → Persian city names (prefix-matched while typing)
+const LATIN_TO_CITY = {
+  tehran: 'تهران', teh: 'تهران', teheran: 'تهران',
+  isfahan: 'اصفهان', esfahan: 'اصفهان', esfehan: 'اصفهان',
+  rasht: 'رشت',
+  chalus: 'چالوس', chaloos: 'چالوس', chalous: 'چالوس',
+  kermanshah: 'کرمانشاه',
+  noushahr: 'نوشهر', nowshahr: 'نوشهر', noshahr: 'نوشهر',
+  tabriz: 'تبریز',
+  qom: 'قم', ghom: 'قم',
+  hamedan: 'همدان', hamadan: 'همدان',
+  sari: 'ساری',
+  shiraz: 'شیراز',
+  mashhad: 'مشهد', mashad: 'مشهد',
+  karaj: 'کرج',
+  qazvin: 'قزوین', ghazvin: 'قزوین',
+  kerman: 'کرمان',
+  yazd: 'یزد',
+  gorgan: 'گرگان',
+  zanjan: 'زنجان',
+  kashan: 'کاشان',
+  sanandaj: 'سنندج',
+  shahrekord: 'شهرکرد', 'shahr-e-kord': 'شهرکرد',
+  lahijan: 'لاهیجان',
+  ramsar: 'رامسر'
+};
+
+// Windows Persian (ISIRI) layout: typing تهران with an English keyboard produces jivhk
+const QWERTY_TO_FA = {
+  q: 'ض', w: 'ص', e: 'ث', r: 'ق', t: 'ف', y: 'غ', u: 'ع', i: 'ه', o: 'خ', p: 'ح',
+  '[': 'ج', ']': 'چ',
+  a: 'ش', s: 'س', d: 'ی', f: 'ب', g: 'ل', h: 'ا', j: 'ت', k: 'ن', l: 'م',
+  ';': 'ک', "'": 'گ',
+  z: 'ظ', x: 'ط', c: 'ز', v: 'ر', b: 'ذ', n: 'د', m: 'پ',
+  ',': 'و', '`': 'پ', '\\': 'پ'
+};
+
+function looksLatin(str) {
+  const s = str || '';
+  if (!s || /[\u0600-\u06FF]/.test(s)) return false;
+  return /[A-Za-z;'[\]`,\\]/.test(s);
+}
+
+function latinKeyboardToPersian(str) {
+  if (!looksLatin(str)) return str;
+  let out = '';
+  let converted = 0;
+  for (const ch of str) {
+    const mapped = QWERTY_TO_FA[ch.toLowerCase()];
+    if (mapped) {
+      out += mapped;
+      converted++;
+    } else {
+      out += ch;
+    }
   }
+  return converted ? out : str;
+}
+
+function toPersianGuess(str) {
+  const trimmed = (str || '').trim();
+  if (!trimmed) return str;
+  const fromAlias = LATIN_TO_CITY[trimmed.toLowerCase()];
+  if (fromAlias) return fromAlias;
+  const fromKeys = latinKeyboardToPersian(trimmed);
+  if (fromKeys !== trimmed) return fromKeys;
+  return str;
+}
+
+function queryNeedles(raw) {
+  const needles = [];
+  const add = (value) => {
+    const n = normalize(value);
+    if (n && !needles.includes(n)) needles.push(n);
+  };
+  add(raw);
+  add(toPersianGuess(raw));
+  add(latinKeyboardToPersian(raw));
+  const lower = (raw || '').trim().toLowerCase();
+  if (lower.length >= 2 && isAscii(lower)) {
+    Object.keys(LATIN_TO_CITY).forEach((alias) => {
+      if (alias.startsWith(lower)) add(LATIN_TO_CITY[alias]);
+    });
+  }
+  return needles;
+}
+
+function keysMatchingNeedles(keys, needles) {
+  if (!needles.length) return [];
+  return keys.filter((key) => needles.some((n) => key.includes(n)));
 }
 
 function isAscii(str) { return /^[\x00-\x7F]*$/.test(str || ''); }
@@ -101,16 +127,37 @@ function normalize(str) {
   } catch { return (str || '').trim().toLocaleLowerCase(); }
 }
 
+function isMobileCityPicker() {
+  return !!(document.getElementById('tripForm') && window.matchMedia('(max-width: 767.98px)').matches);
+}
+
+function pickerChrome(title, inputId, placeholder) {
+  return `
+      <div class="city-picker__head">
+        <span class="city-picker__title">${title}</span>
+        <button type="button" class="city-picker__close" aria-label="بستن">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="city-picker__search">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" class="form-control city-picker__input" id="${inputId}" placeholder="${placeholder}" autocomplete="off" />
+      </div>`;
+}
+
 function ensureOriginDropdown() {
   const spanElement = $('.origin_location');
   if ($('#origincontainer').length === 0) {
     spanElement.html(`
-      <div class="staredlocations">
-        <label class="staredlocation_title ms-2 mt-2 text-muted pb-1" id="origin_most_lable">
-          <i class="ti ti-map-pin-star icon locationicon p-1 pe-0"></i>
-          شهرهای پرتردد
-        </label>
-        <div class="px-1 .terminals_container_orig" id="origincontainer"></div>
+      <div class="city-picker">
+        ${pickerChrome('انتخاب مبدا', 'origin_picker_q', 'جستجوی شهر مبدا')}
+        <div class="staredlocations">
+          <label class="staredlocation_title ms-2 mt-2 text-muted pb-1" id="origin_most_lable">
+            <i class="ti ti-map-pin-star icon locationicon p-1 pe-0"></i>
+            شهرهای پرتردد
+          </label>
+          <div class="px-1 terminals_container_orig" id="origincontainer"></div>
+        </div>
       </div>`);
   }
 }
@@ -119,14 +166,40 @@ function ensureDestinationDropdown() {
   const spanElement = $('.dropdown-menu.destination_location');
   if ($('#desticontainer').length === 0) {
     spanElement.html(`
-      <div class="staredlocations">
-        <label class="staredlocation_title ms-2 mt-2 text-muted pb-1">
-          <i class="ti ti-map-pin-star icon locationicon p-1 pe-0"></i>
-          مقصد ها
-        </label>
-        <div class="px-1 .terminals_container_desti" id="desticontainer"></div>
+      <div class="city-picker">
+        ${pickerChrome('انتخاب مقصد', 'dest_picker_q', 'جستجوی شهر مقصد')}
+        <div class="staredlocations">
+          <label class="staredlocation_title ms-2 mt-2 text-muted pb-1">
+            <i class="ti ti-map-pin-star icon locationicon p-1 pe-0"></i>
+            مقصد ها
+          </label>
+          <div class="px-1 terminals_container_desti" id="desticontainer"></div>
+        </div>
       </div>`);
   }
+}
+
+let cityPickerPushed = false;
+
+function pushCityPickerHistory() {
+  if (cityPickerPushed) return;
+  cityPickerPushed = true;
+  try { history.pushState({ mrCityPicker: true }, ''); } catch { /* ignore */ }
+}
+
+function consumeCityPickerHistory() {
+  if (!cityPickerPushed) return;
+  cityPickerPushed = false;
+  try {
+    if (history.state && history.state.mrCityPicker) history.back();
+  } catch { /* ignore */ }
+}
+
+function syncCityPickerLock() {
+  const open = isMobileCityPicker() && document.querySelector(
+    '.dropdown-menu.origin_location.show, .dropdown-menu.destination_location.show'
+  );
+  document.body.classList.toggle('city-picker-open', !!open);
 }
 
 function FetchDirections() {
@@ -430,7 +503,10 @@ function AddResultLocations_origin(keys) {
     keys.forEach(key => {
       const display = keyToDisplay(key);
       var $aTag = $('<a>', { class: 'dropdown-item', text: display });
-      $aTag.on('click', function () { OriginSelected(0, display); });
+      $aTag.on('click', function () {
+        OriginSelected(0, display);
+        if (isMobileCityPicker()) $('#origin_input').dropdown('hide');
+      });
       terminals_container.append($aTag);
     });
   }
@@ -446,7 +522,11 @@ function AddResultLocations_destination(result_locations) {
   }
   result_locations.forEach(location => {
     var $aTag = $('<a>', { class: 'dropdown-item', text: location });
-    $aTag.on('click', function () { DestSelected(0, location); FetchTrips(); });
+    $aTag.on('click', function () {
+      DestSelected(0, location);
+      if (isMobileCityPicker()) $('#destination_input').dropdown('hide');
+      FetchTrips();
+    });
     terminals_container.append($aTag);
   });
 }
@@ -455,7 +535,9 @@ function OriginSelected(id, name) {
   const city = (name || '').trim();
   // Always store the city name in both property and attribute (never the numeric id)
   $('#origin_input').val(city).attr('value', city);
+  $('#origin_picker_q').val(city);
   $('#destination_input').val('').attr('value', '');
+  $('#dest_picker_q').val('');
   EnableDestination();
   SetDestinations(city);
 }
@@ -463,6 +545,7 @@ function OriginSelected(id, name) {
 function DestSelected(id, name) {
   const city = (name || '').trim();
   $('#destination_input').val(city).attr('value', city);
+  $('#dest_picker_q').val(city);
 }
 
 /**
@@ -553,9 +636,8 @@ $(document).ready(async function () {
   $('#origin_input').on('input', function () {
     ensureOriginDropdown();
     const raw = (($(this).val() || ''));
-    const maybePersian = toPersianGuess(raw);
-    const inputKey = normalize(maybePersian);
-    if (inputKey === "") {
+    const needles = queryNeedles(raw);
+    if (!normalize(raw)) {
       $('#destination_input').val('');
       _destinations = [];
       AddResultLocations_destination([]);
@@ -564,11 +646,12 @@ $(document).ready(async function () {
       return;
     }
     $('#origin_most_lable').css('display', 'none');
-    const matches = originKeys.filter(key => key.includes(inputKey));
+    const matches = keysMatchingNeedles(originKeys, needles);
     const listToShow = raw.length < 2 ? originKeys : matches;
     AddResultLocations_origin(listToShow);
-    if (originKeys.includes(inputKey)) {
-      OriginSelected(0, keyToDisplay(inputKey));
+    const exactKey = originKeys.find((key) => needles.includes(key));
+    if (exactKey) {
+      OriginSelected(0, keyToDisplay(exactKey));
     } else if (matches.length === 1) {
       OriginSelected(0, keyToDisplay(matches[0]));
     } else {
@@ -579,21 +662,65 @@ $(document).ready(async function () {
   });
 
   $('#origin_input').on('blur', function () {
-    const maybePersian = toPersianGuess(($(this).val() || ''));
-    const inputKey = normalize(maybePersian);
-    if (inputKey && originKeys.includes(inputKey)) OriginSelected(0, keyToDisplay(inputKey));
+    const needles = queryNeedles($(this).val() || '');
+    const exactKey = originKeys.find((key) => needles.includes(key));
+    if (exactKey) OriginSelected(0, keyToDisplay(exactKey));
   });
 
   $('#destination_input').on('input', function () {
     ensureDestinationDropdown();
-    const maybePersian = toPersianGuess($(this).val());
-    const inputText = normalize(maybePersian);
-    if (inputText === "") {
+    const raw = $(this).val() || '';
+    const needles = queryNeedles(raw);
+    if (!normalize(raw)) {
       AddResultLocations_destination(_destinations);
     } else {
-      const filteredCities = _destinations.filter(city => normalize(city).includes(inputText));
+      const destKeys = _destinations.map((city) => normalize(city));
+      const matchedKeys = new Set(keysMatchingNeedles(destKeys, needles));
+      const filteredCities = _destinations.filter((city) => matchedKeys.has(normalize(city)));
       AddResultLocations_destination(filteredCities);
     }
+  });
+
+  $(document).on('input', '#origin_picker_q', function () {
+    $('#origin_input').val($(this).val()).trigger('input');
+  });
+  $(document).on('input', '#dest_picker_q', function () {
+    $('#destination_input').val($(this).val()).trigger('input');
+  });
+  $(document).on('click', '.city-picker__close', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const $menu = $(this).closest('.dropdown-menu');
+    $menu.closest('.input-container').find('input.dropdown-toggle').dropdown('hide');
+  });
+  $('#origin_input, #destination_input').on('show.bs.dropdown', function () {
+    if (!isMobileCityPicker()) return;
+    this.setAttribute('data-bs-display', 'static');
+  });
+  $('#origin_input').on('shown.bs.dropdown', function () {
+    if (!isMobileCityPicker()) return;
+    const $q = $('#origin_picker_q');
+    $q.val($(this).val() || '');
+    window.setTimeout(() => $q.trigger('focus'), 50);
+    pushCityPickerHistory();
+    syncCityPickerLock();
+  });
+  $('#destination_input').on('shown.bs.dropdown', function () {
+    if (!isMobileCityPicker()) return;
+    const $q = $('#dest_picker_q');
+    $q.val($(this).val() || '');
+    window.setTimeout(() => $q.trigger('focus'), 50);
+    pushCityPickerHistory();
+    syncCityPickerLock();
+  });
+  $('#origin_input, #destination_input').on('hidden.bs.dropdown', function () {
+    syncCityPickerLock();
+    consumeCityPickerHistory();
+  });
+  window.addEventListener('popstate', function () {
+    if (!document.body.classList.contains('city-picker-open')) return;
+    cityPickerPushed = false;
+    $('#origin_input, #destination_input').dropdown('hide');
   });
 
   $(document).on('click', '#od-swap-btn', function (e) {

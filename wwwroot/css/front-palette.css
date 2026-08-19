@@ -36,6 +36,21 @@
   --bs-focus-ring-color: rgba(39, 110, 241, 0.4);
 }
 
+/* Same navbar shell on home and trips so the bar does not jump between pages */
+@media (min-width: 992px) {
+  .layout-navbar > .container {
+    max-width: 90% !important;
+    width: 90%;
+  }
+}
+
+@media (min-width: 1400px) {
+  .layout-navbar > .container {
+    max-width: min(90%, 85rem) !important;
+    width: min(90%, 85rem);
+  }
+}
+
 html.light-style body,
 .light-style body {
   background: var(--brand-bg) !important;
@@ -290,9 +305,6 @@ a:not(.btn):not(.nav-link):not(.dropdown-item):not(.footer-link) {
   color: var(--brand-ink-inverse);
 }
 
-/* Feature icons — grayscale so they sit in the ink palette */
-.features-icon-box img,
-.landing-features img,
 .contact-border-img {
   filter: grayscale(1) contrast(1.12);
 }
@@ -312,10 +324,18 @@ a:not(.btn):not(.nav-link):not(.dropdown-item):not(.footer-link) {
 }
 
 /* Footer — solid ink, no purple artwork */
+.landing-footer {
+  border: 1px solid #000;
+  border-radius: 0;
+}
+
 .light-style .landing-footer .footer-top,
 .landing-footer .footer-top {
   background-image: none !important;
   background: #111111 !important;
+  border-radius: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
 }
 .light-style .landing-footer .footer-bottom {
   background-color: #000000 !important;
@@ -361,12 +381,40 @@ span.flatpickr-day.selected {
   color: #3d3d3d !important;
 }
 
-/* Reserve stepper — active step is ink */
-.step.selected,
-.selected .step-title,
-.step.selected .step-title,
-.selected {
-  color: var(--brand-ink) !important;
+/* Reserve stepper — current step ink, others muted */
+.steps .step i.ti {
+  color: #8d8d8d !important;
+}
+
+.steps .step-title {
+  color: #8d8d8d;
+}
+
+.steps .step.selected,
+.steps .step.selected .step-title,
+.steps .step-container.selected,
+.steps .step-container.selected .step-title,
+.steps .step.selected i.ti,
+.steps .step-container.selected i.ti {
+  color: var(--brand-ink, #000) !important;
+}
+
+.steps .step i.ti.ti-checks,
+.steps .step i.ti.text-success {
+  color: #22c55e !important;
+}
+
+.steps .step:has(> i.ti-checks) .step-title,
+.steps .step:has(> i.text-success) .step-title {
+  color: var(--brand-ink, #000);
+  font-family: font-bold, "tahoma", sans-serif;
+  font-weight: normal;
+}
+
+@media (max-width: 767.98px) {
+  .steps .step i.ti-lg {
+    font-size: 1.8rem !important; /* 10% under desktop 2rem */
+  }
 }
 
 .success-payment,
@@ -411,13 +459,9 @@ span.flatpickr-day.selected {
 }
 
 /* Lifted cards */
-.hero-zone-card,
-.hero-definition-card,
-.search-card,
 .searchbar,
 .trip-card,
 .pm-card,
-.landing-howto-step,
 .landing-classes-card,
 .landing-contact .card,
 .landing-contact .contact-img-box,
@@ -534,4 +578,91 @@ span.flatpickr-day.selected {
 .sk-primary .sk-grid-cube,
 .sk-primary .sk-fold-cube:before {
   background-color: #000000 !important;
+}
+
+/* Reserve flow — 8px spacing rhythm (stepper + form + confirm) */
+.main_container {
+  --rs-1: 0.5rem;
+  --rs-2: 0.75rem;
+  --rs-3: 1rem;
+  --rs-4: 1.5rem;
+  --rs-5: 2rem;
+  padding-bottom: var(--rs-5);
+}
+
+.main_container .px-14 {
+  padding-inline: var(--rs-3) !important;
+  padding-block: 0.85rem !important;
+}
+
+.main_container .steps .step .ti {
+  padding-inline: 0.35rem !important;
+}
+
+.main_container .downside-contaner {
+  margin-top: var(--rs-4) !important;
+}
+
+.main_container .downside-contaner.row {
+  --bs-gutter-y: 1rem;
+}
+
+.main_container article.card {
+  padding: var(--rs-4) !important;
+}
+
+.main_container .trip_info {
+  padding: var(--rs-4) !important;
+}
+
+.main_container .trip_info p {
+  line-height: 1.75 !important;
+  margin-bottom: var(--rs-2);
+}
+
+.main_container .form-label {
+  line-height: 1.6;
+  margin-bottom: 0.4rem;
+}
+
+.main_container .input-forms .mt-2 {
+  margin-top: 0 !important;
+}
+
+.main_container .input-forms .mb-3 {
+  margin-bottom: var(--rs-3) !important;
+}
+
+.main_container .reserve-form-title {
+  margin: 0 0 var(--rs-3) !important;
+  line-height: 1.7;
+}
+
+.main_container .info-container {
+  margin-top: 0;
+}
+
+.main_container .confirm-header {
+  margin-bottom: var(--rs-3) !important;
+}
+
+@media (min-width: 768px) {
+  .main_container .px-14 {
+    padding-inline: var(--rs-4) !important;
+    padding-block: var(--rs-3) !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .main_container.px-lg-6 {
+    padding-inline: var(--rs-4) !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .main_container.px-lg-6 {
+    padding-inline: var(--rs-5) !important;
+    max-width: 72rem;
+    margin-inline: auto;
+  }
 }

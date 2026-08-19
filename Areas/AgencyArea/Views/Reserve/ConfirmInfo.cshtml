@@ -58,7 +58,6 @@
 }
 
 <style>
-
     @@media (max-width: 767.98px) {
         .downside-contaner {
             display: flex;
@@ -93,7 +92,7 @@
     }
 
     @@media only screen and (max-width: 600px) {
-        .px-14 { padding-left: .2rem !important; padding-right: .2rem !important; }
+        .px-14 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
         .step-title { font-size: .75rem !important; }
         /* Confirm button full-width on mobile */
         .confirm-btn-wrap { margin-top: .75rem !important; padding-top: 0 !important; }
@@ -239,22 +238,47 @@
         line-height: 1.5rem;
     }
 
-    .selected {
+    .steps .step i.ti {
+        color: #8d8d8d !important;
+    }
+
+    .steps .step-title {
+        color: #8d8d8d;
+    }
+
+    .steps .step.selected,
+    .steps .step.selected .step-title,
+    .steps .step-container.selected,
+    .steps .step-container.selected .step-title,
+    .steps .step.selected i.ti,
+    .steps .step-container.selected i.ti {
+        color: #000000 !important;
+    }
+
+    .steps .step i.ti.ti-checks,
+    .steps .step i.ti.text-success {
+        color: #22c55e !important;
+    }
+
+    .steps .step:has(> i.ti-checks) .step-title,
+    .steps .step:has(> i.text-success) .step-title {
         color: #000000;
+        font-family: font-bold, "tahoma", sans-serif;
+        font-weight: normal;
     }
 
 
     @@media only screen and (min-width: 960px) {
         .px-lg-6 {
-            padding-right: 2.6rem !important;
-            padding-left: 2.6rem !important;
+            padding-right: 1.5rem !important;
+            padding-left: 1.5rem !important;
         }
     }
 
     @@media only screen and (min-width: 1200px) {
         .px-lg-6 {
-            padding-right: 8.8rem !important;
-            padding-left: 8.8rem !important;
+            padding-right: 2rem !important;
+            padding-left: 2rem !important;
         }
     }
 
@@ -371,7 +395,7 @@
         @await Html.PartialAsync("~/Areas/AgencyArea/Views/Shared/_NorthRoutePriceNotice.cshtml")
     </div>
 
-    <div class="downside-contaner mt-5">
+    <div class="downside-contaner mt-4">
         <div class="mb-4 confirm-header">
 
             <div class="d-flex justify-content-between align-items-baseline">
@@ -607,16 +631,8 @@
                     </div>
                 </div>
 
-                <!-- Phone confirm note -->
-                <div class="d-flex align-items-start gap-2 mt-3 p-2 rounded-3" style="background:#fff8e1">
-                    <i class="ti ti-alert-circle text-warning mt-1" style="font-size:1rem;flex-shrink:0"></i>
-                    <small class="text-muted" style="line-height:1.4">
-                        با توجه به هماهنگی مبدا و مقصد، شماره وارده حتما باید شماره‌ی <strong>مسافر</strong> باشد
-                    </small>
-                </div>
-
                 <small class="text-muted d-block mt-2" style="font-size:.72rem">
-                    <i class="ti ti-message-2 me-1"></i>بعد از ثبت خرید و صدور بلیط، لینک اطلاعات سفر و فایل بلیط برای مسافر ارسال می‌شود
+                    <i class="ti ti-message-2 me-1"></i>بعد از خرید و صدور بلیط، لینک اطلاعات سفر و فایل بلیط برای شما از طریق پیامک ارسال می‌گردد
                 </small>
 
             </div>
@@ -728,7 +744,7 @@
                 <img src="/location.png" height="18px;" class="me-1" />
                 پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط
                 <strong>مسترشوفر</strong>
-                با مسافر هماهنگ خواهد شد.
+                با شما هماهنگ خواهد شد.
             </p>
         </div>
         </div><!-- /confirm-left-col -->
@@ -813,7 +829,7 @@
         </div>
         <p class="text-muted mb-0 mt-3" style="line-height:1.3rem;font-size:.8rem;">
             <img src="/location.png" height="18px;" class="me-1" />
-            پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط <strong>مسترشوفر</strong> با مسافر هماهنگ خواهد شد.
+            پس از ثبت و تایید بلیط، مکان دقیق مقصد و مبدا توسط <strong>مسترشوفر</strong> با شما هماهنگ خواهد شد.
         </p>
     </div>
 
@@ -880,7 +896,7 @@
                         <!-- Info rows -->
                         <div class="d-flex flex-column mb-3" style="gap:0">
                             <div class="d-flex justify-content-between align-items-center py-2 px-1" style="border-bottom:1px solid #f0f0f0">
-                                <span class="text-muted" style="font-size:.83rem"><i class="ti ti-user me-1"></i>مسافر</span>
+                                <span class="text-muted" style="font-size:.83rem"><i class="ti ti-user me-1"></i>نام و نام خانوادگی</span>
                                 <span class="fw-semibold" style="font-size:.9rem">@reserve_viemodel?.Firstname @reserve_viemodel?.Lastname</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-2 px-1" style="border-bottom:1px solid #f0f0f0">

@@ -43,11 +43,43 @@ check_redirect "$LEGACY/" "$CANONICAL/"
 check_redirect "$LEGACY/routes/tehran-isfahan" "$CANONICAL/routes/tehran-isfahan"
 check_redirect "https://www.mrshoofer.ir/" "$CANONICAL/"
 check_redirect "https://www.mrshoofer.com/" "$CANONICAL/"
-check_redirect "$LEGACY/otapanel/Auth/Login" "$CANONICAL/Auth/Login"
+check_redirect "http://mrshoofer.ir/" "$CANONICAL/"
+check_redirect "http://www.mrshoofer.ir/" "$CANONICAL/"
+check_redirect "http://www.mrshoofer.ir/otapanel/Auth/Login" "$CANONICAL/"
+
+check_gone() {
+  local from="$1"
+  local code
+  code="$(curl -sI -m 25 -o /dev/null -w '%{http_code}' "$from")"
+  if [[ "$code" == "410" ]]; then
+    echo "OK  $from → 410"
+    pass=$((pass + 1))
+  elif [[ "$code" == "301" || "$code" == "308" ]]; then
+    local loc
+    loc="$(curl -sI -m 25 "$from" | tr -d '\r' | awk 'tolower($1)=="location:"{print $2; exit}')"
+    local final
+    final="$(curl -sI -m 25 -o /dev/null -w '%{http_code}' "$loc")"
+    if [[ "$final" == "410" ]]; then
+      echo "OK  $from → $loc → 410"
+      pass=$((pass + 1))
+    else
+      echo "FAIL $from (redirected to $loc HTTP $final, want 410)"
+      fail=$((fail + 1))
+    fi
+  else
+    echo "FAIL $from (HTTP $code, want 410)"
+    fail=$((fail + 1))
+  fi
+}
 
 echo "=== Canonical site ==="
 check_200_canonical "$CANONICAL/"
 check_200_canonical "$CANONICAL/routes/tehran-isfahan"
+
+echo "=== Dead URLs (410) ==="
+check_gone "$CANONICAL/cgi-sys/suspendedpage.cgi"
+check_gone "$CANONICAL/index.php/category/uncategorized/feed/"
+check_gone "$LEGACY/index.php/2024/09/01/enhancing-customer-engagement-with-hubspot-crm/feed/"
 
 echo "=== Sitemap ==="
 if curl -sL -m 25 "$CANONICAL/sitemap.xml" | head -5 | grep -q "$CANONICAL"; then

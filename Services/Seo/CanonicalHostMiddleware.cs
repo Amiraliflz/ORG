@@ -3,10 +3,17 @@ using Microsoft.Extensions.Options;
 namespace Application.Services.Seo;
 
 /// <summary>
-/// 301 legacy hosts → canonical origin; strip /otapanel prefix (old OTA panel URLs).
+/// Crawl hygiene for GSC: 301 legacy hosts to the canonical origin, 410 dead CMS/hosting
+/// URLs, keep the payment host out of the index, strip /otapanel.
 /// </summary>
 public sealed class CanonicalHostMiddleware
 {
+  private static readonly string[] PaymentHosts =
+  [
+    "pay.mrshoofer.ir",
+    "payment.mrshoofer.ir",
+  ];
+
   private readonly RequestDelegate _next;
   private readonly IHostEnvironment _env;
   private readonly SeoOptions _seo;
@@ -24,35 +31,125 @@ public sealed class CanonicalHostMiddleware
   public Task InvokeAsync(HttpContext context)
   {
     var request = context.Request;
+    var path = request.Path.Value ?? "/";
     var host = request.Host.Host;
-    var canonicalHost = GetCanonicalHost();
 
+    if (IsGonePath(path))
+      return Gone(context);
+
+    if (IsPaymentHost(host))
+      return HandlePaymentHost(context, path);
+
+    var canonicalHost = GetCanonicalHost();
     if (!string.IsNullOrEmpty(canonicalHost)
         && !host.Equals(canonicalHost, StringComparison.OrdinalIgnoreCase)
         && IsLegacyHost(host))
     {
-      var target = $"{ResolveScheme(request)}://{canonicalHost}{request.PathBase}{request.Path}{request.QueryString}";
-      context.Response.Headers["Cache-Control"] = "no-store";
-      context.Response.Redirect(target, permanent: true);
-      return Task.CompletedTask;
+      return PermanentRedirect(context, CanonicalUrl(request, canonicalHost, RewriteLegacyPath(path)));
     }
 
-    var path = request.Path.Value ?? "/";
-    if (path.Equals("/otapanel", StringComparison.OrdinalIgnoreCase))
+    // Never HTTP→HTTPS here. Arvan terminates TLS; origin is HTTP, so IsHttps is
+    // often false and a 301 to https://{same-host}/ loops (ERR_TOO_MANY_REDIRECTS).
+
+    if (path.Equals("/otapanel", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWith("/otapanel/", StringComparison.OrdinalIgnoreCase))
     {
-      context.Response.Redirect("/" + request.QueryString, permanent: true);
-      return Task.CompletedTask;
+      return PermanentRedirect(context, CanonicalUrl(request, canonicalHost, RewriteLegacyPath(path)));
     }
+
+    return _next(context);
+  }
+
+  private Task HandlePaymentHost(HttpContext context, string path)
+  {
+    if (path.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase))
+    {
+      context.Response.StatusCode = StatusCodes.Status200OK;
+      context.Response.ContentType = "text/plain; charset=utf-8";
+      context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
+      context.Response.Headers["Cache-Control"] = "public,max-age=3600";
+      return context.Response.WriteAsync(
+        "User-agent: *\nDisallow: /\n");
+    }
+
+    // Payment root is not a public landing — send Google to the canonical site.
+    if (path == "/" || path.Length == 0)
+    {
+      var canonicalHost = GetCanonicalHost();
+      if (!string.IsNullOrEmpty(canonicalHost))
+        return PermanentRedirect(context, $"https://{canonicalHost}/");
+    }
+
+    context.Response.OnStarting(() =>
+    {
+      context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
+      return Task.CompletedTask;
+    });
+    return _next(context);
+  }
+
+  private static Task PermanentRedirect(HttpContext context, string target)
+  {
+    context.Response.Headers["Cache-Control"] = "no-store";
+    context.Response.Redirect(target, permanent: true);
+    return Task.CompletedTask;
+  }
+
+  private static Task Gone(HttpContext context)
+  {
+    context.Response.StatusCode = StatusCodes.Status410Gone;
+    context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
+    context.Response.Headers["Cache-Control"] = "public,max-age=86400";
+    context.Response.ContentType = "text/plain; charset=utf-8";
+    return context.Response.WriteAsync("Gone");
+  }
+
+  internal static bool IsGonePath(string path)
+  {
+    if (string.IsNullOrEmpty(path) || path == "/") return false;
+    var p = path.ToLowerInvariant();
+
+    if (p.StartsWith("/index.php", StringComparison.Ordinal)
+        || p.StartsWith("/cgi-sys/", StringComparison.Ordinal)
+        || p.StartsWith("/cgi-bin/", StringComparison.Ordinal)
+        || p.StartsWith("/wp-", StringComparison.Ordinal)
+        || p.Equals("/xmlrpc.php", StringComparison.Ordinal)
+        || p.EndsWith("/xmlrpc.php", StringComparison.Ordinal)
+        || p.StartsWith("/wordpress", StringComparison.Ordinal)
+        || p.Contains("/feed/", StringComparison.Ordinal)
+        || p.EndsWith("/feed", StringComparison.Ordinal))
+      return true;
+
+    if (p.Contains(".php", StringComparison.Ordinal) && !p.StartsWith("/farsi-fonts", StringComparison.Ordinal))
+      return true;
+
+    return false;
+  }
+
+  internal static string RewriteLegacyPath(string path)
+  {
+    if (path.Equals("/otapanel", StringComparison.OrdinalIgnoreCase))
+      return "/";
 
     if (path.StartsWith("/otapanel/", StringComparison.OrdinalIgnoreCase))
     {
       var remainder = path["/otapanel".Length..];
       if (string.IsNullOrEmpty(remainder)) remainder = "/";
-      context.Response.Redirect(remainder + request.QueryString, permanent: true);
-      return Task.CompletedTask;
+      if (remainder.Equals("/Auth/Login", StringComparison.OrdinalIgnoreCase)
+          || remainder.Equals("/Auth/Login/", StringComparison.OrdinalIgnoreCase))
+        return "/Auth/Login";
+      return remainder;
     }
 
-    return _next(context);
+    return path;
+  }
+
+  private string CanonicalUrl(HttpRequest request, string canonicalHost, string path)
+  {
+    if (string.IsNullOrEmpty(canonicalHost))
+      canonicalHost = request.Host.Host;
+    var pathBase = request.PathBase.HasValue ? request.PathBase.Value! : "";
+    return $"https://{canonicalHost}{pathBase}{path}{request.QueryString}";
   }
 
   private string GetCanonicalHost()
@@ -70,9 +167,6 @@ public sealed class CanonicalHostMiddleware
       host.Equals(h, StringComparison.OrdinalIgnoreCase));
   }
 
-  private string ResolveScheme(HttpRequest request)
-  {
-    if (request.IsHttps) return "https";
-    return _env.IsDevelopment() ? request.Scheme : "https";
-  }
+  private static bool IsPaymentHost(string host) =>
+    PaymentHosts.Any(h => host.Equals(h, StringComparison.OrdinalIgnoreCase));
 }

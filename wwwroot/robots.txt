@@ -21,6 +21,11 @@ Disallow: /Error/
 Disallow: /Home/Error
 Disallow: /TaxiTrips
 Disallow: /TaxiTrips?
+Disallow: /index.php
+Disallow: /cgi-sys/
+Disallow: /cgi-bin/
+Disallow: /wp-
+Disallow: /xmlrpc.php
 
 # Major search + answer engines
 User-agent: Googlebot

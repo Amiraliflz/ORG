@@ -57,7 +57,8 @@
 
 @section VendorStyles {
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link href="~/css/TaxiTripsIndex.css?v=63" rel="stylesheet" />
+    <link href="~/css/TaxiTripsIndex.css?v=67" rel="stylesheet" />
+    <link href="~/css/trip-search.css?v=3" rel="stylesheet" />
     @if (ViewBag.RouteSeo is not null)
     {
         <link href="~/css/RoutePages.css?v=20" rel="stylesheet" />
@@ -95,7 +96,7 @@
         });
       })();
     </script>
-    <script src="~/js/searchpage.js?v=6"></script>
+    <script src="~/js/searchpage.js?v=10"></script>
     <script src="~/js/Trips.js?v=14"></script>
 }
 
@@ -324,7 +325,7 @@
 
 <div class="trips-page-shell">
 
-<div class="landing-hero px-lg-5 px-0 pb-md-3" style="padding-top: 7.5rem !important;">
+<div class="landing-hero px-lg-5 px-0 pb-md-3">
 	<div class="container px-lg-6 px-0">
 	@if (isSeoLanding && routePage is not null)
 	{
@@ -340,19 +341,19 @@
 				<div class="row g-3 align-items-end justify-content-center mx-0">
 					<div class="col-12 col-md-6 od-pair-col">
 						<div class="row g-0 od-pair">
-							<div class="col-6 inputcel">
+							<div class="col-12 col-md-6 inputcel">
 								<small class="searchbar-field-label">مبدا</small>
 								<div class="input-container">
-									<input required id="origin_input" name="originstring" autocomplete="off" aria-describedby="defaultFormControlHelp" value="@ViewBag.origin_city_text" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle" placeholder="مبدا" type="text" role="button" style="font-weight:bold;" />
+									<input required id="origin_input" name="originstring" autocomplete="off" aria-describedby="defaultFormControlHelp" value="@ViewBag.origin_city_text" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle hide-arrow" placeholder="مبدا" type="text" role="button" style="font-weight:bold;" />
 									<i class="ti ti-location mb-2 icon"></i>
 									<span class="dropdown-menu dropdown-menu-end origin_location"></span>
 								</div>
 							</div>
 
-							<div class="col-6 inputcel">
+							<div class="col-12 col-md-6 inputcel">
 								<small class="searchbar-field-label">مقصد</small>
 								<div class="input-container">
-									<input required id="destination_input" name="destinationstring" value="@ViewBag.dest_city_text" data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle" placeholder="مقصد" type="text" role="button" style="font-weight:bold;" />
+									<input required id="destination_input" name="destinationstring" value="@ViewBag.dest_city_text" data-bs-toggle="dropdown" autocomplete="off" class="form-control destination input-field dropdown-toggle hide-arrow" placeholder="مقصد" type="text" role="button" style="font-weight:bold;" />
 									<i class="ti ti-map-pin mb-2 icon"></i>
 									<span class="dropdown-menu dropdown-menu-end destination_location"></span>
 								</div>
@@ -387,7 +388,7 @@
 
 
 
-<div class="position-relative trips-results" style="padding-top: 1.7rem;">
+<div class="position-relative trips-results">
 	<div class="page-safezone">
 
 		@if (ViewBag.RouteSeo is not null)
