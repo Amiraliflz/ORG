@@ -19,7 +19,11 @@ $(function () {
   });
 
   var dateInput = document.getElementById('starttime');
+  console.log('[IndexPage] starttime:', dateInput, 'JalaliDatepicker:', typeof window.JalaliDatepicker, 'JDate:', typeof window.JDate);
   if (dateInput && window.JalaliDatepicker) {
     new JalaliDatepicker(dateInput, { minDate: 'today' });
+    console.log('[IndexPage] JalaliDatepicker initialized');
+  } else {
+    console.warn('[IndexPage] Datepicker NOT initialized — missing:', !dateInput ? 'input' : 'JalaliDatepicker');
   }
 });
