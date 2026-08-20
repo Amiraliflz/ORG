@@ -15,7 +15,7 @@ namespace Application.Areas.Admin.Controllers
 {
   [Area("Admin")]
   [Route("[area]/Agency/[action]")]
-  //[Authorize(Policy = "Admin")]
+  [Authorize(Policy = "Admin")]
   public class AgencyManagement : Controller
   {
     private readonly AppDbContext context;
@@ -29,7 +29,6 @@ namespace Application.Areas.Admin.Controllers
       this._userManager = userManager;
     }
 
-    [Route("/Admin/")]
     public IActionResult Index()
     {
       return View();
