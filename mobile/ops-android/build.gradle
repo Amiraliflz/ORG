@@ -1,0 +1,23 @@
+buildscript {
+    repositories {
+        maven { url uri("${rootDir}/vendor-m2") }
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url uri("${rootDir}/vendor-m2") }
+        mavenCentral()
+        google()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

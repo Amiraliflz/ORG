@@ -2,6 +2,7 @@ using Application.Data;
 using Application.Models;
 using Application.Services.Ops;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -18,6 +19,9 @@ namespace Application.Areas.Admin.Controllers
         private readonly IServiceRestarter _restarter;
         private readonly IBusinessEventLogger _businessLog;
         private readonly ILogger<OpsController> _logger;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IOpsMobileTokenService _mobileTokens;
 
         public OpsController(
             PlatformAnalyticsService analytics,
@@ -25,7 +29,10 @@ namespace Application.Areas.Admin.Controllers
             AppDbContext db,
             IServiceRestarter restarter,
             IBusinessEventLogger businessLog,
-            ILogger<OpsController> logger)
+            ILogger<OpsController> logger,
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager,
+            IOpsMobileTokenService mobileTokens)
         {
             _analytics = analytics;
             _status = status;
@@ -33,6 +40,9 @@ namespace Application.Areas.Admin.Controllers
             _restarter = restarter;
             _businessLog = businessLog;
             _logger = logger;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _mobileTokens = mobileTokens;
         }
 
         public IActionResult Analytics() => View();
@@ -140,5 +150,109 @@ namespace Application.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Monitor));
         }
+
+        /// <summary>JSON login for the Ops Android APK — returns a bearer token (no cookie required).</summary>
+        [HttpPost]
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> ApiLogin([FromBody] OpsApiLoginRequest body)
+        {
+            if (body is null || string.IsNullOrWhiteSpace(body.Username) || string.IsNullOrWhiteSpace(body.Password))
+                return BadRequest(new { success = false, message = "نام کاربری و رمز لازم است" });
+
+            var user = await _userManager.FindByNameAsync(body.Username.Trim());
+            if (user is null)
+                return Unauthorized(new { success = false, message = "نام کاربری یا رمز عبور اشتباه است" });
+
+            var claims = await _userManager.GetClaimsAsync(user);
+            if (!claims.Any(c => c.Type == "Role" && c.Value == "Admin"))
+                return Unauthorized(new { success = false, message = "دسترسی ادمین ندارید" });
+
+            if (!await _userManager.CheckPasswordAsync(user, body.Password))
+                return Unauthorized(new { success = false, message = "نام کاربری یا رمز عبور اشتباه است" });
+
+            // Cookie optional (web); mobile uses token
+            await _signInManager.SignInAsync(user, isPersistent: true);
+
+            var token = _mobileTokens.Issue(user.Id, user.UserName ?? body.Username);
+            _businessLog.LogEvent("Ops", "Mobile API login", new { user.Id, user.UserName });
+            return Json(new { success = true, username = user.UserName, token });
+        }
+
+        /// <summary>Status for APK — cookie OR Bearer token.</summary>
+        [HttpGet]
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> ApiStatus(CancellationToken ct)
+        {
+            if (!TryAuthorizeMobile(out var userId))
+                return Unauthorized(new { success = false, message = "نشست منقضی شده — دوباره وارد شوید" });
+
+            var status = await _status.GetStatusAsync(ct);
+            return Json(status);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> ApiRestart([FromBody] OpsApiRestartRequest body, CancellationToken ct)
+        {
+            if (!TryAuthorizeMobile(out var userId))
+                return Unauthorized(new { success = false, message = "نشست منقضی شده — دوباره وارد شوید" });
+
+            if (body is null || !string.Equals(body.Confirm, "RESTART", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { success = false, message = "confirm باید RESTART باشد" });
+
+            _businessLog.LogEvent("Ops", "API Restart requested", new { userId });
+            _logger.LogWarning("API service restart requested by {UserId}", userId);
+
+            var (success, message) = await _restarter.RestartAsync(ct);
+            _db.OperationAudits.Add(new OperationAudit
+            {
+                Action = "RestartApi",
+                UserId = userId,
+                Success = success,
+                Details = message
+            });
+            await _db.SaveChangesAsync(ct);
+
+            return Json(new { success, message });
+        }
+
+        private bool TryAuthorizeMobile(out string userId)
+        {
+            userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+            if (User.Identity?.IsAuthenticated == true
+                && User.HasClaim("Role", "Admin")
+                && !string.IsNullOrEmpty(userId))
+                return true;
+
+            var header = Request.Headers.Authorization.ToString();
+            if (header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                var token = header["Bearer ".Length..].Trim();
+                if (_mobileTokens.TryValidate(token, out userId, out _))
+                    return true;
+            }
+
+            // Also accept X-Ops-Token (some clients)
+            var alt = Request.Headers["X-Ops-Token"].ToString();
+            if (!string.IsNullOrEmpty(alt) && _mobileTokens.TryValidate(alt, out userId, out _))
+                return true;
+
+            userId = "";
+            return false;
+        }
+    }
+
+    public class OpsApiLoginRequest
+    {
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    public class OpsApiRestartRequest
+    {
+        public string Confirm { get; set; } = "";
     }
 }

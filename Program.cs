@@ -129,6 +129,7 @@ builder.Services.AddScoped<IBusinessEventLogger, BusinessEventLogger>();
 builder.Services.AddScoped<PlatformAnalyticsService>();
 builder.Services.AddScoped<OpsStatusService>();
 builder.Services.AddSingleton<IServiceRestarter, ServiceRestarter>();
+builder.Services.AddSingleton<IOpsMobileTokenService, OpsMobileTokenService>();
 builder.Services.AddHostedService<LogPersistenceWorker>();
 builder.Services.AddHostedService<HealthSnapshotWorker>();
 builder.Services.AddHttpClient("OpsHealthCheck", c => c.Timeout = TimeSpan.FromSeconds(8));
@@ -199,6 +200,8 @@ builder.Services.ConfigureApplicationCookie(options =>
   options.AccessDeniedPath = "/Auth/AccessDenied";
   options.Cookie.Name = "YourAppCookieName";
   options.Cookie.HttpOnly = true;
+  options.Cookie.SameSite = SameSiteMode.Lax;
+  options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
   options.ExpireTimeSpan = TimeSpan.FromDays(75);
   options.LoginPath = "/Auth/Login";
 

@@ -433,3 +433,10 @@ ASALocalRun/
 
 # local deploy secrets
 .env.deploy
+
+# Android ops monitor (generated / build output)
+mobile/ops-android/vendor-m2/
+mobile/ops-android/.gradle/
+mobile/ops-android/app/build/
+mobile/ops-android/build/
+mobile/ops-android/local.properties

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink">#000000</color>
+    <color name="ink_inverse">#FFFFFF</color>
+    <color name="muted">#5E5E5E</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="bg">#F3F3F3</color>
+    <color name="border">#1F000000</color>
+    <color name="focus">#276EF1</color>
+</resources>

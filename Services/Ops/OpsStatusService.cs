@@ -11,37 +11,37 @@ namespace Application.Services.Ops
         private readonly PlatformAnalyticsService _analytics;
         private readonly IConfiguration _config;
         private readonly IHttpClientFactory _httpFactory;
+        private readonly IHostEnvironment _env;
 
         public OpsStatusService(
             AppDbContext db,
             IServiceRestarter restarter,
             PlatformAnalyticsService analytics,
             IConfiguration config,
-            IHttpClientFactory httpFactory)
+            IHttpClientFactory httpFactory,
+            IHostEnvironment env)
         {
             _db = db;
             _restarter = restarter;
             _analytics = analytics;
             _config = config;
             _httpFactory = httpFactory;
+            _env = env;
         }
 
         public async Task<OpsStatusDto> GetStatusAsync(CancellationToken ct = default)
         {
             var components = new List<ComponentStatus>();
 
-            // App heartbeat
-            var lastApp = await _db.SystemHeartbeats.AsNoTracking()
-                .Where(h => h.Component == "app")
-                .OrderByDescending(h => h.CheckedAt)
-                .FirstOrDefaultAsync(ct);
+            // App — live: this process is answering
             components.Add(new ComponentStatus
             {
                 Name = "app",
-                Label = "Application",
-                IsHealthy = lastApp?.IsHealthy ?? true,
-                Details = lastApp?.Details,
-                CheckedAt = lastApp?.CheckedAt
+                Label = "وب‌اپ",
+                IsHealthy = true,
+                Critical = true,
+                Details = $"pid={Environment.ProcessId}",
+                CheckedAt = DateTime.UtcNow
             });
 
             // Database
@@ -52,8 +52,9 @@ namespace Application.Services.Ops
                 components.Add(new ComponentStatus
                 {
                     Name = "database",
-                    Label = "Database",
+                    Label = "دیتابیس",
                     IsHealthy = true,
+                    Critical = true,
                     ResponseMs = (int)sw.ElapsedMilliseconds,
                     CheckedAt = DateTime.UtcNow
                 });
@@ -63,27 +64,31 @@ namespace Application.Services.Ops
                 components.Add(new ComponentStatus
                 {
                     Name = "database",
-                    Label = "Database",
+                    Label = "دیتابیس",
                     IsHealthy = false,
-                    Details = ex.Message,
+                    Critical = true,
+                    Details = Truncate(ex.Message, 120),
                     CheckedAt = DateTime.UtcNow
                 });
             }
 
-            // MrShoofer API
+            // MrShoofer API (informational — 2xx/3xx = ok)
             sw.Restart();
             try
             {
                 var client = _httpFactory.CreateClient("OpsHealthCheck");
                 var baseUrl = _config["MrShoofer:ApiBaseUrl"] ?? "https://ors.shoofer.taxi";
-                var resp = await client.GetAsync(baseUrl, ct);
+                using var resp = await client.GetAsync(baseUrl, HttpCompletionOption.ResponseHeadersRead, ct);
+                var code = (int)resp.StatusCode;
+                var ok = code is >= 200 and < 400;
                 components.Add(new ComponentStatus
                 {
                     Name = "mrshoofer_api",
-                    Label = "MrShoofer API",
-                    IsHealthy = resp.IsSuccessStatusCode,
+                    Label = "API مسترشوفر",
+                    IsHealthy = ok,
+                    Critical = false,
                     ResponseMs = (int)sw.ElapsedMilliseconds,
-                    Details = $"HTTP {(int)resp.StatusCode}",
+                    Details = $"HTTP {code}",
                     CheckedAt = DateTime.UtcNow
                 });
             }
@@ -92,40 +97,35 @@ namespace Application.Services.Ops
                 components.Add(new ComponentStatus
                 {
                     Name = "mrshoofer_api",
-                    Label = "MrShoofer API",
+                    Label = "API مسترشوفر",
                     IsHealthy = false,
-                    Details = ex.Message,
+                    Critical = false,
+                    Details = Truncate(ex.Message, 120),
                     CheckedAt = DateTime.UtcNow
                 });
             }
 
-            // Disk from last snapshot
-            var lastDisk = await _db.SystemHeartbeats.AsNoTracking()
-                .Where(h => h.Component == "disk")
-                .OrderByDescending(h => h.CheckedAt)
-                .FirstOrDefaultAsync(ct);
-            components.Add(new ComponentStatus
-            {
-                Name = "disk",
-                Label = "Disk",
-                IsHealthy = lastDisk?.IsHealthy ?? true,
-                Details = lastDisk?.Details,
-                CheckedAt = lastDisk?.CheckedAt
-            });
+            // Disk — live reading
+            components.Add(ReadDiskStatus());
 
-            // Systemd service
-            var serviceActive = await _restarter.IsServiceActiveAsync(ct);
-            components.Add(new ComponentStatus
+            // Application service (systemd) — only critical in Production
+            if (!_env.IsDevelopment())
             {
-                Name = "systemd",
-                Label = "Service",
-                IsHealthy = serviceActive,
-                Details = serviceActive ? "active" : "inactive",
-                CheckedAt = DateTime.UtcNow
-            });
+                var serviceActive = await _restarter.IsServiceActiveAsync(ct);
+                components.Add(new ComponentStatus
+                {
+                    Name = "systemd",
+                    Label = "سرویس اپ",
+                    IsHealthy = serviceActive,
+                    Critical = true,
+                    Details = serviceActive ? "active" : "inactive",
+                    CheckedAt = DateTime.UtcNow
+                });
+            }
 
             var uptime = await _analytics.GetUptimePercent24hAsync(ct);
-            var overallHealthy = components.All(c => c.IsHealthy);
+            // Overall = critical components only (disk / external API don't force DOWN)
+            var overallHealthy = components.Where(c => c.Critical).All(c => c.IsHealthy);
 
             return new OpsStatusDto
             {
@@ -135,6 +135,51 @@ namespace Application.Services.Ops
                 Components = components
             };
         }
+
+        private ComponentStatus ReadDiskStatus()
+        {
+            try
+            {
+                var usage = DiskUsageProbe.TryGet(_env.ContentRootPath);
+                if (usage is null)
+                {
+                    return new ComponentStatus
+                    {
+                        Name = "disk",
+                        Label = "دیسک",
+                        IsHealthy = true,
+                        Critical = false,
+                        Details = "نامشخص",
+                        CheckedAt = DateTime.UtcNow
+                    };
+                }
+
+                return new ComponentStatus
+                {
+                    Name = "disk",
+                    Label = "دیسک",
+                    IsHealthy = usage.Value.FreeGb > 2,
+                    Critical = false,
+                    Details = DiskUsageProbe.FormatFa(usage.Value),
+                    CheckedAt = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ComponentStatus
+                {
+                    Name = "disk",
+                    Label = "دیسک",
+                    IsHealthy = true,
+                    Critical = false,
+                    Details = Truncate(ex.Message, 80),
+                    CheckedAt = DateTime.UtcNow
+                };
+            }
+        }
+
+        private static string Truncate(string s, int max) =>
+            string.IsNullOrEmpty(s) ? s : (s.Length <= max ? s : s[..max] + "…");
     }
 
     public class OpsStatusDto
@@ -150,6 +195,8 @@ namespace Application.Services.Ops
         public string Name { get; set; } = "";
         public string Label { get; set; } = "";
         public bool IsHealthy { get; set; }
+        /// <summary>If true, failure marks overall status DOWN.</summary>
+        public bool Critical { get; set; }
         public int? ResponseMs { get; set; }
         public string? Details { get; set; }
         public DateTime? CheckedAt { get; set; }

@@ -23,11 +23,11 @@
   function renderStatus(data) {
     var up = data.isHealthy;
     heroDot.className = 'ops-hero-dot ' + (up ? 'up' : 'down');
-    heroText.textContent = up ? 'UP' : 'DOWN';
+    heroText.textContent = up ? 'فعال' : 'قطع';
     pill.textContent = up ? 'UP' : 'DOWN';
     pill.className = 'ops-status-pill ' + (up ? 'up' : 'down');
-    uptimeEl.textContent = 'Uptime 24h: ' + (data.uptimePercent24h != null ? data.uptimePercent24h + '%' : '—');
-    lastCheckEl.textContent = 'Last check: ' + fmtTime(data.checkedAt);
+    uptimeEl.textContent = 'آپتایم ۲۴ ساعت: ' + (data.uptimePercent24h != null ? data.uptimePercent24h + '%' : '—');
+    lastCheckEl.textContent = 'آخرین بررسی: ' + fmtTime(data.checkedAt);
 
     if (restartForm) {
       restartForm.style.display = up ? 'none' : 'block';
@@ -54,7 +54,7 @@
       .then(renderStatus)
       .catch(function () {
         renderStatus({ isHealthy: false, uptimePercent24h: 0, checkedAt: new Date().toISOString(), components: [
-          { name: 'app', label: 'Application', isHealthy: false, details: 'Fetch failed' }
+          { name: 'app', label: 'Application', isHealthy: false, details: 'اتصال برقرار نشد' }
         ]});
       });
   }

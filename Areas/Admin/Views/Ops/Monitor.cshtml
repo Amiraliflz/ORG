@@ -1,10 +1,10 @@
 @{
     Layout = "_OpsMobileLayout";
-    ViewData["Title"] = "MrShoofer Ops — Monitor";
+    ViewData["Title"] = "مانیتور عملیات — مسترشوفر";
 }
 
 <div class="ops-header">
-    <h1>MrShoofer Ops</h1>
+    <h1>مسترشوفر · عملیات</h1>
     <span id="opsOverallPill" class="ops-status-pill">…</span>
 </div>
 
@@ -19,29 +19,29 @@
 
 <div class="ops-hero">
     <div id="opsHeroDot" class="ops-hero-dot"></div>
-    <h2 id="opsHeroText">Checking…</h2>
-    <p class="ops-meta" id="opsUptime">Uptime 24h: —</p>
-    <p class="ops-meta" id="opsLastCheck">Last check: —</p>
+    <h2 id="opsHeroText">در حال بررسی…</h2>
+    <p class="ops-meta" id="opsUptime">آپتایم ۲۴ ساعت: —</p>
+    <p class="ops-meta" id="opsLastCheck">آخرین بررسی: —</p>
 </div>
 
 <div id="opsComponents" class="ops-components"></div>
 
 <div class="ops-actions">
-    <button type="button" class="ops-btn" id="opsRefreshBtn">Refresh now</button>
-    <a href="/Admin/Ops/Analytics" class="ops-btn">Analytics</a>
-    <a href="/Admin/Ops/Logs" class="ops-btn">Logs</a>
+    <button type="button" class="ops-btn ops-btn-primary" id="opsRefreshBtn">بروزرسانی</button>
+    <a href="/Admin/Ops/Analytics" class="ops-btn">آمار</a>
+    <a href="/Admin/Ops/Logs" class="ops-btn">گزارش‌ها</a>
 </div>
 
 <form id="opsRestartForm" method="post" action="/Admin/Ops/Restart" style="display:none; margin-top:1rem;">
     @Html.AntiForgeryToken()
     <input type="hidden" name="confirm" value="RESTART" />
     <button type="submit" class="ops-btn ops-btn-danger" id="opsRestartBtn">
-        Restart service
+        راه‌اندازی مجدد سرویس
     </button>
 </form>
 
 <p class="ops-meta" style="text-align:center; margin-top:1.5rem;">
-    Install: Share → Add to Home Screen
+    اپ اندروید: <code>mobile/ops-android/app/build/outputs/apk/debug/app-debug.apk</code>
 </p>
 
 @section PageScripts {

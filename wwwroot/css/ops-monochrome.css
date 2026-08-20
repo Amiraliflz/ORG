@@ -1,26 +1,34 @@
+/* Ops UI — aligned with front-palette / index (Shoofer ink) */
 :root {
   --ops-bg: #ffffff;
-  --ops-fg: #111111;
-  --ops-muted: #666666;
-  --ops-border: #e5e5e5;
-  --ops-up: #111111;
+  --ops-bg-muted: #f3f3f3;
+  --ops-fg: #000000;
+  --ops-muted: #5e5e5e;
+  --ops-border: rgba(0, 0, 0, 0.12);
+  --ops-up: #000000;
   --ops-down: #ffffff;
-  --ops-card: #fafafa;
+  --ops-card: #ffffff;
+  --ops-focus: #276ef1;
+  --ops-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 10px 24px rgba(0, 0, 0, 0.1);
 }
 
 * { box-sizing: border-box; }
 
 body.ops-body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--ops-bg);
+  font-family: font-regular, "IRANSansX", Tahoma, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f3f3 100%);
+  background-attachment: fixed;
   color: var(--ops-fg);
+  min-height: 100dvh;
 }
 
 .ops-mobile {
   min-height: 100dvh;
-  padding: 1rem;
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  padding: 1.25rem 1rem;
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
 }
 
 .ops-header {
@@ -33,19 +41,21 @@ body.ops-body {
 }
 
 .ops-header h1 {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  font-size: 1.15rem;
+  font-weight: normal;
   margin: 0;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
+  color: var(--ops-fg);
 }
 
 .ops-status-pill {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   border-radius: 999px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .ops-status-pill.up {
@@ -61,11 +71,12 @@ body.ops-body {
 
 .ops-hero {
   text-align: center;
-  padding: 2rem 1rem;
-  margin-bottom: 1.5rem;
+  padding: 2rem 1.25rem;
+  margin-bottom: 1.25rem;
   border: 1px solid var(--ops-border);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   background: var(--ops-card);
+  box-shadow: var(--ops-shadow);
 }
 
 .ops-hero-dot {
@@ -80,14 +91,18 @@ body.ops-body {
 .ops-hero-dot.down { background: var(--ops-down); }
 
 .ops-hero h2 {
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
   font-size: 1.75rem;
-  margin: 0 0 0.25rem;
-  font-weight: 800;
+  margin: 0 0 0.35rem;
+  font-weight: normal;
+  letter-spacing: 0;
 }
 
 .ops-meta {
   color: var(--ops-muted);
   font-size: 0.85rem;
+  line-height: 1.7;
+  margin: 0.15rem 0;
 }
 
 .ops-components {
@@ -101,21 +116,24 @@ body.ops-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 1rem 1.1rem;
   border: 1px solid var(--ops-border);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .ops-component-name {
-  font-weight: 600;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  font-weight: normal;
   font-size: 0.95rem;
 }
 
 .ops-component-detail {
   font-size: 0.75rem;
   color: var(--ops-muted);
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
+  line-height: 1.6;
 }
 
 .ops-dot {
@@ -137,16 +155,23 @@ body.ops-body {
 .ops-btn {
   display: block;
   width: 100%;
-  padding: 0.9rem 1rem;
+  padding: 0.95rem 1rem;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: normal;
   text-align: center;
-  border-radius: 0.75rem;
+  border-radius: 999px;
   border: 1px solid var(--ops-fg);
   background: #fff;
   color: var(--ops-fg);
   cursor: pointer;
   text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ops-btn:hover {
+  background: var(--ops-bg-muted);
+  color: var(--ops-fg);
 }
 
 .ops-btn-primary {
@@ -154,47 +179,59 @@ body.ops-body {
   color: #fff;
 }
 
+.ops-btn-primary:hover {
+  background: #1a1a1a;
+  color: #fff;
+}
+
 .ops-btn-danger {
   border-color: var(--ops-fg);
   background: #fff;
+  color: var(--ops-fg);
 }
 
 .ops-alert {
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
   margin-bottom: 1rem;
   font-size: 0.85rem;
   border: 1px solid var(--ops-border);
+  background: #fff;
+  line-height: 1.7;
 }
 
-.ops-alert-success { background: #f5f5f5; }
+.ops-alert-success { background: var(--ops-bg-muted); }
 .ops-alert-error { background: #fff; border-color: var(--ops-fg); }
 
 /* Admin analytics (desktop) */
 .ops-analytics .ops-stat-card {
   border: 1px solid var(--ops-border);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   padding: 1.25rem;
   background: #fff;
   height: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .ops-analytics .ops-stat-value {
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: normal;
   color: var(--ops-fg);
 }
 
 .ops-analytics .ops-stat-label {
   color: var(--ops-muted);
   font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .ops-analytics .ops-chart-card {
   border: 1px solid var(--ops-border);
-  border-radius: 1rem;
-  padding: 1rem;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
   background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .ops-logs-table {
@@ -206,7 +243,7 @@ body.ops-body {
 .ops-logs-table th,
 .ops-logs-table td {
   border-bottom: 1px solid var(--ops-border);
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.75rem;
   text-align: right;
   vertical-align: top;
 }
@@ -216,7 +253,7 @@ body.ops-body {
   color: var(--ops-muted);
 }
 
-.ops-level-error { font-weight: 700; }
+.ops-level-error { font-weight: 700; color: var(--ops-fg); }
 .ops-level-warning { font-weight: 600; color: var(--ops-muted); }
 
 @media (min-width: 768px) {

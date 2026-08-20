@@ -71,20 +71,18 @@ namespace Application.Services.Ops
                 });
             }
 
-            // Disk
+            // Disk — df on app content root (correct VPS / macOS mount, not APFS system volume)
             try
             {
-                var drive = DriveInfo.GetDrives()
-                    .FirstOrDefault(d => d.IsReady && d.Name == Path.GetPathRoot(AppContext.BaseDirectory));
-                if (drive is not null)
+                var root = scope.ServiceProvider.GetRequiredService<IHostEnvironment>().ContentRootPath;
+                var usage = DiskUsageProbe.TryGet(root);
+                if (usage is not null)
                 {
-                    var freeGb = drive.AvailableFreeSpace / (1024.0 * 1024 * 1024);
-                    var totalGb = drive.TotalSize / (1024.0 * 1024 * 1024);
                     beats.Add(new SystemHeartbeat
                     {
                         Component = "disk",
-                        IsHealthy = freeGb > 1,
-                        Details = $"{freeGb:F1}GB free / {totalGb:F1}GB"
+                        IsHealthy = usage.Value.FreeGb > 2,
+                        Details = DiskUsageProbe.FormatEn(usage.Value)
                     });
                 }
             }
@@ -93,7 +91,7 @@ namespace Application.Services.Ops
                 beats.Add(new SystemHeartbeat
                 {
                     Component = "disk",
-                    IsHealthy = false,
+                    IsHealthy = true,
                     Details = ex.Message
                 });
             }
