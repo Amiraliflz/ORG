@@ -40,7 +40,9 @@ namespace Application.Services.Ops
             {
                 // Prefer local restart script so the process comes back up
                 var root = _env.ContentRootPath;
-                var script = Path.Combine(root, "scripts", "ops-local-restart.sh");
+                var script = Path.Combine(root, "Scripts", "ops-local-restart.sh");
+                if (!File.Exists(script))
+                    script = Path.Combine(root, "scripts", "ops-local-restart.sh");
                 if (File.Exists(script))
                 {
                     _logger.LogWarning("Restart requested — launching {Script}", script);
@@ -67,32 +69,44 @@ namespace Application.Services.Ops
                 return (true, "Development: وب‌اپ در حال توقف است. دوباره آن را دستی اجرا کنید.");
             }
 
+            // Production: blue-green helper (preferred), then systemd fallback
+            var helper = _config["Ops:RestartScript"] ?? "/usr/local/bin/org-ops-restart.sh";
+            if (File.Exists(helper))
+            {
+                _logger.LogWarning("Restart requested — running {Helper}", helper);
+                var (ok, msg) = await RunProcessAsync("sudo", helper, ct);
+                if (!ok)
+                    return (false, string.IsNullOrWhiteSpace(msg) ? "راه‌اندازی مجدد ناموفق" : msg);
+
+                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+                var healthUrl = _config["Ops:HealthUrl"] ?? "http://127.0.0.1:5055/health";
+                for (var i = 0; i < 40; i++)
+                {
+                    await Task.Delay(1000, ct);
+                    try
+                    {
+                        var resp = await http.GetAsync(healthUrl, ct);
+                        if (resp.IsSuccessStatusCode)
+                            return (true, "وب‌اپ ری‌استارت شد و سالم است");
+                    }
+                    catch
+                    {
+                        // still starting / cutting over
+                    }
+                }
+
+                return (true, "دستور ری‌استارت وب‌اپ اجرا شد؛ منتظر سلامت…");
+            }
+
             var service = _config["Ops:ServiceName"] ?? "org.service";
 
             try
             {
-                var psi = new System.Diagnostics.ProcessStartInfo
+                var (ok, msg) = await RunProcessAsync("sudo", $"/bin/systemctl restart {service}", ct);
+                if (!ok)
                 {
-                    FileName = "sudo",
-                    Arguments = $"/bin/systemctl restart {service}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using var proc = System.Diagnostics.Process.Start(psi);
-                if (proc is null)
-                    return (false, "Failed to start restart process");
-
-                var stdout = await proc.StandardOutput.ReadToEndAsync(ct);
-                var stderr = await proc.StandardError.ReadToEndAsync(ct);
-                await proc.WaitForExitAsync(ct);
-
-                if (proc.ExitCode != 0)
-                {
-                    _logger.LogError("Restart failed: {Stderr}", stderr);
-                    return (false, string.IsNullOrWhiteSpace(stderr) ? "Restart command failed" : stderr.Trim());
+                    _logger.LogError("Restart failed: {Msg}", msg);
+                    return (false, string.IsNullOrWhiteSpace(msg) ? "Restart command failed" : msg);
                 }
 
                 using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
@@ -121,31 +135,29 @@ namespace Application.Services.Ops
             }
         }
 
+        private async Task<(bool Success, string Message)> RunProcessAsync(string fileName, string args, CancellationToken ct)
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = args,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using var proc = System.Diagnostics.Process.Start(psi);
+            if (proc is null) return (false, "Failed to start process");
+            var stdout = await proc.StandardOutput.ReadToEndAsync(ct);
+            var stderr = await proc.StandardError.ReadToEndAsync(ct);
+            await proc.WaitForExitAsync(ct);
+            var combined = (stdout + "\n" + stderr).Trim();
+            return proc.ExitCode == 0 ? (true, combined) : (false, combined);
+        }
+
         private async Task<(bool Success, string Message)> RunShellAsync(string command, CancellationToken ct)
         {
-            try
-            {
-                var psi = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "/bin/bash",
-                    Arguments = $"-lc {Quote(command)}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                using var proc = System.Diagnostics.Process.Start(psi);
-                if (proc is null) return (false, "Failed to start restart command");
-                var stderr = await proc.StandardError.ReadToEndAsync(ct);
-                await proc.WaitForExitAsync(ct);
-                if (proc.ExitCode != 0)
-                    return (false, string.IsNullOrWhiteSpace(stderr) ? "Restart command failed" : stderr.Trim());
-                return (true, "دستور ری‌استارت وب‌اپ اجرا شد");
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
+            return await RunProcessAsync("/bin/bash", $"-lc {Quote(command)}", ct);
         }
 
         private static string Quote(string s) =>

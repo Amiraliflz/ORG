@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
-# Install limited sudoers rule so the app can restart org.service from Ops monitor.
-# Run once on the VPS as root (deploy can invoke this).
+# Install Ops restart helper + sudoers for blue-green ORG app.
 set -euo pipefail
 
-SERVICE="${SERVICE:-org.service}"
-RUN_USER="${RUN_USER:-www-data}"
+SCRIPT_SRC="$(cd "$(dirname "$0")" && pwd)/org-ops-restart.sh"
+INSTALL_PATH="/usr/local/bin/org-ops-restart.sh"
+# App currently runs as root on this VPS; also allow www-data for future hardening
+RUN_USERS="${RUN_USERS:-root www-data}"
+
+install -m 755 "$SCRIPT_SRC" "$INSTALL_PATH"
+mkdir -p /var/log/org
+chmod 755 /var/log/org
 
 SUDOERS_FILE="/etc/sudoers.d/org-ops-restart"
-
-cat > "$SUDOERS_FILE" <<EOF
-# MrShoofer Ops — allow ${RUN_USER} to restart/check ${SERVICE} only
-${RUN_USER} ALL=(root) NOPASSWD: /bin/systemctl restart ${SERVICE}, /bin/systemctl is-active ${SERVICE}
-EOF
-
+{
+  echo "# MrShoofer Ops — restart web app only (not the whole server)"
+  for u in $RUN_USERS; do
+    echo "${u} ALL=(root) NOPASSWD: ${INSTALL_PATH}, /bin/systemctl restart org.service, /bin/systemctl is-active org.service"
+  done
+} > "$SUDOERS_FILE"
 chmod 440 "$SUDOERS_FILE"
 visudo -cf "$SUDOERS_FILE"
 
-mkdir -p /var/log/org
-chown "${RUN_USER}:${RUN_USER}" /var/log/org 2>/dev/null || true
-
-echo "Installed ${SUDOERS_FILE} for ${RUN_USER} → ${SERVICE}"
-echo "Log directory: /var/log/org"
+echo "Installed ${INSTALL_PATH}"
+echo "Installed ${SUDOERS_FILE}"
