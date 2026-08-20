@@ -381,7 +381,17 @@ if [[ "$NEED_CODE" == "1" ]]; then
   dotnet build Application.csproj -c Release -v q
 
   DLL_LOCAL="bin/Release/net8.0/Application.dll"
+  RELEASE_DIR="bin/Release/net8.0"
   [[ -f "$DLL_LOCAL" ]] || { echo "Build output missing: $DLL_LOCAL" >&2; exit 1; }
+
+  sync_release_dlls() {
+    echo "==> Uploading Release dependencies (*.dll)"
+    local tar="/tmp/org-release-dlls-$$.tar.gz"
+    tar czf "$tar" -C "$RELEASE_DIR" $(cd "$RELEASE_DIR" && ls *.dll)
+    remote_scp "$tar" "/tmp/org-release-dlls.tar.gz"
+    remote "cd ${DEPLOY_DIR} && tar xzf /tmp/org-release-dlls.tar.gz && rm -f /tmp/org-release-dlls.tar.gz"
+    rm -f "$tar"
+  }
 
   # Detect stable localhost proxy (keeps :5055 fixed for peer apps)
   HAS_STABLE="$(remote "test -f /etc/nginx/conf.d/org-stable-localhost.conf && test -f /etc/nginx/conf.d/org-backend-active.conf && echo yes || echo no" | tr -d '\r' || echo no)"
@@ -401,6 +411,7 @@ if [[ "$NEED_CODE" == "1" ]]; then
       echo "==> Minimal-downtime restart deploy"
     fi
     echo "==> Uploading Application.dll"
+    sync_release_dlls
     remote_scp "$DLL_LOCAL" "${DEPLOY_DIR}/Application.dll.new"
     remote "set -e
       mv -f ${DEPLOY_DIR}/Application.dll.new ${DEPLOY_DIR}/Application.dll
@@ -423,6 +434,7 @@ if [[ "$NEED_CODE" == "1" ]]; then
     echo "  active backend=${ACTIVE_PORT}  new backend=${NEW_PORT}  stable=${STABLE_PORT}"
 
     echo "==> Uploading Application.dll"
+    sync_release_dlls
     remote_scp "$DLL_LOCAL" "${DEPLOY_DIR}/Application.dll.new"
     echo "==> Starting standby + cutover on VPS"
 
