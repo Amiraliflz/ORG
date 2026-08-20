@@ -4,6 +4,8 @@ namespace Application.Services.Ops
     {
         Task<(bool Success, string Message)> RestartAsync(CancellationToken ct = default);
         Task<bool> IsServiceActiveAsync(CancellationToken ct = default);
+        /// <summary>True when the web app host is up (systemd and/or blue-green process).</summary>
+        Task<(bool Healthy, string Details)> GetHostHealthAsync(CancellationToken ct = default);
     }
 
     public class ServiceRestarter : IServiceRestarter
@@ -151,8 +153,16 @@ namespace Application.Services.Ops
 
         public async Task<bool> IsServiceActiveAsync(CancellationToken ct = default)
         {
-            if (_env.IsDevelopment()) return true;
+            var (healthy, _) = await GetHostHealthAsync(ct);
+            return healthy;
+        }
 
+        public async Task<(bool Healthy, string Details)> GetHostHealthAsync(CancellationToken ct = default)
+        {
+            if (_env.IsDevelopment())
+                return (true, "development");
+
+            // 1) systemd unit (when used)
             var service = _config["Ops:ServiceName"] ?? "org.service";
             try
             {
@@ -167,15 +177,21 @@ namespace Application.Services.Ops
                 };
 
                 using var proc = System.Diagnostics.Process.Start(psi);
-                if (proc is null) return false;
-                var stdout = await proc.StandardOutput.ReadToEndAsync(ct);
-                await proc.WaitForExitAsync(ct);
-                return stdout.Trim().Equals("active", StringComparison.OrdinalIgnoreCase);
+                if (proc is not null)
+                {
+                    var stdout = await proc.StandardOutput.ReadToEndAsync(ct);
+                    await proc.WaitForExitAsync(ct);
+                    if (stdout.Trim().Equals("active", StringComparison.OrdinalIgnoreCase))
+                        return (true, $"systemd {service} active");
+                }
             }
             catch
             {
-                return false;
+                // fall through — blue-green is normal on this VPS
             }
+
+            // 2) Blue-green: this process is answering Ops status ⇒ host is up
+            return (true, $"blue-green pid={Environment.ProcessId}");
         }
     }
 }

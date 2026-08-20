@@ -108,17 +108,17 @@ namespace Application.Services.Ops
             // Disk — live reading
             components.Add(ReadDiskStatus());
 
-            // Application service (systemd) — only critical in Production
+            // Host process — production uses blue-green ./Application, not always systemd
             if (!_env.IsDevelopment())
             {
-                var serviceActive = await _restarter.IsServiceActiveAsync(ct);
+                var (hostOk, hostDetail) = await _restarter.GetHostHealthAsync(ct);
                 components.Add(new ComponentStatus
                 {
-                    Name = "systemd",
+                    Name = "host",
                     Label = "سرویس اپ",
-                    IsHealthy = serviceActive,
+                    IsHealthy = hostOk,
                     Critical = true,
-                    Details = serviceActive ? "active" : "inactive",
+                    Details = hostDetail,
                     CheckedAt = DateTime.UtcNow
                 });
             }
