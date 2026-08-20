@@ -17,6 +17,10 @@ namespace Application.Data
     public DbSet<CustomerProfile> CustomerProfiles { get; set; }
     public DbSet<DiscountCode> DiscountCodes { get; set; }
     public DbSet<DiscountCodeUsage> DiscountCodeUsages { get; set; }
+    public DbSet<AppSetting> AppSettings { get; set; }
+    public DbSet<AppLogEntry> AppLogEntries { get; set; }
+    public DbSet<SystemHeartbeat> SystemHeartbeats { get; set; }
+    public DbSet<OperationAudit> OperationAudits { get; set; }
 
     public DbSet<CityCoordinate> CityCoordinates { get; set; }
     public DbSet<RouteTravelTime> RouteTravelTimes { get; set; }
@@ -41,6 +45,18 @@ namespace Application.Data
       {
         e.HasIndex(x => new { x.OriginCityId, x.DestinationCityId }).IsUnique();
         e.HasIndex(x => new { x.OriginNameFa, x.DestinationNameFa });
+      });
+
+      modelBuilder.Entity<AppLogEntry>(e =>
+      {
+        e.HasIndex(x => x.Timestamp);
+        e.HasIndex(x => x.Level);
+        e.HasIndex(x => x.RequestPath);
+      });
+
+      modelBuilder.Entity<SystemHeartbeat>(e =>
+      {
+        e.HasIndex(x => new { x.Component, x.CheckedAt });
       });
     }
 

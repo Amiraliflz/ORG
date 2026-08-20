@@ -55,6 +55,35 @@
                 <div>کدهای تخفیف</div>
             </a>
         </li>
+        <li class='menu-item@(currentPage.StartsWith("/Admin/Loyalty") ? " active" : "")'>
+            <a asp-controller="Loyalty" asp-area="Admin" asp-action="Index" class="menu-link">
+                <i class="ti ti-award menu-icon tf-icons"></i>
+                <div>وفاداری</div>
+            </a>
+        </li>
+        <li class='menu-item@(currentPage.StartsWith("/Admin/Ops") ? " active open" : "")'>
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="ti ti-activity menu-icon tf-icons"></i>
+                <div>عملیات</div>
+            </a>
+            <ul class="menu-sub">
+                <li class='menu-item@(currentPage.StartsWith("/Admin/Ops/Monitor") ? " active" : "")'>
+                    <a asp-controller="Ops" asp-area="Admin" asp-action="Monitor" class="menu-link">
+                        <div>مانیتور</div>
+                    </a>
+                </li>
+                <li class='menu-item@(currentPage.StartsWith("/Admin/Ops/Analytics") ? " active" : "")'>
+                    <a asp-controller="Ops" asp-area="Admin" asp-action="Analytics" class="menu-link">
+                        <div>آمار</div>
+                    </a>
+                </li>
+                <li class='menu-item@(currentPage.StartsWith("/Admin/Ops/Logs") ? " active" : "")'>
+                    <a asp-controller="Ops" asp-area="Admin" asp-action="Logs" class="menu-link">
+                        <div>گزارش‌ها</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
 
     </ul>
 

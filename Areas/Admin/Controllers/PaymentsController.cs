@@ -1,5 +1,6 @@
 using Application.Data;
 using Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace Application.Areas.Admin.Controllers
 {
 
   [Area("Admin")]
+  [Authorize(Policy = "Admin")]
   public class PaymentsController : Controller
   {
 

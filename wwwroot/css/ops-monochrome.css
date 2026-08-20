@@ -1,0 +1,224 @@
+:root {
+  --ops-bg: #ffffff;
+  --ops-fg: #111111;
+  --ops-muted: #666666;
+  --ops-border: #e5e5e5;
+  --ops-up: #111111;
+  --ops-down: #ffffff;
+  --ops-card: #fafafa;
+}
+
+* { box-sizing: border-box; }
+
+body.ops-body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--ops-bg);
+  color: var(--ops-fg);
+}
+
+.ops-mobile {
+  min-height: 100dvh;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
+.ops-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ops-border);
+}
+
+.ops-header h1 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.ops-status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ops-status-pill.up {
+  background: var(--ops-up);
+  color: #fff;
+}
+
+.ops-status-pill.down {
+  background: var(--ops-down);
+  color: var(--ops-fg);
+  border: 2px solid var(--ops-fg);
+}
+
+.ops-hero {
+  text-align: center;
+  padding: 2rem 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--ops-border);
+  border-radius: 1rem;
+  background: var(--ops-card);
+}
+
+.ops-hero-dot {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  border: 3px solid var(--ops-fg);
+}
+
+.ops-hero-dot.up { background: var(--ops-up); }
+.ops-hero-dot.down { background: var(--ops-down); }
+
+.ops-hero h2 {
+  font-size: 1.75rem;
+  margin: 0 0 0.25rem;
+  font-weight: 800;
+}
+
+.ops-meta {
+  color: var(--ops-muted);
+  font-size: 0.85rem;
+}
+
+.ops-components {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.ops-component {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--ops-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.ops-component-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ops-component-detail {
+  font-size: 0.75rem;
+  color: var(--ops-muted);
+  margin-top: 0.15rem;
+}
+
+.ops-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ops-dot.up { background: var(--ops-up); }
+.ops-dot.down { background: var(--ops-down); border: 2px solid var(--ops-fg); }
+
+.ops-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ops-btn {
+  display: block;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--ops-fg);
+  background: #fff;
+  color: var(--ops-fg);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ops-btn-primary {
+  background: var(--ops-fg);
+  color: #fff;
+}
+
+.ops-btn-danger {
+  border-color: var(--ops-fg);
+  background: #fff;
+}
+
+.ops-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--ops-border);
+}
+
+.ops-alert-success { background: #f5f5f5; }
+.ops-alert-error { background: #fff; border-color: var(--ops-fg); }
+
+/* Admin analytics (desktop) */
+.ops-analytics .ops-stat-card {
+  border: 1px solid var(--ops-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: #fff;
+  height: 100%;
+}
+
+.ops-analytics .ops-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--ops-fg);
+}
+
+.ops-analytics .ops-stat-label {
+  color: var(--ops-muted);
+  font-size: 0.85rem;
+}
+
+.ops-analytics .ops-chart-card {
+  border: 1px solid var(--ops-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fff;
+}
+
+.ops-logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ops-logs-table th,
+.ops-logs-table td {
+  border-bottom: 1px solid var(--ops-border);
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  vertical-align: top;
+}
+
+.ops-logs-table th {
+  font-weight: 600;
+  color: var(--ops-muted);
+}
+
+.ops-level-error { font-weight: 700; }
+.ops-level-warning { font-weight: 600; color: var(--ops-muted); }
+
+@media (min-width: 768px) {
+  .ops-mobile { max-width: 480px; margin: 0 auto; }
+}

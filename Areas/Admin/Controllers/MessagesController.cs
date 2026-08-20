@@ -1,11 +1,13 @@
 using Application.Data;
 using Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.Entity;
 
 namespace Application.Areas.Admin.Controllers
 {
   [Area("Admin")]
+  [Authorize(Policy = "Admin")]
   public class MessagesController : Controller
   {
 

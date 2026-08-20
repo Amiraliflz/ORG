@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "آمار عملیات";
+}
+
+@section PageStyles {
+<link rel="stylesheet" href="/css/ops-monochrome.css" asp-append-version="true" />
+}
+
+<div class="ops-analytics container-xxl flex-grow-1 container-p-y">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0">آمار پلتفرم</h4>
+            <small class="text-muted">داشبورد سیاه و سفید</small>
+        </div>
+        <a href="/Admin/Ops/Monitor" class="btn btn-outline-dark rounded-pill">مانیتور موبایل</a>
+    </div>
+
+    <div class="row g-3 mb-4" id="opsStats"></div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="ops-chart-card">
+                <h6 class="mb-3">فروش ۷ روز اخیر</h6>
+                <div id="opsSalesChart"></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ops-chart-card">
+                <h6 class="mb-3">مسیرهای پرتردد</h6>
+                <div id="opsRoutesChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section VendorScripts {
+<script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
+}
+
+@section PageScripts {
+<script src="/ops/analytics.js" asp-append-version="true"></script>
+}

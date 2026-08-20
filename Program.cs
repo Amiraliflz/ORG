@@ -2,10 +2,12 @@ using Application.Data;
 using Application.Services;
 using Application.Services.Auth;
 using Application.Services.MrShooferORS;
+using Application.Services.Ops;
 using Application.Services.Payment;
 using Application.Services.Seo;
 using Kavenegar;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,11 +17,33 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Serilog;
 using System.IO.Compression;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 using System.Text.Encodings.Web;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<LogBufferService>();
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    var buffer = services.GetRequiredService<LogBufferService>();
+    var logPath = context.HostingEnvironment.IsDevelopment()
+        ? Path.Combine(context.HostingEnvironment.ContentRootPath, "logs", "app-.log")
+        : "/var/log/org/app-.log";
+
+    configuration
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .Enrich.WithEnvironmentName()
+        .Enrich.WithThreadId()
+        .WriteTo.Console()
+        .WriteTo.File(logPath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
+        .WriteTo.Sink(new DatabaseLogSink(buffer));
+});
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -100,6 +124,14 @@ builder.Services.AddHttpClient<CustomerServiceSmsSender>(client =>
 });
 builder.Services.AddTransient<Application.Services.TicketIssuer>();
 builder.Services.AddScoped<Application.Services.CustomerBalanceService>();
+builder.Services.AddScoped<Application.Services.LoyaltyService>();
+builder.Services.AddScoped<IBusinessEventLogger, BusinessEventLogger>();
+builder.Services.AddScoped<PlatformAnalyticsService>();
+builder.Services.AddScoped<OpsStatusService>();
+builder.Services.AddSingleton<IServiceRestarter, ServiceRestarter>();
+builder.Services.AddHostedService<LogPersistenceWorker>();
+builder.Services.AddHostedService<HealthSnapshotWorker>();
+builder.Services.AddHttpClient("OpsHealthCheck", c => c.Timeout = TimeSpan.FromSeconds(8));
 
 // Register Payment Service with Dependency Inversion Principle
 // This allows easy swapping to other payment providers (IDPay, Sep, etc.)
@@ -134,6 +166,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(pgsqlConnString);
 });
+
+builder.Services.AddHealthChecks()
+    .AddNpgSql(pgsqlConnString!, name: "database", timeout: TimeSpan.FromSeconds(5));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -188,6 +223,16 @@ builder.Services.AddRateLimiter(options =>
 
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestPath", httpContext.Request.Path.Value);
+        diagnosticContext.Set("RequestMethod", httpContext.Request.Method);
+        diagnosticContext.Set("UserId", httpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+    };
+});
 
 SeoDefaults.Configure(app.Configuration);
 
@@ -269,6 +314,25 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var payload = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                duration = e.Value.Duration.TotalMilliseconds
+            })
+        };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+    }
+});
+
 // Explicit SEO routes (must stay above the AgencyArea catch-all)
 app.MapControllerRoute(
     name: "seo-sitemap-index",
@@ -325,4 +389,16 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}
+
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

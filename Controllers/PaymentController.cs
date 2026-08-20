@@ -1,5 +1,6 @@
 using Application.Data;
 using Application.Services;
+using Application.Services.Ops;
 using Application.Services.Payment;
 using Application.Services.MrShooferORS;
 using Microsoft.AspNetCore.Identity;
@@ -24,6 +25,7 @@ namespace Application.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly CustomerBalanceService _balanceSvc;
+        private readonly IBusinessEventLogger _businessLog;
 
         public PaymentController(
             IPaymentService paymentService,
@@ -34,7 +36,8 @@ namespace Application.Controllers
             IHttpClientFactory httpClientFactory,
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            CustomerBalanceService balanceSvc)
+            CustomerBalanceService balanceSvc,
+            IBusinessEventLogger businessLog)
         {
             _paymentService = paymentService;
             _context = context;
@@ -45,6 +48,7 @@ namespace Application.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _balanceSvc = balanceSvc;
+            _businessLog = businessLog;
         }
 
         /// <summary>
@@ -169,6 +173,7 @@ namespace Application.Controllers
                 }
 
                 _logger.LogInformation("Payment verified successfully. RefId: {RefId}, Authority: {Authority}", refId, Authority);
+                _businessLog.LogEvent("Payment", "Payment verified", new { refId, Authority, ticketId = ticket.Id });
 
                 // ✅ NOW CREATE MRSHOOFER RESERVATION (AFTER PAYMENT VERIFIED!)
                 try

@@ -49,7 +49,7 @@ USE_DOCKER="${USE_DOCKER:-0}"
 ENSURE_AUTOSTART="${ENSURE_AUTOSTART:-1}"
 ORG_IMAGE="${ORG_IMAGE:-mrshoofer-org:latest}"
 DOCKER_NAME="${DOCKER_NAME:-mrshoofer-org}"
-HEALTH_PATH="${HEALTH_PATH:-/}"
+HEALTH_PATH="${HEALTH_PATH:-/health}"
 SSH_OPTS="-o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no -o ConnectTimeout=30"
 
 need() { command -v "$1" >/dev/null || { echo "Missing dependency: $1" >&2; exit 1; }; }
@@ -529,6 +529,10 @@ EOF
 fi
 
 ensure_autostart_systemd
+
+echo "==> Ensuring Ops restart sudoers + log directory"
+remote_scp "$ROOT/deploy/scripts/install-ops-restart.sh" "/tmp/install-ops-restart.sh"
+remote "bash /tmp/install-ops-restart.sh && rm -f /tmp/install-ops-restart.sh" || echo "    (ops restart install skipped or already configured)"
 
 echo
 echo "==> Deploy finished."

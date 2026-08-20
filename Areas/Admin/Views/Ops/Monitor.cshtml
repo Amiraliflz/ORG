@@ -1,0 +1,53 @@
+@{
+    Layout = "_OpsMobileLayout";
+    ViewData["Title"] = "MrShoofer Ops — Monitor";
+}
+
+<div class="ops-header">
+    <h1>MrShoofer Ops</h1>
+    <span id="opsOverallPill" class="ops-status-pill">…</span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="ops-alert ops-alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="ops-alert ops-alert-error">@TempData["Error"]</div>
+}
+
+<div class="ops-hero">
+    <div id="opsHeroDot" class="ops-hero-dot"></div>
+    <h2 id="opsHeroText">Checking…</h2>
+    <p class="ops-meta" id="opsUptime">Uptime 24h: —</p>
+    <p class="ops-meta" id="opsLastCheck">Last check: —</p>
+</div>
+
+<div id="opsComponents" class="ops-components"></div>
+
+<div class="ops-actions">
+    <button type="button" class="ops-btn" id="opsRefreshBtn">Refresh now</button>
+    <a href="/Admin/Ops/Analytics" class="ops-btn">Analytics</a>
+    <a href="/Admin/Ops/Logs" class="ops-btn">Logs</a>
+</div>
+
+<form id="opsRestartForm" method="post" action="/Admin/Ops/Restart" style="display:none; margin-top:1rem;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="confirm" value="RESTART" />
+    <button type="submit" class="ops-btn ops-btn-danger" id="opsRestartBtn">
+        Restart service
+    </button>
+</form>
+
+<p class="ops-meta" style="text-align:center; margin-top:1.5rem;">
+    Install: Share → Add to Home Screen
+</p>
+
+@section PageScripts {
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/ops/sw.js').catch(() => {});
+}
+</script>
+}
