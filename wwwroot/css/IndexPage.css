@@ -219,7 +219,7 @@
 }
 
 .landing-hero .hero-search-head {
-  margin-bottom: var(--hz-sp-5);
+  margin-bottom: var(--hz-sp-4);
   padding: 0;
   border: 0;
   background: transparent;
@@ -315,7 +315,10 @@
   }
   .landing-hero .hero-search-panel {
     padding-inline: var(--hz-pad);
-    padding-block: var(--hz-sp-4) 0;
+    padding-block: var(--hz-sp-5) var(--hz-sp-5);
+  }
+  .landing-hero .hero-search-head {
+    margin-bottom: var(--hz-sp-4);
   }
   .landing-hero .hero-definition-media {
     border-radius: 0.75rem;
@@ -1201,7 +1204,7 @@
 
 .landing-hero .dropdown-menu.origin_location,
 .landing-hero .dropdown-menu.destination_location {
-  /* Match field width; avoid fixed 230–250px min-width that overflows mobile */
+  /* Mobile: match field. Desktop overrides below for a wider, readable panel. */
   width: 100%;
   min-width: 100% !important;
   max-width: 100%;
@@ -1209,12 +1212,21 @@
   overflow-y: auto !important;
   overflow-x: hidden !important;
   z-index: 1080;
+  border-radius: 0.85rem;
+  padding: 0.35rem 0;
+  box-shadow:
+    0 0.5rem 1.25rem rgba(47, 43, 61, 0.12),
+    0 0.125rem 0.35rem rgba(47, 43, 61, 0.06);
 }
 
 @media (min-width: 768px) {
   .landing-hero .dropdown-menu.origin_location,
   .landing-hero .dropdown-menu.destination_location {
-    max-height: 380px !important;
+    /* Wider + shorter panel so the open list reads as a usable sheet, not a thin column */
+    width: max(100%, 22rem);
+    min-width: max(100%, 22rem) !important;
+    max-width: min(26rem, 42vw);
+    max-height: min(40dvh, 18rem) !important;
   }
 }
 
@@ -1265,8 +1277,24 @@ body:has(.landing-hero) {
 }
 
 .inputcel {
-  padding: 0;
   padding: 0 0.25rem !important;
+}
+
+@media (max-width: 767.98px) {
+  .landing-hero #tripForm > .inputcel,
+  .landing-hero #tripForm > .od-pair-col {
+    padding-inline: 0 !important;
+  }
+
+  .landing-hero #tripForm > .col-12 + .col-12 {
+    margin-top: 0.5rem;
+  }
+
+  .landing-hero #tripForm .form-text {
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
 }
 
 .od-pair-col {
@@ -1278,10 +1306,10 @@ body:has(.landing-hero) {
   align-items: flex-start;
 }
 
-/* Leave a clear center gutter so the swap control sits between the fields */
+/* Tight center gutter: swap sits close to both fields; date/CTA columns unchanged */
 @media (min-width: 768px) {
   .landing-hero #tripForm .od-pair {
-    --od-swap-gutter: 2.75rem;
+    --od-swap-gutter: 1rem;
   }
 
   .landing-hero #tripForm .od-pair > .inputcel:first-child {
@@ -1298,7 +1326,7 @@ body:has(.landing-hero) {
 .landing-hero .od-pair-col > .od-swap-btn,
 .landing-hero .od-swap-btn,
 .od-swap-btn {
-  --od-swap-size: 2rem;
+  --od-swap-size: 1.85rem;
   position: absolute !important;
   left: 50%;
   top: 1.15rem;
@@ -1315,12 +1343,12 @@ body:has(.landing-hero) {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  border-radius: 0.85rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--bs-border-color, #d9dee3);
   background: var(--bs-paper-bg, #fff);
   color: var(--bs-secondary-color, #8592a3);
   box-shadow:
-    0 0 0 4px var(--bs-paper-bg, #fff),
+    0 0 0 2px var(--bs-paper-bg, #fff),
     0 1px 2px rgba(47, 43, 61, 0.06);
   line-height: 1;
   cursor: pointer;
@@ -1348,7 +1376,7 @@ body:has(.landing-hero) {
   background: color-mix(in srgb, var(--bs-primary) 8%, #fff);
   outline: none;
   box-shadow:
-    0 0 0 4px var(--bs-paper-bg, #fff),
+    0 0 0 2px var(--bs-paper-bg, #fff),
     0 2px 6px color-mix(in srgb, var(--bs-primary) 18%, transparent);
 }
 
@@ -1386,7 +1414,7 @@ body:has(.landing-hero) {
 
 @media (min-width: 768px) {
   .landing-hero #tripForm .od-pair {
-    --od-swap-gutter: 2.35rem;
+    --od-swap-gutter: 1rem;
   }
 
   .landing-hero .od-swap-btn,

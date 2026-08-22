@@ -5,8 +5,108 @@
   display: none;
 }
 
+.city-picker__context-icon {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  #tripForm .dropdown-menu.origin_location,
+  #tripForm .dropdown-menu.destination_location,
+  .searchbar .dropdown-menu.origin_location,
+  .searchbar .dropdown-menu.destination_location {
+    top: calc(100% + 0.5rem) !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    overflow: hidden !important;
+    padding: 0.35rem !important;
+    transition: none !important;
+  }
+
+  #tripForm .dropdown-menu .city-picker {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(min(40dvh, 18rem) - 0.7rem);
+    overflow: hidden;
+  }
+
+  #tripForm .dropdown-menu .city-picker__head {
+    min-height: 1.9rem;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 0.3rem 0.55rem;
+    margin-bottom: 0.3rem;
+    background: var(--brand-bg-muted, #f3f3f3);
+    color: var(--brand-muted, #52525b);
+    border-radius: 0.5rem;
+  }
+
+  #tripForm .dropdown-menu .city-picker__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    font-weight: 650;
+  }
+
+  #tripForm .dropdown-menu .city-picker__context-icon {
+    display: inline-block;
+    position: static;
+    transform: none;
+    min-width: auto;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+
+  #tripForm .dropdown-menu .city-picker__close {
+    display: none;
+  }
+
+  #tripForm .dropdown-menu .city-picker .staredlocations {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+    border-radius: 0.55rem;
+    padding-inline: 0.2rem;
+  }
+
+  #tripForm .dropdown-menu .city-picker .staredlocations::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #tripForm .dropdown-menu .city-picker .staredlocations::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  #tripForm .dropdown-menu .city-picker .staredlocations::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+
+  #tripForm .dropdown-menu .city-picker .staredlocations::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+  }
+}
+
 body.city-picker-open {
   overflow: hidden;
+}
+
+/* The fullscreen picker must always cover the fixed page navigation. */
+body.city-picker-open .layout-navbar,
+body.city-picker-open .landing-navbar {
+  z-index: 0 !important;
+  pointer-events: none;
 }
 
 @media (max-width: 767.98px) {
@@ -38,6 +138,7 @@ body.city-picker-open {
   .landing-hero #tripForm .od-pair,
   #tripForm .od-pair {
     --od-swap-gutter: 0 !important;
+    --bs-gutter-y: 0 !important;
     flex-direction: column !important;
     align-items: stretch;
     gap: 0.5rem;
@@ -166,7 +267,9 @@ body.city-picker-open {
   }
 
   #tripForm .dropdown-menu.origin_location,
-  #tripForm .dropdown-menu.destination_location {
+  #tripForm .dropdown-menu.destination_location,
+  body > .dropdown-menu.origin_location[data-city-picker-host],
+  body > .dropdown-menu.destination_location[data-city-picker-host] {
     position: fixed !important;
     inset: 0 !important;
     top: 0 !important;
@@ -184,11 +287,11 @@ body.city-picker-open {
     border: none !important;
     border-radius: 0 !important;
     background: var(--brand-surface, #fff);
-    z-index: 2000;
+    z-index: 2147483000 !important;
     overflow: hidden !important;
   }
 
-  #tripForm .city-picker {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker {
     --picker-inline: 1rem;
     display: flex;
     flex-direction: column;
@@ -197,7 +300,7 @@ body.city-picker-open {
     background: var(--brand-surface, #fff);
   }
 
-  #tripForm .input-container .city-picker i {
+  :is(#tripForm .input-container, body > .dropdown-menu[data-city-picker-host]) .city-picker i {
     position: static;
     left: auto;
     top: auto;
@@ -207,15 +310,15 @@ body.city-picker-open {
     margin: 0;
   }
 
-  #tripForm .city-picker__head,
-  #tripForm .city-picker__search {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__head,
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__search {
     display: flex;
     align-items: center;
     flex-shrink: 0;
     padding-inline: var(--picker-inline);
   }
 
-  #tripForm .city-picker__head {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__head {
     justify-content: space-between;
     gap: 0.5rem;
     padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
@@ -223,7 +326,7 @@ body.city-picker-open {
     border-bottom: 1px solid var(--brand-border, rgba(0, 0, 0, 0.08));
   }
 
-  #tripForm .city-picker__close {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__close {
     width: 2.5rem;
     height: 2.5rem;
     display: inline-flex;
@@ -236,23 +339,23 @@ body.city-picker-open {
     border-radius: 0.65rem;
   }
 
-  #tripForm .city-picker__close .ti {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__close .ti {
     font-size: 1.25rem;
     line-height: 1;
   }
 
-  #tripForm .city-picker__title {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__title {
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--brand-ink, #000);
   }
 
-  #tripForm .city-picker__search {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__search {
     position: relative;
     padding-block: 0.75rem;
   }
 
-  #tripForm .city-picker__search > .ti-search {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__search > .ti-search {
     position: absolute !important;
     inset-inline-start: calc(var(--picker-inline) + 0.7rem);
     inset-inline-end: auto;
@@ -263,13 +366,13 @@ body.city-picker-open {
     pointer-events: none;
   }
 
-  #tripForm .city-picker #origincontainer,
-  #tripForm .city-picker #desticontainer,
-  #tripForm .city-picker .px-1 {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker #origincontainer,
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker #desticontainer,
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker .px-1 {
     padding-inline: 0 !important;
   }
 
-  #tripForm .city-picker__input {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker__input {
     min-height: 3.15rem;
     height: 3.15rem;
     padding-inline-start: 2.4rem;
@@ -279,7 +382,7 @@ body.city-picker-open {
     border-radius: 0.85rem;
   }
 
-  #tripForm .city-picker .staredlocations {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker .staredlocations {
     flex: 1 1 auto;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -287,13 +390,13 @@ body.city-picker-open {
     padding-bottom: env(safe-area-inset-bottom, 0.75rem);
   }
 
-  #tripForm .city-picker .staredlocation_title {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker .staredlocation_title {
     display: block;
     margin: 0.35rem 0 0.5rem;
     padding: 0;
   }
 
-  #tripForm .city-picker .dropdown-item {
+  :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker .dropdown-item {
     width: 100% !important;
     max-width: 100%;
     margin: 0 !important;

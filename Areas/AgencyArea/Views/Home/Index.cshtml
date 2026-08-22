@@ -19,14 +19,14 @@
 
 @section VendorStyles {
     <link href="~/vendor/css/pages/front-page-landing.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/jalali-datepicker.css?v=5" />
-    <link href="~/css/IndexPage.css?v=56" rel="stylesheet" />
-    <link href="~/css/trip-search.css?v=3" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/jalali-datepicker.css" asp-append-version="true" />
+    <link href="~/css/IndexPage.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/trip-search.css?v=10" rel="stylesheet" />
     <link rel="preload" href="/img/front-pages/landing-page/hero-travel.webp" as="image" type="image/webp" fetchpriority="high" />
     <style>
       .landing-hero .od-pair-col { position: relative; }
       .landing-hero .od-swap-btn {
-        --od-swap-size: 2rem;
+        --od-swap-size: 1.85rem;
         position: absolute !important;
         z-index: 4;
         width: var(--od-swap-size) !important;
@@ -41,7 +41,8 @@
         background: #fff;
         color: #8592a3;
         line-height: 1;
-        box-shadow: 0 0 0 4px #fff, 0 1px 2px rgba(47, 43, 61, 0.06);
+        /* Thin halo so the control can sit closer to both fields */
+        box-shadow: 0 0 0 2px #fff, 0 1px 2px rgba(47, 43, 61, 0.06);
         cursor: pointer;
       }
       @@media (max-width: 767.98px) {
@@ -55,7 +56,8 @@
         }
       }
       @@media (min-width: 768px) {
-        .landing-hero #tripForm .od-pair { --od-swap-gutter: 2.75rem; }
+        /* Tight center gap: swap sits between fields without pushing date/CTA */
+        .landing-hero #tripForm .od-pair { --od-swap-gutter: 1rem; }
         .landing-hero #tripForm .od-pair > .inputcel:first-child {
           padding-inline-end: calc(var(--od-swap-gutter) / 2) !important;
         }
@@ -66,7 +68,7 @@
           left: 50%;
           top: 0.25rem;
           transform: translateX(-50%);
-          border-radius: 0.85rem;
+          border-radius: 0.75rem;
         }
       }
     </style>
@@ -74,10 +76,10 @@
 
 @section VendorScripts {
     <script src="~/libs/jquery.js"></script>
-    <script src="~/vendor/libs/jdate/jdate.min.js"></script>
-    <script src="~/js/jalali-datepicker.js?v=5"></script>
-    <script src="~/js/IndexPage.js?v=6"></script>
-    <script src="~/js/searchpage.js?v=10"></script>
+    <script src="~/vendor/libs/jdate/jdate.min.js" asp-append-version="true"></script>
+    <script src="~/js/jalali-datepicker.js" asp-append-version="true"></script>
+    <script src="~/js/index-page.js" asp-append-version="true"></script>
+    <script src="~/js/searchpage.js?v=26"></script>
 }
 
 
@@ -127,13 +129,19 @@
 
                                 <form asp-controller="TaxiTrips" asp-action="Index" method="get" class="row g-3 m-0" id="tripForm">
                                     <div class="col-12 col-md-6 od-pair-col">
-                                        <div class="row g-2 g-md-3 od-pair">
+                                        <div class="row g-2 g-md-0 od-pair">
                                             <div class="col-12 col-md-6 inputcel">
                                                 <label class="form-text d-md-none d-block" for="origin_input" id="originHelpMobile">شهر مبدا سفر</label>
                                                 <div class="input-container">
-                                                    <input autocomplete="off" aria-describedby="originHelpDesktop originHelpMobile" data-bs-toggle="dropdown" class="form-control origin input-field dropdown-toggle hide-arrow" id="origin_input" placeholder="مبدا" type="text" role="button" name="originstring" />
+                                                    <input autocomplete="off" autocapitalize="off" spellcheck="false"
+                                                           aria-describedby="originHelpDesktop originHelpMobile"
+                                                           aria-autocomplete="list" aria-haspopup="listbox"
+                                                           data-bs-toggle="dropdown" data-bs-offset="0,8"
+                                                           class="form-control origin input-field dropdown-toggle hide-arrow"
+                                                           id="origin_input" placeholder="مبدا" type="text" role="combobox"
+                                                           name="originstring" />
                                                     <i class="ti ti-location mb-2 icon" aria-hidden="true"></i>
-                                                    <span class="dropdown-menu dropdown-menu-end origin_location"></span>
+                                                    <div class="dropdown-menu origin_location"></div>
                                                 </div>
                                                 <div class="form-text d-md-block d-none" id="originHelpDesktop">شهر مبدا سفر</div>
                                             </div>
@@ -141,9 +149,14 @@
                                             <div class="col-12 col-md-6 inputcel">
                                                 <label class="form-text d-block d-md-none" for="destination_input" id="destinationHelpMobile">شهر مقصد سفر</label>
                                                 <div class="input-container">
-                                                    <input data-bs-toggle="dropdown" autocomplete="off" aria-describedby="destinationHelpDesktop destinationHelpMobile" class="form-control destination input-field dropdown-toggle hide-arrow" id="destination_input" placeholder="مقصد" type="text" role="button" name="destinationstring" />
+                                                    <input data-bs-toggle="dropdown" data-bs-offset="0,8" autocomplete="off" autocapitalize="off" spellcheck="false"
+                                                           aria-describedby="destinationHelpDesktop destinationHelpMobile"
+                                                           aria-autocomplete="list" aria-haspopup="listbox"
+                                                           class="form-control destination input-field dropdown-toggle hide-arrow"
+                                                           id="destination_input" placeholder="مقصد" type="text" role="combobox"
+                                                           name="destinationstring" />
                                                     <i class="ti ti-map-pin mb-2 icon" aria-hidden="true"></i>
-                                                    <span class="dropdown-menu dropdown-menu-end destination_location"></span>
+                                                    <div class="dropdown-menu destination_location"></div>
                                                 </div>
                                                 <div class="form-text d-none d-md-block" id="destinationHelpDesktop">شهر مقصد سفر</div>
                                             </div>
@@ -164,7 +177,7 @@
                                     </div>
 
                                     <div class="col-12 col-md-3 inputcel">
-                                        <div class="ps-0 mt-1 mt-md-0">
+                                        <div class="ps-0">
                                             <button class="btn btn-primary waves-effect waves-light btn-lg search-submit-btn" type="submit">
                                                 بزن بریم
                                                 <i class="ti ti-search" aria-hidden="true"></i>

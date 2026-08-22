@@ -8,6 +8,7 @@ let supportedKeys = new Set(); // normalized keys supported by server (Direction
 let displayNameByKey = new Map(); // normalized -> display name (prefer Persian)
 let _destinations = []; // destination display names
 let trips = []; // will be reused by Trips.js
+let activeOriginKey = ''; // exact typed/clicked origin currently driving destination choices
 
 // Decode literal \uXXXX sequences into real characters (handles double-escaped payloads)
 function decodeUnicodeEscapes(str) {
@@ -131,10 +132,159 @@ function isMobileCityPicker() {
   return !!(document.getElementById('tripForm') && window.matchMedia('(max-width: 767.98px)').matches);
 }
 
-function pickerChrome(title, inputId, placeholder) {
+let desktopPickerModeActive = null;
+
+function cityPickerDropdown(input) {
+  if (!input || typeof bootstrap === 'undefined') return null;
+  return bootstrap.Dropdown.getOrCreateInstance(input, { autoClose: 'outside', offset: [0, 8] });
+}
+
+function syncCityPickerDropdownMode() {
+  const mobile = isMobileCityPicker();
+  if (desktopPickerModeActive === !mobile) return;
+  desktopPickerModeActive = !mobile;
+
+  ['origin_input', 'destination_input'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const inst = bootstrap.Dropdown.getInstance(el);
+    if (inst) inst.dispose();
+    if (mobile) {
+      el.setAttribute('data-bs-toggle', 'dropdown');
+      el.setAttribute('data-bs-offset', '0,8');
+    } else {
+      el.removeAttribute('data-bs-toggle');
+      cityPickerDropdown(el);
+    }
+  });
+}
+
+function openDesktopCityPicker(input) {
+  if (!input || isMobileCityPicker()) return;
+
+  const menu = input.parentElement && input.parentElement.querySelector('.dropdown-menu');
+  if (menu && menu.classList.contains('show')) return;
+
+  const otherInput = input.id === 'origin_input'
+    ? document.getElementById('destination_input')
+    : document.getElementById('origin_input');
+  if (otherInput) {
+    const otherMenu = otherInput.parentElement && otherInput.parentElement.querySelector('.dropdown-menu');
+    if (otherMenu && otherMenu.classList.contains('show')) {
+      const otherInst = bootstrap.Dropdown.getInstance(otherInput);
+      if (otherInst) otherInst.hide();
+    }
+  }
+
+  try {
+    cityPickerDropdown(input).show();
+  } catch { /* Bootstrap initializes on first interaction */ }
+}
+
+function closeCityPicker(input) {
+  if (!input) return;
+  try {
+    const inst = typeof bootstrap !== 'undefined' ? bootstrap.Dropdown.getInstance(input) : null;
+    if (inst) inst.hide();
+    else $(input).dropdown('hide');
+  } catch { /* already closed */ }
+}
+
+function openCityPicker(input, force) {
+  if (!input) return;
+  if (isMobileCityPicker()) {
+    try {
+      cityPickerDropdown(input).show();
+    } catch {
+      try { $(input).dropdown('show'); } catch { /* Bootstrap initializes on first interaction */ }
+    }
+    return;
+  }
+  if (!force) {
+    openDesktopCityPicker(input);
+    return;
+  }
+  const otherInput = input.id === 'origin_input'
+    ? document.getElementById('destination_input')
+    : document.getElementById('origin_input');
+  if (otherInput) closeCityPicker(otherInput);
+  try {
+    cityPickerDropdown(input).show();
+  } catch { /* Bootstrap initializes on first interaction */ }
+}
+
+function showFocusedDesktopPicker(input) {
+  openDesktopCityPicker(input);
+}
+
+function cityPickerContext(target) {
+  if (!target) return null;
+  const isOrigin = target.id === 'origin_input' || target.id === 'origin_picker_q';
+  const isDestination = target.id === 'destination_input' || target.id === 'dest_picker_q';
+  if (!isOrigin && !isDestination) return null;
+
+  const toggle = document.getElementById(isOrigin ? 'origin_input' : 'destination_input');
+  if (!toggle) return null;
+  const menuClass = isOrigin ? 'origin_location' : 'destination_location';
+  const menu = (toggle.parentElement && toggle.parentElement.querySelector('.' + menuClass))
+    || document.querySelector('body > .' + menuClass + '[data-city-picker-host="' + toggle.id + '"]');
+  return { toggle, menu };
+}
+
+function clearCityPickerKeyboardSelection(toggle) {
+  if (!toggle) return;
+  toggle.removeAttribute('aria-activedescendant');
+  const context = cityPickerContext(toggle);
+  if (!context || !context.menu) return;
+  context.menu.querySelectorAll('[role="option"]').forEach(function (option) {
+    option.classList.remove('active');
+    option.setAttribute('aria-selected', 'false');
+  });
+}
+
+function moveCityPickerSelection(target, key) {
+  const context = cityPickerContext(target);
+  if (!context || !context.menu) return false;
+  try { openDesktopCityPicker(context.toggle); } catch { /* already open */ }
+
+  const options = Array.from(context.menu.querySelectorAll('[role="option"]'))
+    .filter(option => !option.classList.contains('disabled') && !option.hasAttribute('disabled'));
+  if (!options.length) return false;
+
+  let currentIndex = options.findIndex(option => option.classList.contains('active'));
+  let nextIndex;
+  if (key === 'Home') nextIndex = 0;
+  else if (key === 'End') nextIndex = options.length - 1;
+  else if (key === 'ArrowDown') nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % options.length;
+  else nextIndex = currentIndex < 0 ? options.length - 1 : (currentIndex - 1 + options.length) % options.length;
+
+  options.forEach(function (option, index) {
+    const selected = index === nextIndex;
+    option.classList.toggle('active', selected);
+    option.setAttribute('aria-selected', selected ? 'true' : 'false');
+  });
+  context.toggle.setAttribute('aria-activedescendant', options[nextIndex].id);
+  options[nextIndex].scrollIntoView({ block: 'nearest' });
+  return true;
+}
+
+function selectActiveCityPickerOption(target) {
+  const context = cityPickerContext(target);
+  if (!context || !context.menu) return false;
+  const activeOption = context.menu.querySelector('[role="option"].active');
+  if (!activeOption) return false;
+  activeOption.click();
+  clearCityPickerKeyboardSelection(context.toggle);
+  return true;
+}
+
+function pickerChrome(title, inputId, placeholder, iconClass) {
   return `
       <div class="city-picker__head">
-        <span class="city-picker__title">${title}</span>
+        <span class="city-picker__title">
+          <i class="ti ${iconClass} city-picker__context-icon" aria-hidden="true"></i>
+          <span>${title}</span>
+        </span>
         <button type="button" class="city-picker__close" aria-label="بستن">
           <i class="ti ti-x" aria-hidden="true"></i>
         </button>
@@ -147,10 +297,12 @@ function pickerChrome(title, inputId, placeholder) {
 
 function ensureOriginDropdown() {
   const spanElement = $('.origin_location');
+  spanElement.attr({ id: 'origin_city_listbox', role: 'listbox' });
+  $('#origin_input').attr('aria-controls', 'origin_city_listbox');
   if ($('#origincontainer').length === 0) {
     spanElement.html(`
       <div class="city-picker">
-        ${pickerChrome('انتخاب مبدا', 'origin_picker_q', 'جستجوی شهر مبدا')}
+        ${pickerChrome('انتخاب مبدا', 'origin_picker_q', 'جستجوی شهر مبدا', 'ti-location')}
         <div class="staredlocations">
           <label class="staredlocation_title ms-2 mt-2 text-muted pb-1" id="origin_most_lable">
             <i class="ti ti-map-pin-star icon locationicon p-1 pe-0"></i>
@@ -164,10 +316,12 @@ function ensureOriginDropdown() {
 
 function ensureDestinationDropdown() {
   const spanElement = $('.dropdown-menu.destination_location');
+  spanElement.attr({ id: 'destination_city_listbox', role: 'listbox' });
+  $('#destination_input').attr('aria-controls', 'destination_city_listbox');
   if ($('#desticontainer').length === 0) {
     spanElement.html(`
       <div class="city-picker">
-        ${pickerChrome('انتخاب مقصد', 'dest_picker_q', 'جستجوی شهر مقصد')}
+        ${pickerChrome('انتخاب مقصد', 'dest_picker_q', 'جستجوی شهر مقصد', 'ti-map-pin')}
         <div class="staredlocations">
           <label class="staredlocation_title ms-2 mt-2 text-muted pb-1">
             <i class="ti ti-map-pin-star icon locationicon p-1 pe-0"></i>
@@ -196,39 +350,104 @@ function consumeCityPickerHistory() {
 }
 
 function syncCityPickerLock() {
-  const open = isMobileCityPicker() && document.querySelector(
-    '.dropdown-menu.origin_location.show, .dropdown-menu.destination_location.show'
+  const open = isMobileCityPicker() && (
+    document.querySelector('.dropdown-menu.origin_location.show, .dropdown-menu.destination_location.show') ||
+    document.querySelector('body > .dropdown-menu.origin_location, body > .dropdown-menu.destination_location')
   );
   document.body.classList.toggle('city-picker-open', !!open);
 }
 
+const DIRECTIONS_STORAGE_KEY = 'mrshoofer_available_directions_v2';
+const DIRECTIONS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+let directionsReady = false;
+let destinationUnlocked = false;
+
+function applyDirectionsPayload(data) {
+  directions = [];
+  originKeys = [];
+  displayNameByKey = new Map();
+
+  const normalizedPairs = (data || [])
+    .map(item => {
+      let raw1 = item.Cityone || item.cityone || item.cityOne || item.city_one || item.city_name || '';
+      let raw2 = item.Citytwo || item.citytwo || item.cityTwo || item.city_two || item.destination_city_name || '';
+      raw1 = decodeUnicodeEscapes(raw1);
+      raw2 = decodeUnicodeEscapes(raw2);
+      const disp1 = isAscii(raw1) ? toPersianGuess(raw1) : raw1;
+      const disp2 = isAscii(raw2) ? toPersianGuess(raw2) : raw2;
+      const key1 = normalize(disp1 || raw1);
+      const key2 = normalize(disp2 || raw2);
+      if (key1) displayNameByKey.set(key1, disp1 || raw1 || '');
+      if (key2) displayNameByKey.set(key2, disp2 || raw2 || '');
+      return key1 && key2 ? { Cityone: key1, Citytwo: key2 } : null;
+    })
+    .filter(Boolean);
+
+  directions = normalizedPairs;
+  // Direction pairs are ordered: Cityone is an origin and Citytwo is a destination.
+  // A city that only appears as Citytwo must not be offered as an origin.
+  originKeys = Array.from(new Set(directions.map(d => d.Cityone)));
+  directionsReady = originKeys.length > 0;
+}
+
+function readCachedDirections() {
+  try {
+    const raw = sessionStorage.getItem(DIRECTIONS_STORAGE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (!cached || !Array.isArray(cached.data) || !cached.ts) return null;
+    if (Date.now() - cached.ts > DIRECTIONS_CACHE_TTL_MS) return null;
+    return cached.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedDirections(data) {
+  try {
+    sessionStorage.setItem(DIRECTIONS_STORAGE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch { /* quota / private mode */ }
+}
+
+function showPickerStatus(containerSelector, message) {
+  const $c = $(containerSelector);
+  if (!$c.length) return;
+  $c.empty().append($('<a>', {
+    class: 'dropdown-item text-center mt-2 text-muted',
+    text: message,
+    href: 'javascript:void(0)'
+  }));
+}
+
 function FetchDirections() {
   return new Promise((resolve, reject) => {
-    $.getJSON('/TaxiTrips/AvailableDirections', function (data) {
-      directions = [];
-      originKeys = [];
-      displayNameByKey = new Map();
-
-      const normalizedPairs = (data || [])
-        .map(item => {
-          let raw1 = item.Cityone || item.cityone || item.cityOne || item.city_one || item.city_name || '';
-          let raw2 = item.Citytwo || item.citytwo || item.cityTwo || item.city_two || item.destination_city_name || '';
-          raw1 = decodeUnicodeEscapes(raw1);
-          raw2 = decodeUnicodeEscapes(raw2);
-          const disp1 = isAscii(raw1) ? toPersianGuess(raw1) : raw1;
-          const disp2 = isAscii(raw2) ? toPersianGuess(raw2) : raw2;
-          const key1 = normalize(disp1 || raw1);
-          const key2 = normalize(disp2 || raw2);
-          if (key1) displayNameByKey.set(key1, disp1 || raw1 || '');
-          if (key2) displayNameByKey.set(key2, disp2 || raw2 || '');
-          return key1 && key2 ? { Cityone: key1, Citytwo: key2 } : null;
+    const cached = readCachedDirections();
+    if (cached && cached.length) {
+      applyDirectionsPayload(cached);
+      resolve();
+      // Soft refresh in background — do not block UI
+      $.getJSON('/TaxiTrips/AvailableDirections')
+        .done(function (data) {
+          applyDirectionsPayload(data);
+          writeCachedDirections(data);
+          const typedOrigin = ($('#origin_input').val() || '').trim();
+          const typedOriginKey = normalize(typedOrigin);
+          if (typedOriginKey && originKeys.includes(typedOriginKey)) {
+            // Refresh choices from the new server catalog without changing either input.
+            activeOriginKey = typedOriginKey;
+            SetDestinations(typedOriginKey);
+            EnableDestination();
+          } else if (!typedOrigin) {
+            LoadMostUsedOrigins();
+          }
         })
-        .filter(Boolean);
+        .fail(function () { /* keep cache */ });
+      return;
+    }
 
-      directions = normalizedPairs;
-      const cities = new Set();
-      directions.forEach(d => { cities.add(d.Cityone); cities.add(d.Citytwo); });
-      originKeys = Array.from(cities);
+    $.getJSON('/TaxiTrips/AvailableDirections', function (data) {
+      applyDirectionsPayload(data);
+      writeCachedDirections(data);
       resolve();
     }).fail(function (xhr) {
       console.error('Failed to fetch available directions.', xhr?.status, xhr?.responseText);
@@ -425,9 +644,12 @@ async function FetchTrips() {
   const oKey = normalize(toPersianGuess(origin));
   const dKey = normalize(toPersianGuess(destination));
   const isOriginValid = originKeys.length === 0 || originKeys.includes(oKey);
-  const isDestValid = originKeys.length === 0 || originKeys.includes(dKey);
-  if (!isOriginValid || !isDestValid) {
-    const msg = !isOriginValid ? `شهر مبدا نامعتبر است: ${origin}` : `شهر مقصد نامعتبر است: ${destination}`;
+  const isDirectionValid = directions.length === 0 ||
+    directions.some(direction => direction.Cityone === oKey && direction.Citytwo === dKey);
+  if (!isOriginValid || !isDirectionValid) {
+    const msg = !isOriginValid
+      ? `شهر مبدا نامعتبر است: ${origin}`
+      : `مسیر ${origin} به ${destination} در حال حاضر فعال نیست`;
     const $container = $('.trips-container');
     if ($container.length) {
       $container.empty().append(`<div class="d-flex col-12 mt-3" style="flex-direction: column; align-items: center; justify-content: start;">
@@ -475,11 +697,9 @@ function keyToDisplay(key) { return displayNameByKey.get(key) || toPersianGuess(
 function SetDestinations(originDisplay) {
   ensureDestinationDropdown();
   const selectedKey = normalize(originDisplay);
-  const destinationsKeys = [];
-  directions.forEach(item => {
-    if (item.Cityone === selectedKey) destinationsKeys.push(item.Citytwo);
-    else if (item.Citytwo === selectedKey) destinationsKeys.push(item.Cityone);
-  });
+  const destinationsKeys = directions
+    .filter(item => item.Cityone === selectedKey)
+    .map(item => item.Citytwo);
   const uniqueKeys = Array.from(new Set(destinationsKeys));
   _destinations = uniqueKeys.map(keyToDisplay);
   AddResultLocations_destination(_destinations);
@@ -496,16 +716,29 @@ function LoadMostUsedOrigins() {
 function AddResultLocations_origin(keys) {
   ensureOriginDropdown();
   var terminals_container = $('#origincontainer');
+  clearCityPickerKeyboardSelection(document.getElementById('origin_input'));
   terminals_container.empty();
   if (!keys || keys.length === 0) {
-    terminals_container.append($('<a>', { class: 'dropdown-item text-center mt-2 text-muted', text: "نتیجه‌ای پیدا نشد" }));
+    terminals_container.append($('<div>', { class: 'dropdown-item text-center mt-2 text-muted', role: 'status', text: "نتیجه‌ای پیدا نشد" }));
   } else {
-    keys.forEach(key => {
+    keys.forEach((key, index) => {
       const display = keyToDisplay(key);
-      var $aTag = $('<a>', { class: 'dropdown-item', text: display });
-      $aTag.on('click', function () {
+      var $aTag = $('<button>', {
+        id: 'origin_city_option_' + index,
+        type: 'button',
+        class: 'dropdown-item',
+        role: 'option',
+        tabindex: '-1',
+        'aria-selected': 'false',
+        text: display
+      });
+      $aTag.on('mousedown', function (e) {
+        e.preventDefault();
+      });
+      $aTag.on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         OriginSelected(0, display);
-        if (isMobileCityPicker()) $('#origin_input').dropdown('hide');
       });
       terminals_container.append($aTag);
     });
@@ -515,20 +748,39 @@ function AddResultLocations_origin(keys) {
 function AddResultLocations_destination(result_locations) {
   ensureDestinationDropdown();
   var terminals_container = $('#desticontainer');
+  clearCityPickerKeyboardSelection(document.getElementById('destination_input'));
   terminals_container.empty();
   if (!result_locations || result_locations.length === 0) {
-    terminals_container.append($('<a>', { class: 'dropdown-item text-center mt-2 text-muted', text: "ابتدا شهر مبدا را انتخاب کنید" }));
+    terminals_container.append($('<div>', { class: 'dropdown-item text-center mt-2 text-muted', role: 'status', text: "ابتدا شهر مبدا را انتخاب کنید" }));
     return;
   }
-  result_locations.forEach(location => {
-    var $aTag = $('<a>', { class: 'dropdown-item', text: location });
-    $aTag.on('click', function () {
+  result_locations.forEach((location, index) => {
+    var $aTag = $('<button>', {
+      id: 'destination_city_option_' + index,
+      type: 'button',
+      class: 'dropdown-item',
+      role: 'option',
+      tabindex: '-1',
+      'aria-selected': 'false',
+      text: location
+    });
+    $aTag.on('mousedown', function (e) {
+      e.preventDefault();
+    });
+    $aTag.on('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
       DestSelected(0, location);
-      if (isMobileCityPicker()) $('#destination_input').dropdown('hide');
-      FetchTrips();
     });
     terminals_container.append($aTag);
   });
+}
+
+function focusDestinationPicker() {
+  const destInput = document.getElementById('destination_input');
+  if (!destInput || !destinationUnlocked) return;
+  destInput.focus();
+  openCityPicker(destInput, true);
 }
 
 function OriginSelected(id, name) {
@@ -538,14 +790,48 @@ function OriginSelected(id, name) {
   $('#origin_picker_q').val(city);
   $('#destination_input').val('').attr('value', '');
   $('#dest_picker_q').val('');
+  activeOriginKey = normalize(city);
   EnableDestination();
   SetDestinations(city);
+
+  const originInput = document.getElementById('origin_input');
+  const originMenu = originInput && originInput.parentElement && originInput.parentElement.querySelector('.dropdown-menu');
+  const originWasOpen = !!(originMenu && originMenu.classList.contains('show'));
+
+  if (originWasOpen && originInput) {
+    const onOriginHidden = function () {
+      originInput.removeEventListener('hidden.bs.dropdown', onOriginHidden);
+      focusDestinationPicker();
+    };
+    originInput.addEventListener('hidden.bs.dropdown', onOriginHidden);
+    closeCityPicker(originInput);
+    window.setTimeout(function () {
+      originInput.removeEventListener('hidden.bs.dropdown', onOriginHidden);
+      if (!originMenu.classList.contains('show')) focusDestinationPicker();
+    }, isMobileCityPicker() ? 120 : 60);
+    return;
+  }
+
+  window.setTimeout(focusDestinationPicker, isMobileCityPicker() ? 80 : 0);
+}
+
+function focusNextSearchField() {
+  if (isMobileCityPicker()) return;
+  const dateInput = document.getElementById('starttime');
+  if (!dateInput || dateInput.disabled) return;
+  window.setTimeout(function () {
+    dateInput.focus();
+  }, 0);
 }
 
 function DestSelected(id, name) {
   const city = (name || '').trim();
   $('#destination_input').val(city).attr('value', city);
   $('#dest_picker_q').val(city);
+
+  const destInput = document.getElementById('destination_input');
+  closeCityPicker(destInput);
+  focusNextSearchField();
 }
 
 /**
@@ -570,6 +856,7 @@ async function SwapOriginDestination() {
   const originKey = normalize(toPersianGuess(newOriginRaw));
 
   if (!originKey) {
+    activeOriginKey = '';
     LoadMostUsedOrigins();
     _destinations = [];
     AddResultLocations_destination([]);
@@ -578,6 +865,7 @@ async function SwapOriginDestination() {
   }
 
   if (!originKeys.includes(originKey)) {
+    activeOriginKey = '';
     _destinations = [];
     AddResultLocations_destination([]);
     DisableDestination();
@@ -585,6 +873,7 @@ async function SwapOriginDestination() {
   }
 
   const originDisplay = keyToDisplay(originKey);
+  activeOriginKey = originKey;
   $o.val(originDisplay).attr('value', originDisplay);
   SetDestinations(originDisplay);
   EnableDestination();
@@ -608,36 +897,150 @@ async function SwapOriginDestination() {
   }
 }
 
-function DisableDestination() { $("#destination_input").removeAttr("data-bs-toggle").prop("disabled", true); }
-function EnableDestination() { $("#destination_input").attr("data-bs-toggle", "dropdown").prop("disabled", false); }
+function DisableDestination() {
+  destinationUnlocked = false;
+  // Keep dropdown openable so users never hit a "dead" field — list explains next step.
+  $("#destination_input").prop("disabled", false);
+  syncCityPickerDropdownMode();
+  AddResultLocations_destination([]);
+}
+function EnableDestination() {
+  destinationUnlocked = true;
+  $("#destination_input").prop("disabled", false);
+  syncCityPickerDropdownMode();
+}
+
+function applyOdUiAfterLoad() {
+  var origin_value_raw = ($('#origin_input').val() || '').trim();
+  var origin_value = normalize(origin_value_raw);
+
+  if (origin_value && originKeys.includes(origin_value)) {
+    activeOriginKey = origin_value;
+    LoadMostUsedOrigins();
+    SetDestinations(origin_value_raw);
+    EnableDestination();
+  } else if (originKeys.length) {
+    activeOriginKey = '';
+    LoadMostUsedOrigins();
+    AddResultLocations_destination([]);
+    DisableDestination();
+  } else {
+    showPickerStatus('#origincontainer', 'شهرها در دسترس نیستند — لطفا دوباره تلاش کنید');
+    showPickerStatus('#desticontainer', 'ابتدا شهر مبدا را انتخاب کنید');
+    DisableDestination();
+  }
+}
 
 $(document).ready(async function () {
-  try {
-    await FetchDirections();
-    await FetchSupportedCities();
-    intersectDirectionsWithSupported();
-    ensureOriginDropdown();
-    ensureDestinationDropdown();
+  // Build picker chrome immediately so Bootstrap can open menus before the API returns.
+  ensureOriginDropdown();
+  ensureDestinationDropdown();
+  showPickerStatus('#origincontainer', 'در حال بارگذاری شهرها…');
+  showPickerStatus('#desticontainer', 'ابتدا شهر مبدا را انتخاب کنید');
+  DisableDestination();
 
-    var origin_value_raw = ($('#origin_input').val() || '').trim();
-    var origin_value = normalize(origin_value_raw);
-
-    if (origin_value && originKeys.includes(origin_value)) {
-      SetDestinations(origin_value_raw);
-      EnableDestination();
-      if ((($('#destination_input').val() || '').trim())) await FetchTrips();
-    } else {
-      LoadMostUsedOrigins();
-      AddResultLocations_destination([]);
-      DisableDestination();
+  const loadCatalog = (async function () {
+    try {
+      await Promise.all([FetchDirections(), FetchSupportedCities()]);
+      intersectDirectionsWithSupported();
+      applyOdUiAfterLoad();
+      if (destinationUnlocked && (($('#destination_input').val() || '').trim())) {
+        await FetchTrips();
+      }
+    } catch (error) {
+      console.error('An error occurred:', error);
+      most_used_origins = most_used_origins.length
+        ? most_used_origins
+        : ["تهران", "اصفهان", "رشت", "چالوس", "کرمانشاه", "نوشهر"];
+      if (!originKeys.length && most_used_origins.length) {
+        most_used_origins.forEach((c) => {
+          const key = normalize(c);
+          displayNameByKey.set(key, c);
+          originKeys.push(key);
+        });
+      }
+      applyOdUiAfterLoad();
+      if (!directionsReady) {
+        showPickerStatus('#origincontainer', 'خطا در بارگذاری — دوباره لمس کنید');
+      }
     }
-  } catch (error) { console.error('An error occurred:', error); }
+  })();
+
+  syncCityPickerDropdownMode();
+  window.addEventListener('resize', function () {
+    window.clearTimeout(syncCityPickerDropdownMode._t);
+    syncCityPickerDropdownMode._t = window.setTimeout(syncCityPickerDropdownMode, 150);
+  });
+
+  document.addEventListener('focus', function (event) {
+    if (event.target.matches('#origin_input, #destination_input')) {
+      openDesktopCityPicker(event.target);
+    }
+  }, true);
+
+  // Block Bootstrap's delegated click-toggle on desktop (data-bs-toggle is removed, but guard anyway).
+  document.addEventListener('pointerdown', function (event) {
+    if (isMobileCityPicker()) return;
+    if (!event.target.matches('#origin_input, #destination_input')) return;
+    event.stopImmediatePropagation();
+    openDesktopCityPicker(event.target);
+  }, true);
+
+  document.addEventListener('keydown', function (event) {
+    if (!event.target.matches('#origin_input, #destination_input, #origin_picker_q, #dest_picker_q')) return;
+
+    if (event.key === 'Tab') {
+      const nextToggle = !event.shiftKey && event.target.id === 'origin_input'
+        ? document.getElementById('destination_input')
+        : event.shiftKey && event.target.id === 'destination_input'
+          ? document.getElementById('origin_input')
+          : null;
+      if (nextToggle) {
+        event.preventDefault();
+        event.stopPropagation();
+        clearCityPickerKeyboardSelection(event.target);
+        nextToggle.focus();
+        showFocusedDesktopPicker(nextToggle);
+      }
+      return;
+    }
+
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      if (moveCityPickerSelection(event.target, event.key)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      return;
+    }
+
+    if (event.key === 'Enter' && selectActiveCityPickerOption(event.target)) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      const context = cityPickerContext(event.target);
+      if (context && context.menu && context.menu.classList.contains('show')) {
+        event.preventDefault();
+        event.stopPropagation();
+        clearCityPickerKeyboardSelection(context.toggle);
+        try { $(context.toggle).dropdown('hide'); } catch { /* already closed */ }
+      }
+    }
+  }, true);
 
   $('#origin_input').on('input', function () {
     ensureOriginDropdown();
+    showFocusedDesktopPicker(this);
+    if (!directionsReady && !originKeys.length) {
+      showPickerStatus('#origincontainer', 'در حال بارگذاری شهرها…');
+      return;
+    }
     const raw = (($(this).val() || ''));
     const needles = queryNeedles(raw);
     if (!normalize(raw)) {
+      activeOriginKey = '';
       $('#destination_input').val('');
       _destinations = [];
       AddResultLocations_destination([]);
@@ -649,26 +1052,32 @@ $(document).ready(async function () {
     const matches = keysMatchingNeedles(originKeys, needles);
     const listToShow = raw.length < 2 ? originKeys : matches;
     AddResultLocations_origin(listToShow);
-    const exactKey = originKeys.find((key) => needles.includes(key));
+    const exactKey = originKeys.find((key) => key === normalize(raw));
     if (exactKey) {
-      OriginSelected(0, keyToDisplay(exactKey));
-    } else if (matches.length === 1) {
-      OriginSelected(0, keyToDisplay(matches[0]));
+      // Exact text unlocks its destinations, but never rewrites the user's input.
+      // Only an explicit dropdown click commits/canonicalizes the displayed city.
+      if (activeOriginKey !== exactKey) {
+        activeOriginKey = exactKey;
+        $('#destination_input').val('').attr('value', '');
+        $('#dest_picker_q').val('');
+      }
+      SetDestinations(exactKey);
+      EnableDestination();
     } else {
+      activeOriginKey = '';
       _destinations = [];
       AddResultLocations_destination([]);
       DisableDestination();
     }
   });
 
-  $('#origin_input').on('blur', function () {
-    const needles = queryNeedles($(this).val() || '');
-    const exactKey = originKeys.find((key) => needles.includes(key));
-    if (exactKey) OriginSelected(0, keyToDisplay(exactKey));
-  });
-
   $('#destination_input').on('input', function () {
     ensureDestinationDropdown();
+    showFocusedDesktopPicker(this);
+    if (!destinationUnlocked) {
+      AddResultLocations_destination([]);
+      return;
+    }
     const raw = $(this).val() || '';
     const needles = queryNeedles(raw);
     if (!normalize(raw)) {
@@ -691,14 +1100,69 @@ $(document).ready(async function () {
     e.preventDefault();
     e.stopPropagation();
     const $menu = $(this).closest('.dropdown-menu');
-    $menu.closest('.input-container').find('input.dropdown-toggle').dropdown('hide');
+    const hostId = $menu.attr('data-city-picker-host');
+    const $toggle = hostId
+      ? $('#' + hostId)
+      : $menu.closest('.input-container').find('input.dropdown-toggle');
+    if ($toggle.length) $toggle.dropdown('hide');
   });
-  $('#origin_input, #destination_input').on('show.bs.dropdown', function () {
+
+  function portalCityPickerMenu(toggleEl) {
+    if (!isMobileCityPicker() || !toggleEl) return;
+    const menu = toggleEl.parentElement && toggleEl.parentElement.querySelector('.dropdown-menu');
+    if (!menu || menu.parentElement === document.body) return;
+    menu.setAttribute('data-city-picker-host', toggleEl.id || '');
+    menu._cityPickerHome = toggleEl.parentElement;
+    document.body.appendChild(menu);
+    menu.classList.add('show');
+    menu.style.position = 'fixed';
+    menu.style.inset = '0';
+    menu.style.top = '0';
+    menu.style.right = '0';
+    menu.style.bottom = '0';
+    menu.style.left = '0';
+    menu.style.transform = 'none';
+    menu.style.width = '100vw';
+    menu.style.height = '100dvh';
+    menu.style.maxHeight = '100dvh';
+    menu.style.zIndex = '1080';
+    menu.style.margin = '0';
+  }
+
+  function unportalCityPickerMenu(toggleEl) {
+    const hostId = toggleEl && toggleEl.id;
+    let menu = hostId
+      ? document.querySelector('body > .dropdown-menu[data-city-picker-host="' + hostId + '"]')
+      : null;
+    if (!menu && toggleEl && toggleEl.parentElement) {
+      menu = toggleEl.parentElement.querySelector('.dropdown-menu');
+    }
+    if (!menu) return;
+    const home = menu._cityPickerHome;
+    menu.style.cssText = '';
+    menu.removeAttribute('data-city-picker-host');
+    delete menu._cityPickerHome;
+    if (home && menu.parentElement === document.body) {
+      home.appendChild(menu);
+    }
+  }
+
+  $('#origin_input, #destination_input').on('show.bs.dropdown', function (e) {
+    if (this.id === 'destination_input' && !destinationUnlocked) {
+      ensureDestinationDropdown();
+      AddResultLocations_destination([]);
+    }
+    if (this.id === 'origin_input' && !directionsReady && !originKeys.length) {
+      ensureOriginDropdown();
+      showPickerStatus('#origincontainer', 'در حال بارگذاری شهرها…');
+      loadCatalog.catch(function () { /* handled above */ });
+    }
     if (!isMobileCityPicker()) return;
     this.setAttribute('data-bs-display', 'static');
   });
   $('#origin_input').on('shown.bs.dropdown', function () {
     if (!isMobileCityPicker()) return;
+    portalCityPickerMenu(this);
     const $q = $('#origin_picker_q');
     $q.val($(this).val() || '');
     window.setTimeout(() => $q.trigger('focus'), 50);
@@ -707,6 +1171,7 @@ $(document).ready(async function () {
   });
   $('#destination_input').on('shown.bs.dropdown', function () {
     if (!isMobileCityPicker()) return;
+    portalCityPickerMenu(this);
     const $q = $('#dest_picker_q');
     $q.val($(this).val() || '');
     window.setTimeout(() => $q.trigger('focus'), 50);
@@ -714,6 +1179,8 @@ $(document).ready(async function () {
     syncCityPickerLock();
   });
   $('#origin_input, #destination_input').on('hidden.bs.dropdown', function () {
+    clearCityPickerKeyboardSelection(this);
+    unportalCityPickerMenu(this);
     syncCityPickerLock();
     consumeCityPickerHistory();
   });
@@ -747,6 +1214,7 @@ $(document).ready(async function () {
         <label class="fw-bold fs-5 ms-3">در حال بارگزاری سفر ها</label>
       </div>`);
     }
+    await loadCatalog;
     await FetchTrips();
     return false;
   });
