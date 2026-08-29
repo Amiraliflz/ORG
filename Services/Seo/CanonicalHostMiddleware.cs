@@ -40,6 +40,9 @@ public sealed class CanonicalHostMiddleware
     if (IsPaymentHost(host))
       return HandlePaymentHost(context, path);
 
+    if (IsCrawlerPath(path))
+      return _next(context);
+
     var canonicalHost = GetCanonicalHost();
     if (!string.IsNullOrEmpty(canonicalHost)
         && !host.Equals(canonicalHost, StringComparison.OrdinalIgnoreCase)
@@ -69,7 +72,7 @@ public sealed class CanonicalHostMiddleware
       context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
       context.Response.Headers["Cache-Control"] = "public,max-age=3600";
       return context.Response.WriteAsync(
-        "User-agent: *\nDisallow: /\n");
+        "User-agent: *\nDisallow: /pg/\nDisallow: /Payment/\n");
     }
 
     // Payment root is not a public landing — send Google to the canonical site.
@@ -102,6 +105,17 @@ public sealed class CanonicalHostMiddleware
     context.Response.Headers["Cache-Control"] = "public,max-age=86400";
     context.Response.ContentType = "text/plain; charset=utf-8";
     return context.Response.WriteAsync("Gone");
+  }
+
+  internal static bool IsCrawlerPath(string path)
+  {
+    if (string.IsNullOrEmpty(path)) return false;
+    if (path.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase)
+        || path.Equals("/llms.txt", StringComparison.OrdinalIgnoreCase)
+        || path.Equals("/sitemap.xml", StringComparison.OrdinalIgnoreCase))
+      return true;
+    return path.StartsWith("/sitemap-", StringComparison.OrdinalIgnoreCase)
+           && path.EndsWith(".xml", StringComparison.OrdinalIgnoreCase);
   }
 
   internal static bool IsGonePath(string path)

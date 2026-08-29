@@ -63,9 +63,14 @@
                     جستجوی این مسیر
                     <i class="ti ti-search" aria-hidden="true"></i>
                 </a>
+                <a class="btn btn-outline-primary btn-lg route-detail-cta-secondary"
+                   href="/Reserve/MapBook?origin=@Uri.EscapeDataString(Model.OriginFa)&amp;dest=@Uri.EscapeDataString(Model.DestinationFa)">
+                    <i class="ti ti-map-2" aria-hidden="true"></i>
+                    انتخاب روی نقشه
+                </a>
                 @if (reverse is not null)
                 {
-                    <a class="btn btn-outline-primary btn-lg route-detail-cta-secondary" href="/routes/@reverse.Slug">
+                    <a class="btn btn-outline-secondary btn-lg route-detail-cta-secondary" href="/routes/@reverse.Slug">
                         مسیر برگشت: @reverse.OriginFa ← @reverse.DestinationFa
                     </a>
                 }

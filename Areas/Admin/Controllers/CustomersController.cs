@@ -17,13 +17,15 @@ namespace Application.Areas.Admin.Controllers
         private readonly AppDbContext _context;
         private readonly ILogger<CustomersController> _logger;
         private readonly CustomerBalanceService _balanceSvc;
+        private readonly LoyaltyService _loyaltySvc;
 
-        public CustomersController(UserManager<IdentityUser> userManager, AppDbContext context, ILogger<CustomersController> logger, CustomerBalanceService balanceSvc)
+        public CustomersController(UserManager<IdentityUser> userManager, AppDbContext context, ILogger<CustomersController> logger, CustomerBalanceService balanceSvc, LoyaltyService loyaltySvc)
         {
             _userManager = userManager;
             _context = context;
             _logger = logger;
             _balanceSvc = balanceSvc;
+            _loyaltySvc = loyaltySvc;
         }
 
         public async Task<IActionResult> Index(string? search)
@@ -39,8 +41,11 @@ namespace Application.Areas.Admin.Controllers
 
                 profileMap.TryGetValue(user.Id, out var profile);
                 var balance = profile?.Balance ?? 0m;
+                LoyaltyInfo? loyalty = null;
+                if (LoyaltyService.FeatureEnabled)
+                    loyalty = await _loyaltySvc.GetInfoAsync(user.UserName);
 
-                result.Add(new CustomerListItem { User = user, Balance = balance, Profile = profile });
+                result.Add(new CustomerListItem { User = user, Balance = balance, Profile = profile, Loyalty = loyalty });
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -144,5 +149,6 @@ namespace Application.Areas.Admin.Controllers
         public IdentityUser User { get; set; } = null!;
         public decimal Balance { get; set; }
         public CustomerProfile? Profile { get; set; }
+        public LoyaltyInfo? Loyalty { get; set; }
     }
 }

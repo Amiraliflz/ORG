@@ -8,7 +8,17 @@
   var SUPPORT_TEL = '02128422243';
   var SUPPORT_DISPLAY = '۰۲۱-۲۸۴۲۲۲۴۳';
   var MODAL_ID = 'gatewayDownModal';
+  var STORAGE_KEY = 'gateway-down-notice-shown';
   var shownOnce = false;
+
+  function alreadyShownThisSession() {
+    try { return sessionStorage.getItem(STORAGE_KEY) === '1'; } catch (e) { return shownOnce; }
+  }
+
+  function markShown() {
+    shownOnce = true;
+    try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (e) { /* ignore */ }
+  }
 
   function buildModalHtml() {
     return (
@@ -79,18 +89,18 @@
     });
 
     instance.show();
-    shownOnce = true;
+    markShown();
     return true;
   }
 
   window.showGatewayDownModal = showGatewayDownModal;
 
   function autoOpen() {
-    if (shownOnce) return;
+    if (alreadyShownThisSession()) return;
     // ConfirmInfo sets this; default true so standalone script still opens
     if (window.gatewayPaymentEnabled === true) return;
     setTimeout(function () {
-      if (shownOnce) return;
+      if (alreadyShownThisSession()) return;
       if (!showGatewayDownModal()) {
         // bootstrap may not be ready yet — retry briefly
         var tries = 0;

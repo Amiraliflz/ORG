@@ -300,39 +300,38 @@ namespace Application.Services.MrShooferORS
             "destinationCity", "toCity", "to", "endCity", "destinationCityName", "cityTwoName",
             "dest_city", "destination_city", "target", "destination_city_name", "destinationName");
 
-          // Nested shape: { origin: { city_name, city_id }, destination: { ... } }
-          var originObj = TryGetObject(obj, "origin", "originCity", "from", "cityOne", "Cityone");
-          var destObj = TryGetObject(obj, "destination", "destinationCity", "to", "cityTwo", "Citytwo");
+          // Nested shape: { Origin: { City_name, City_id }, Destination: { ... } }
+          var originObj = TryGetObject(obj, "origin", "Origin", "originCity", "from", "cityOne", "Cityone");
+          var destObj = TryGetObject(obj, "destination", "Destination", "destinationCity", "to", "cityTwo", "Citytwo");
+          int? id1 = null;
+          int? id2 = null;
+
           if (originObj != null)
           {
-            c1 ??= TryGetString(originObj, "city_name", "cityName", "name", "Cityone", "city");
+            c1 ??= TryGetString(originObj,
+              "City_name", "city_name", "CityName", "cityName", "name", "title", "Cityone", "city");
+            id1 = TryGetInt(originObj,
+              "City_id", "city_id", "CityId", "cityId", "id", "Id", "ID");
           }
           if (destObj != null)
           {
-            c2 ??= TryGetString(destObj, "city_name", "cityName", "name", "Citytwo", "city");
+            c2 ??= TryGetString(destObj,
+              "City_name", "city_name", "CityName", "cityName", "name", "title", "Citytwo", "city");
+            id2 = TryGetInt(destObj,
+              "City_id", "city_id", "CityId", "cityId", "id", "Id", "ID");
           }
 
           // Enhanced ID extraction with more property name candidates
-          var id1 = TryGetInt(obj, 
+          id1 ??= TryGetInt(obj, 
             "CityoneId", "cityoneid", "cityOneId", "CityOneId", 
             "originCityId", "fromCityId", "city_one_id", "origin_city_id",
             "originId", "origin_id", "fromId", "from_id", "startCityId", "start_city_id",
             "id1", "cityId1", "city_id_1");
-          var id2 = TryGetInt(obj, 
+          id2 ??= TryGetInt(obj, 
             "CitytwoId", "citytwoid", "cityTwoId", "CityTwoId", 
             "destinationCityId", "toCityId", "city_two_id", "destination_city_id",
             "destinationId", "destination_id", "toId", "to_id", "endCityId", "end_city_id",
             "id2", "cityId2", "city_id_2");
-
-          // If IDs are in nested objects, try to extract them
-          if (!id1.HasValue && originObj != null)
-          {
-            id1 = TryGetInt(originObj, "id", "cityId", "city_id", "Id", "ID");
-          }
-          if (!id2.HasValue && destObj != null)
-          {
-            id2 = TryGetInt(destObj, "id", "cityId", "city_id", "Id", "ID");
-          }
 
           if (!string.IsNullOrWhiteSpace(c1) && !string.IsNullOrWhiteSpace(c2))
           {

@@ -136,6 +136,170 @@
     }
     .main_container{
       max-width: 1024px;
+      padding-inline: 0.75rem;
+    }
+
+    .ticket-print-root {
+      width: 100%;
+    }
+
+    .ticket-print-root .card.rounded-5 {
+      padding: 1rem 1.25rem 1.1rem !important;
+      margin-top: 0.75rem !important;
+    }
+
+    .ticket-print-root .ticket-notes small {
+      display: block;
+      line-height: 1.55 !important;
+      margin-bottom: 0.28rem;
+    }
+
+    .ticket-print-footer {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-top: 0.85rem;
+      line-height: 1.65;
+    }
+
+    .ticket-print-footer > .row > [class*="col-"] {
+      margin-bottom: 0.35rem;
+    }
+
+    .ticket-print-closing {
+      margin-top: 0.75rem !important;
+      padding-top: 0.35rem;
+    }
+
+    .ticket-print-closing p {
+      margin-bottom: 0 !important;
+      line-height: 1.5;
+    }
+
+    @@media print {
+      @@page {
+        size: A4;
+        margin: 10mm 12mm;
+      }
+
+      html, body {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+      }
+
+      .main_container {
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .ticket-print-root {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .ticket-print-footer {
+        page-break-before: avoid;
+        break-before: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-top: 0.7rem !important;
+        line-height: 1.55 !important;
+      }
+
+      .ticket-print-footer > .row > [class*="col-"] {
+        margin-bottom: 0.3rem !important;
+      }
+
+      .card.rounded-5 {
+        box-shadow: none !important;
+        margin-top: 0.55rem !important;
+        padding: 0.7rem 0.95rem 0.75rem !important;
+      }
+
+      .ticket-print-root hr {
+        margin-top: 0.55rem !important;
+        margin-bottom: 0.55rem !important;
+      }
+
+      .ticket-print-root .mt-1 {
+        margin-top: 0.4rem !important;
+      }
+
+      .ticket-print-root .mt-2,
+      .ticket-print-root .mt-3 {
+        margin-top: 0.55rem !important;
+      }
+
+      .ticket-print-root .pt-2,
+      .ticket-print-root .pb-2 {
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+      }
+
+      .ticket-print-root .p-3 {
+        padding: 0.65rem 0.75rem !important;
+      }
+
+      .ticket-print-root .px-3,
+      .ticket-print-root .px-4,
+      .ticket-print-root .px-lg-5,
+      .ticket-print-root .px-md-5 {
+        padding-left: 0.65rem !important;
+        padding-right: 0.65rem !important;
+      }
+
+      .ticket-print-root .ticket-notes {
+        margin-top: 0.55rem !important;
+      }
+
+      .ticket-print-root .ticket-notes small {
+        line-height: 1.5 !important;
+        margin-bottom: 0.22rem !important;
+        font-size: 0.72rem !important;
+      }
+
+      .ticket-print-root h3 {
+        font-size: 1.05rem !important;
+        margin-bottom: 0.2rem !important;
+        margin-top: 0.15rem !important;
+      }
+
+      .ticket-print-root .fs-3 {
+        font-size: 1.2rem !important;
+        line-height: 1.4 !important;
+      }
+
+      .ticket-print-root .fs-4 {
+        font-size: 1.08rem !important;
+        line-height: 1.4 !important;
+      }
+
+      .ticket-print-root .fs-5,
+      .ticket-print-root h5 {
+        font-size: 0.98rem !important;
+        line-height: 1.45 !important;
+      }
+
+      .ticket-print-root .mb-0 {
+        margin-bottom: 0.15rem !important;
+      }
+
+      /* Keep closing wish + logo on the same page as the ticket */
+      .ticket-print-closing {
+        page-break-before: avoid;
+        break-before: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-top: 0.55rem !important;
+        margin-bottom: 0 !important;
+        padding-top: 0.25rem !important;
+      }
     }
     
 </style>
@@ -149,7 +313,7 @@
 
 <div class="main_container mt-0 d-flex justify-content-center">
 
-    <div class="downside-contaner row">
+    <div class="downside-contaner row ticket-print-root">
         <div class="mb-0 px-0 d-flex row justify-content-between" style="justify-content: space-between;">
 
             <div class="d-flex col-7 ps-3" style="flex-direction: column; align-items: start;">
@@ -419,7 +583,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-2 px-0">
+                            <div class="mt-2 px-0 ticket-notes">
 
                                 <small style="font-size: .7rem;" class="text-muted d-block">
                                     <i class="ti ti-info-circle ti-sm"></i>
@@ -492,7 +656,7 @@
             </div>
         </div>
 
-        <div class="col-12 mt-1">
+        <div class="col-12 mt-1 ticket-print-footer">
 
             <div class="row px-2">
 
@@ -516,13 +680,13 @@
                 </div>
 
 
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between ticket-print-closing align-items-center">
 
-                <p>
+                <p class="mb-0">
                     سفر خوشی را برای شما آرزومندیم
                 </p>
 
-                    <img src="/logo_full_b.png" height="40px" />
+                    <img src="/logo_full_b.png" height="40px" alt="مسترشوفر" />
                 </div>
             </div>
         </div>

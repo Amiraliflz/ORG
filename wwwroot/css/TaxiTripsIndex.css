@@ -22,6 +22,71 @@
   }
 }
 
+.book-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin: 0 0 0.85rem;
+  padding: 0.3rem;
+  border-radius: 1rem;
+  background: #f3f4f6;
+  border: 1px solid rgba(67, 89, 113, 0.08);
+}
+
+.book-mode-switch--searchbar {
+  margin: 0.85rem 0.85rem 0;
+}
+
+@media (min-width: 768px) {
+  .book-mode-switch--searchbar {
+    margin: 1rem 1.15rem 0;
+  }
+}
+
+.book-mode-switch__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.55rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.8rem;
+  border: 0;
+  background: transparent;
+  color: #6f6b7d;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  text-align: center;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.book-mode-switch__item i {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.book-mode-switch__item.is-active {
+  background: #fff;
+  color: #29263d;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.06);
+  cursor: default;
+}
+
+a.book-mode-switch__item:hover,
+a.book-mode-switch__item:focus-visible {
+  color: #1a56c4;
+  background: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+}
+
+a.book-mode-switch__item:focus-visible {
+  outline: 2px solid #276ef1;
+  outline-offset: 2px;
+}
+
 /*
   Trips safe zone — compact booking shell (~Alibaba-width cards).
   Desktop cap ~64rem so cards stay narrow with clear side margins.

@@ -22,6 +22,7 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
   private sealed record Snapshot(
     IReadOnlyList<string> SupportedCities,
     IReadOnlyList<string> PopularOrigins,
+    IReadOnlyList<MrShooferAPIClient.AvaiableDirection> AvailableDirections,
     IReadOnlyDictionary<string, long?> RoutePrices,
     string VersionToken,
     DateTime? RefreshedUtc)
@@ -29,6 +30,7 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
     public static Snapshot Empty { get; } = new(
       Array.Empty<string>(),
       SeoDefaults.HomepagePopularOriginCities.ToList(),
+      Array.Empty<MrShooferAPIClient.AvaiableDirection>(),
       new Dictionary<string, long?>(StringComparer.OrdinalIgnoreCase),
       "0",
       null);
@@ -47,6 +49,9 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
   public IReadOnlyList<string> GetSupportedCities() => _snapshot.SupportedCities;
 
   public IReadOnlyList<string> GetPopularOrigins() => _snapshot.PopularOrigins;
+
+  public IReadOnlyList<MrShooferAPIClient.AvaiableDirection> GetAvailableDirections() =>
+    _snapshot.AvailableDirections;
 
   public long? GetRouteStartingPrice(string slug)
   {
@@ -83,14 +88,113 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
     return Task.CompletedTask;
   }
 
+  public async Task EnsureDirectionsAsync(CancellationToken cancellationToken = default)
+  {
+    if (_snapshot.AvailableDirections.Count > 0) return;
+
+    // Another refresh may already be loading directions — wait briefly for it.
+    for (var i = 0; i < 40 && _snapshot.AvailableDirections.Count == 0; i++)
+    {
+      if (await _refreshLock.WaitAsync(0, cancellationToken))
+      {
+        try
+        {
+          if (_snapshot.AvailableDirections.Count > 0) return;
+          await WarmDirectionsUnderLockAsync(cancellationToken);
+          return;
+        }
+        finally
+        {
+          _refreshLock.Release();
+        }
+      }
+
+      await Task.Delay(50, cancellationToken);
+      if (_snapshot.AvailableDirections.Count > 0) return;
+    }
+
+    if (_snapshot.AvailableDirections.Count > 0) return;
+
+    await _refreshLock.WaitAsync(cancellationToken);
+    try
+    {
+      if (_snapshot.AvailableDirections.Count > 0) return;
+      await WarmDirectionsUnderLockAsync(cancellationToken);
+    }
+    finally
+    {
+      _refreshLock.Release();
+    }
+  }
+
+  private async Task WarmDirectionsUnderLockAsync(CancellationToken cancellationToken)
+  {
+    using var scope = _scopeFactory.CreateScope();
+    var api = scope.ServiceProvider.GetRequiredService<MrShooferAPIClient>();
+    var token = _configuration["MrShoofer:SellerToken"];
+    if (!string.IsNullOrWhiteSpace(token))
+      api.SetSellerApiKey(token);
+
+    var directions = await api.GetAvaiableOTADirectionsAsync();
+    PublishDirectionsSnapshot(scope, directions);
+  }
+
+  public async Task RefreshDirectionsAsync(CancellationToken cancellationToken = default)
+  {
+    await _refreshLock.WaitAsync(cancellationToken);
+    try
+    {
+      await WarmDirectionsUnderLockAsync(cancellationToken);
+      _hasRefreshed = _snapshot.AvailableDirections.Count > 0;
+    }
+    finally
+    {
+      _refreshLock.Release();
+    }
+  }
+
+  private void PublishDirectionsSnapshot(IServiceScope scope, List<MrShooferAPIClient.AvaiableDirection> directions)
+  {
+    var cityMap = BuildCityMap(directions);
+    var supportedCities = cityMap.Values
+      .Select(pair => pair.Display)
+      .Distinct(StringComparer.Ordinal)
+      .OrderBy(c => c, StringComparer.Ordinal)
+      .ToList();
+
+    if (supportedCities.Count == 0)
+      supportedCities = directionsRepositoryFallback(scope);
+
+    var popularOrigins = BuildPopularOrigins(supportedCities, cityMap);
+
+    _snapshot = new Snapshot(
+      supportedCities,
+      popularOrigins,
+      directions,
+      _snapshot.RoutePrices,
+      _snapshot.VersionToken == "0" || _snapshot.VersionToken == "fallback" ? "dirs" : _snapshot.VersionToken,
+      DateTime.UtcNow);
+
+    _logger.LogInformation(
+      "Homepage directions warmed: {CityCount} cities, {DirectionCount} pairs",
+      supportedCities.Count,
+      directions.Count);
+  }
+
   public async Task RefreshAsync(CancellationToken cancellationToken = default)
   {
     if (!await _refreshLock.WaitAsync(0, cancellationToken))
     {
-      await _refreshLock.WaitAsync(cancellationToken);
-      _refreshLock.Release();
+      // Another refresh is running; wait for directions to appear, then exit.
+      for (var i = 0; i < 100 && _snapshot.AvailableDirections.Count == 0; i++)
+        await Task.Delay(50, cancellationToken);
       return;
     }
+
+    List<MrShooferAPIClient.AvaiableDirection> directions;
+    Dictionary<string, (string Display, int Id)> cityMap;
+    List<string> supportedCities;
+    IReadOnlyList<string> popularOrigins;
 
     try
     {
@@ -100,9 +204,9 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
       if (!string.IsNullOrWhiteSpace(token))
         api.SetSellerApiKey(token);
 
-      var directions = await api.GetAvaiableOTADirectionsAsync();
-      var cityMap = BuildCityMap(directions);
-      var supportedCities = cityMap.Values
+      directions = await api.GetAvaiableOTADirectionsAsync();
+      cityMap = BuildCityMap(directions);
+      supportedCities = cityMap.Values
         .Select(pair => pair.Display)
         .Distinct(StringComparer.Ordinal)
         .OrderBy(c => c, StringComparer.Ordinal)
@@ -111,22 +215,15 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
       if (supportedCities.Count == 0)
         supportedCities = directionsRepositoryFallback(scope);
 
-      var popularOrigins = BuildPopularOrigins(supportedCities, cityMap);
-      var routePrices = await FetchRoutePricesAsync(api, cityMap, directions, cancellationToken);
-      var version = BuildVersionToken(supportedCities, routePrices);
+      popularOrigins = BuildPopularOrigins(supportedCities, cityMap);
 
       _snapshot = new Snapshot(
         supportedCities,
         popularOrigins,
-        routePrices,
-        version,
+        directions,
+        _snapshot.RoutePrices,
+        _snapshot.VersionToken == "0" || _snapshot.VersionToken == "fallback" ? "dirs" : _snapshot.VersionToken,
         DateTime.UtcNow);
-      _hasRefreshed = true;
-
-      _logger.LogInformation(
-        "Homepage catalog refreshed: {CityCount} cities, {RouteCount} route prices",
-        supportedCities.Count,
-        routePrices.Count(kvp => kvp.Value is > 0));
     }
     catch (Exception ex)
     {
@@ -139,10 +236,54 @@ public sealed class HomepageCatalogCache : IHomepageCatalogCache
           VersionToken = "fallback"
         };
       }
+      return;
     }
     finally
     {
       _refreshLock.Release();
+    }
+
+    // Price probes outside the lock so AvailableDirections stays fast.
+    try
+    {
+      using var scope = _scopeFactory.CreateScope();
+      var api = scope.ServiceProvider.GetRequiredService<MrShooferAPIClient>();
+      var token = _configuration["MrShoofer:SellerToken"];
+      if (!string.IsNullOrWhiteSpace(token))
+        api.SetSellerApiKey(token);
+
+      var routePrices = await FetchRoutePricesAsync(api, cityMap, directions, cancellationToken);
+      var version = BuildVersionToken(supportedCities, routePrices);
+
+      await _refreshLock.WaitAsync(cancellationToken);
+      try
+      {
+        _snapshot = new Snapshot(
+          supportedCities,
+          popularOrigins,
+          directions,
+          routePrices,
+          version,
+          DateTime.UtcNow);
+        _hasRefreshed = true;
+        _refreshScheduled = true;
+      }
+      finally
+      {
+        _refreshLock.Release();
+      }
+
+      _logger.LogInformation(
+        "Homepage catalog refreshed: {CityCount} cities, {DirectionCount} pairs, {RouteCount} route prices",
+        supportedCities.Count,
+        directions.Count,
+        routePrices.Count(kvp => kvp.Value is > 0));
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Homepage catalog price refresh failed");
+      _hasRefreshed = _snapshot.AvailableDirections.Count > 0;
+      _refreshScheduled = true;
     }
   }
 

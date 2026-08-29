@@ -95,6 +95,42 @@ class OpsApi(private val session: OpsSession) {
         restartAt(url, token)
     }
 
+    /**
+     * Soft restart via the web app; if the app is hard-down, fall back to the
+     * always-on Ops Agent (/ops-agent/restart) which runs independently on the VPS.
+     */
+    fun restartOrStart(): Result<String> {
+        val primary = restart()
+        if (primary.isSuccess) return primary
+
+        ensureToken()
+        val token = session.token
+        if (token.isNullOrBlank())
+            return Result.failure(Exception("نشست منقضی شده — دوباره وارد شوید"))
+
+        var lastErr: Throwable? = primary.exceptionOrNull()
+        for (base in OpsSession.agentBases()) {
+            val agent = restartViaAgent(base, token)
+            if (agent.isSuccess) return agent
+            lastErr = agent.exceptionOrNull() ?: lastErr
+        }
+        return Result.failure(
+            lastErr ?: Exception("راه‌اندازی ناموفق — نه وب‌اپ و نه Ops Agent پاسخ دادند")
+        )
+    }
+
+    /** True if the always-on agent is reachable (main app may still be down). */
+    fun agentReachable(): Boolean =
+        OpsSession.agentBases().any { pingAgent(it).isSuccess }
+
+    fun pingAgent(base: String = OpsSession.VPS): Result<Unit> = runCatching {
+        val url = "${OpsSession.normalize(base)}/ops-agent/health"
+        val req = Request.Builder().url(url).get().build()
+        client.newCall(req).execute().use { resp ->
+            if (!resp.isSuccessful) error("agent ${resp.code}")
+        }
+    }
+
     fun clearSession() {
         session.clearAuth(keepServer = true)
     }
@@ -230,6 +266,30 @@ class OpsApi(private val session: OpsSession) {
     }.recoverCatching { e ->
         if (e.message?.contains("نشست") == true || e.message?.contains("راه‌اندازی") == true) throw e
         throw Exception(e.message ?: "وب‌اپ در حال ری‌استارت است…")
+    }
+
+    private fun restartViaAgent(base: String, token: String): Result<String> = runCatching {
+        val restartClient = client.newBuilder().readTimeout(120, TimeUnit.SECONDS).build()
+        val body = JSONObject().put("confirm", "RESTART").toString().toRequestBody(json)
+        val req = Request.Builder()
+            .url("${OpsSession.normalize(base)}/ops-agent/restart")
+            .post(body)
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer $token")
+            .header("X-Ops-Token", token)
+            .build()
+        restartClient.newCall(req).execute().use { resp ->
+            val text = resp.body?.string().orEmpty()
+            val jsonObj = runCatching { JSONObject(text) }.getOrElse { JSONObject() }
+            val message = jsonObj.optString("message", text)
+            if (resp.code == 401) error("نشست منقضی شده")
+            if (!resp.isSuccessful || !jsonObj.optBoolean("success", false))
+                error(message.ifBlank { "Ops Agent نتوانست وب‌اپ را بالا بیاورد" })
+            message.ifBlank { "وب‌اپ از طریق Ops Agent راه‌اندازی شد" }
+        }
+    }.recoverCatching { e ->
+        if (e.message?.contains("نشست") == true || e.message?.contains("Ops Agent") == true) throw e
+        throw Exception(friendlyNetError(e, "$base/ops-agent"))
     }
 
     private fun isAuthMessage(msg: String?): Boolean {

@@ -52,16 +52,24 @@
 <script src="~/vendor/libs/sweetalert2/sweetalert2.js"></script>
 
 <script>
-    Swal.fire({
-        title: 'سفر ثبت شد',
-        text: 'سفر با موفقیت ثبت شد.',
-        confirmButtonText: 'متوجه شدم',
-        icon: 'success',
-        customClass: {
-            confirmButton: 'btn btn-primary waves-effect waves-light'
-        },
-        buttonsStyling: false
-    });
+    (function () {
+        var key = 'rc-swal-@(ticket?.TicketCode ?? ticket?.Id.ToString() ?? "unknown")';
+        try {
+            if (sessionStorage.getItem(key)) return;
+            sessionStorage.setItem(key, '1');
+        } catch (e) { /* private mode */ }
+
+        Swal.fire({
+            title: 'سفر ثبت شد',
+            text: 'سفر با موفقیت ثبت شد.',
+            confirmButtonText: 'متوجه شدم',
+            icon: 'success',
+            customClass: {
+                confirmButton: 'btn btn-primary waves-effect waves-light'
+            },
+            buttonsStyling: false
+        });
+    })();
 </script>
 
 

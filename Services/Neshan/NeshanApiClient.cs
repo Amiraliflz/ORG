@@ -60,6 +60,221 @@ public sealed class NeshanApiClient
     }, ct);
   }
 
+  /// <summary>v5 geocoding — up to several candidate points for one address string.</summary>
+  public async Task<IReadOnlyList<(double Lat, double Lng)>> GeocodeCandidatesAsync(
+    string address, int limit = 5, CancellationToken ct = default)
+  {
+    var empty = Array.Empty<(double, double)>();
+    if (!IsConfigured || string.IsNullOrWhiteSpace(address))
+      return empty;
+
+    var query = Uri.EscapeDataString(address.Trim());
+    var list = await SendWithRetryAsync(async token =>
+    {
+      using var req = new HttpRequestMessage(HttpMethod.Get, $"v5/geocoding?address={query}");
+      req.Headers.TryAddWithoutValidation("Api-Key", _options.ApiKey);
+
+      using var resp = await _http.SendAsync(req, token);
+      var body = await resp.Content.ReadAsStringAsync(token);
+      if (!resp.IsSuccessStatusCode)
+      {
+        if (IsTransientStatus(resp.StatusCode))
+          throw new NeshanTransientException((int)resp.StatusCode, Truncate(body));
+        _logger.LogWarning("Neshan v5 geocode failed ({Status}): {Body}", (int)resp.StatusCode, Truncate(body));
+        return (IReadOnlyList<(double, double)>?)null;
+      }
+
+      using var doc = JsonDocument.Parse(body);
+      var root = doc.RootElement;
+      var results = new List<(double Lat, double Lng)>();
+      if (root.ValueKind == JsonValueKind.Array)
+      {
+        foreach (var el in root.EnumerateArray())
+        {
+          if (el.TryGetProperty("location", out var loc) && TryReadLatLng(loc, out var lat, out var lng))
+            results.Add((lat, lng));
+          if (results.Count >= limit) break;
+        }
+      }
+      return results;
+    }, ct);
+
+    return list ?? empty;
+  }
+
+  public async Task<NeshanReverseResult?> ReverseAsync(double lat, double lng, CancellationToken ct = default)
+  {
+    if (!IsConfigured || !IsValidIran(lat, lng))
+      return null;
+
+    var url = FormattableString.Invariant($"v4/reverse?lat={lat}&lng={lng}");
+    return await SendWithRetryAsync(async token =>
+    {
+      using var req = new HttpRequestMessage(HttpMethod.Get, url);
+      req.Headers.TryAddWithoutValidation("Api-Key", _options.ApiKey);
+
+      using var resp = await _http.SendAsync(req, token);
+      var body = await resp.Content.ReadAsStringAsync(token);
+      if (!resp.IsSuccessStatusCode)
+      {
+        if (IsTransientStatus(resp.StatusCode))
+          throw new NeshanTransientException((int)resp.StatusCode, Truncate(body));
+        _logger.LogWarning("Neshan reverse failed ({Status}): {Body}", (int)resp.StatusCode, Truncate(body));
+        return (NeshanReverseResult?)null;
+      }
+
+      using var doc = JsonDocument.Parse(body);
+      var root = doc.RootElement;
+      if (root.TryGetProperty("status", out var st) &&
+          string.Equals(st.GetString(), "NO_RESULT", StringComparison.OrdinalIgnoreCase))
+        return null;
+
+      var neighbourhood = GetStr(root, "neighbourhood");
+      var route = GetStr(root, "route_name") ?? GetStr(root, "address");
+      var place = GetStr(root, "place");
+      var city = GetStr(root, "city");
+      var state = GetStr(root, "state");
+      // Prefer readable street/district for the pin (Snapp-style), not a random nearby POI.
+      var title = FirstNonEmpty(neighbourhood, route, place) ?? "موقعیت انتخاب‌شده";
+      var subParts = new List<string>();
+      if (!string.IsNullOrWhiteSpace(route) &&
+          !string.Equals(route, title, StringComparison.Ordinal))
+        subParts.Add(route!);
+      if (!string.IsNullOrWhiteSpace(neighbourhood) &&
+          !string.Equals(neighbourhood, title, StringComparison.Ordinal) &&
+          !subParts.Contains(neighbourhood!))
+        subParts.Add(neighbourhood!);
+      if (!string.IsNullOrWhiteSpace(city))
+        subParts.Add(city!);
+      var subtitle = string.Join("، ", subParts);
+      var inTraffic = root.TryGetProperty("in_traffic_zone", out var tz) && tz.ValueKind == JsonValueKind.True;
+      var inOddEven = root.TryGetProperty("in_odd_even_zone", out var oz) && oz.ValueKind == JsonValueKind.True;
+      return new NeshanReverseResult(title, subtitle, neighbourhood, route, city, state, lat, lng, inTraffic, inOddEven);
+    }, ct);
+  }
+
+  /// <summary>Driving route along actual roads (step polylines preferred over overview).</summary>
+  public async Task<NeshanRouteResult?> GetDrivingRouteAsync(
+    double originLat, double originLng,
+    double destLat, double destLng,
+    CancellationToken ct = default)
+  {
+    if (!IsConfigured || !IsValidIran(originLat, originLng) || !IsValidIran(destLat, destLng))
+      return null;
+
+    var url = FormattableString.Invariant(
+      $"v4/direction?type=car&origin={originLat},{originLng}&destination={destLat},{destLng}&alternative=false");
+
+    return await SendWithRetryAsync(async token =>
+    {
+      using var req = new HttpRequestMessage(HttpMethod.Get, url);
+      req.Headers.TryAddWithoutValidation("Api-Key", _options.ApiKey);
+
+      using var resp = await _http.SendAsync(req, token);
+      var body = await resp.Content.ReadAsStringAsync(token);
+      if (!resp.IsSuccessStatusCode)
+      {
+        if (IsTransientStatus(resp.StatusCode))
+          throw new NeshanTransientException((int)resp.StatusCode, Truncate(body));
+        _logger.LogWarning("Neshan direction failed ({Status}): {Body}", (int)resp.StatusCode, Truncate(body));
+        return (NeshanRouteResult?)null;
+      }
+
+      using var doc = JsonDocument.Parse(body);
+      if (!doc.RootElement.TryGetProperty("routes", out var routes) || routes.GetArrayLength() == 0)
+        return null;
+
+      var route = routes[0];
+      var coords = new List<(double Lat, double Lng)>();
+
+      if (route.TryGetProperty("legs", out var legs))
+      {
+        foreach (var leg in legs.EnumerateArray())
+        {
+          if (!leg.TryGetProperty("steps", out var steps)) continue;
+          foreach (var step in steps.EnumerateArray())
+          {
+            if (!step.TryGetProperty("polyline", out var pl)) continue;
+            var encoded = pl.GetString();
+            if (string.IsNullOrWhiteSpace(encoded)) continue;
+            var decoded = DecodePolyline(encoded);
+            if (decoded.Count == 0) continue;
+            if (coords.Count > 0) decoded.RemoveAt(0);
+            coords.AddRange(decoded);
+          }
+        }
+      }
+
+      if (coords.Count < 2 &&
+          route.TryGetProperty("overview_polyline", out var overview) &&
+          overview.TryGetProperty("points", out var pointsEl))
+      {
+        coords = DecodePolyline(pointsEl.GetString() ?? "");
+      }
+
+      if (coords.Count < 2) return null;
+
+      double distance = 0;
+      double duration = 0;
+      if (route.TryGetProperty("legs", out var legs2))
+      {
+        foreach (var leg in legs2.EnumerateArray())
+        {
+          if (leg.TryGetProperty("distance", out var distObj) &&
+              distObj.TryGetProperty("value", out var distVal) &&
+              distVal.ValueKind == JsonValueKind.Number)
+            distance += distVal.GetDouble();
+          if (leg.TryGetProperty("duration", out var durObj) &&
+              durObj.TryGetProperty("value", out var durVal) &&
+              durVal.ValueKind == JsonValueKind.Number)
+            duration += durVal.GetDouble();
+        }
+      }
+
+      return new NeshanRouteResult(coords, distance, duration, "neshan");
+    }, ct);
+  }
+
+  /// <summary>Google-encoded polyline (precision 1e-5) → lat/lng list.</summary>
+  public static List<(double Lat, double Lng)> DecodePolyline(string encoded)
+  {
+    var coords = new List<(double, double)>();
+    if (string.IsNullOrEmpty(encoded)) return coords;
+
+    int index = 0, lat = 0, lng = 0;
+    while (index < encoded.Length)
+    {
+      lat += DecodePolylineValue(encoded, ref index);
+      lng += DecodePolylineValue(encoded, ref index);
+      coords.Add((lat / 1e5, lng / 1e5));
+    }
+    return coords;
+  }
+
+  private static int DecodePolylineValue(string encoded, ref int index)
+  {
+    int result = 0, shift = 0, b;
+    do
+    {
+      b = encoded[index++] - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20 && index < encoded.Length);
+
+    return (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
+  }
+
+  private static bool IsValidIran(double lat, double lng) =>
+    lat is >= 24 and <= 41 && lng is >= 43 and <= 64;
+
+  private static string? GetStr(JsonElement el, string name) =>
+    el.TryGetProperty(name, out var p) && p.ValueKind == JsonValueKind.String
+      ? p.GetString()
+      : null;
+
+  private static string? FirstNonEmpty(params string?[] values) =>
+    values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
   public async Task<(int DurationSeconds, int DistanceMeters)?> GetDistanceAsync(
     double originLat, double originLng,
     double destLat, double destLng,
@@ -208,3 +423,21 @@ public sealed class NeshanApiClient
       : base($"HTTP {status}: {body}") { }
   }
 }
+
+public sealed record NeshanReverseResult(
+  string Title,
+  string Subtitle,
+  string? Neighbourhood,
+  string? Route,
+  string? City,
+  string? State,
+  double Lat,
+  double Lng,
+  bool InTrafficZone = false,
+  bool InOddEvenZone = false);
+
+public sealed record NeshanRouteResult(
+  IReadOnlyList<(double Lat, double Lng)> Coordinates,
+  double DistanceMeters,
+  double DurationSeconds,
+  string Source);

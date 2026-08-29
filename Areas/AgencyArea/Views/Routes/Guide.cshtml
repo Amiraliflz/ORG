@@ -1,0 +1,48 @@
+@using Application.Services.Seo
+@{
+    Layout = "_FrontLayout";
+    var route = ViewBag.RoutePage as RouteCatalog.RoutePage;
+    var bookingUrl = ViewBag.BookingUrl as string ?? "/";
+}
+
+@section PageStyles {
+    <link href="~/css/RoutePages.css?v=21" rel="stylesheet" />
+}
+
+<section class="section-py route-detail route-guide" dir="rtl">
+    <div class="container route-detail-inner">
+        @if (route is not null)
+        {
+            <nav class="route-breadcrumbs" aria-label="breadcrumb">
+                <ol>
+                    <li><a href="/">صفحه اصلی</a></li>
+                    <li><a href="/routes">مسیرها</a></li>
+                    <li><a href="/routes/@route.Slug">@RouteCatalog.Title(route)</a></li>
+                    <li aria-current="page">راهنما</li>
+                </ol>
+            </nav>
+
+            <header class="route-guide-header">
+                <h1 class="route-guide-title">@ViewData["Title"]</h1>
+                <p class="route-guide-lead">
+                    راهنمای کامل سفر، زمان تقریبی، نکات مسیر و سوالات متداول —
+                    سپس همان مسیر را آنلاین رزرو کنید.
+                </p>
+                <div class="route-guide-actions">
+                    <a class="btn btn-primary btn-lg" href="@bookingUrl">رزرو آنلاین این مسیر</a>
+                    @if (route is not null)
+                    {
+                        <a class="btn btn-outline-primary btn-lg"
+                           href="/Reserve/MapBook?origin=@Uri.EscapeDataString(route.OriginFa)&amp;dest=@Uri.EscapeDataString(route.DestinationFa)">
+                            <i class="ti ti-map-2" aria-hidden="true"></i>
+                            انتخاب روی نقشه
+                        </a>
+                    }
+                    <a class="btn btn-outline-secondary" href="/routes">همه مسیرها</a>
+                </div>
+            </header>
+        }
+
+        @await Html.PartialAsync("~/Areas/AgencyArea/Views/TaxiTrips/_RouteSeoBottom.cshtml")
+    </div>
+</section>

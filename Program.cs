@@ -45,6 +45,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .WriteTo.Sink(new DatabaseLogSink(buffer));
 });
 
+builder.Services.AddResponseCaching();
 builder.Services.AddResponseCompression(options =>
 {
   options.EnableForHttps = true;
@@ -266,6 +267,18 @@ app.Use(async (context, next) =>
   await next();
 });
 
+// Arvan terminates TLS; origin is HTTP. Always advertise HSTS on public responses
+// (UseHsts alone may not emit when the CDN/proxy chain omits forwarded proto).
+app.Use(async (context, next) =>
+{
+  await next();
+  if (app.Environment.IsDevelopment()) return;
+  if (context.Response.HasStarted) return;
+  if (context.Response.StatusCode is < 200 or >= 400) return;
+  if (context.Response.Headers.ContainsKey("Strict-Transport-Security")) return;
+  context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+});
+
 // Auto-set partner_brand cookie when request comes through the ISIC-branded port (X-Partner header set by nginx)
 app.Use(async (context, next) =>
 {
@@ -290,6 +303,7 @@ if (app.Environment.IsDevelopment())
 {
   app.UseHttpsRedirection();
 }
+app.UseResponseCaching();
 app.UseResponseCompression();
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -297,12 +311,37 @@ app.UseStaticFiles(new StaticFileOptions
   {
     var path = ctx.Context.Request.Path.Value ?? "";
     var hasVersion = ctx.Context.Request.QueryString.HasValue;
+    if (app.Environment.IsDevelopment())
+    {
+      // Avoid stale CSS/JS while iterating locally (browser ignored file edits with max-age=86400).
+      // Keep the large Neshan Mapbox vendor + static MapBook JSON warm across reloads.
+      var isMapBookVendor = path.Contains("NeshanMapboxGl", StringComparison.OrdinalIgnoreCase)
+        || path.Contains("@neshan-maps-platform", StringComparison.OrdinalIgnoreCase);
+      var isMapBookData = path.StartsWith("/data/iran/", StringComparison.OrdinalIgnoreCase)
+        && path.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
+      if (isMapBookVendor || isMapBookData)
+      {
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=86400";
+        return;
+      }
+      if (path.EndsWith(".css", StringComparison.OrdinalIgnoreCase)
+          || path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
+      {
+        ctx.Context.Response.Headers.CacheControl = "no-cache";
+        return;
+      }
+    }
     if (hasVersion || path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase)
         || path.EndsWith(".woff2", StringComparison.OrdinalIgnoreCase)
         || path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
         || path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase))
     {
       ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+    }
+    else if (path.StartsWith("/data/", StringComparison.OrdinalIgnoreCase)
+             && path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+    {
+      ctx.Context.Response.Headers.CacheControl = "public,max-age=86400";
     }
     else if (path.EndsWith(".css", StringComparison.OrdinalIgnoreCase)
              || path.EndsWith(".js", StringComparison.OrdinalIgnoreCase))
@@ -353,12 +392,22 @@ app.MapControllerRoute(
     name: "seo-sitemap-cities",
     pattern: "sitemap-cities.xml",
     defaults: new { controller = "Seo", action = "SitemapCities" });
+app.MapControllerRoute(
+    name: "seo-sitemap-guides",
+    pattern: "sitemap-guides.xml",
+    defaults: new { controller = "Seo", action = "SitemapGuides" });
 
 app.MapAreaControllerRoute(
     name: "seo-routes-hub",
     areaName: "AgencyArea",
     pattern: "routes",
     defaults: new { controller = "Routes", action = "Index" });
+
+app.MapAreaControllerRoute(
+    name: "seo-routes-guide",
+    areaName: "AgencyArea",
+    pattern: "routes/{slug}/guide",
+    defaults: new { controller = "Routes", action = "Guide" });
 
 app.MapAreaControllerRoute(
     name: "seo-routes-detail",

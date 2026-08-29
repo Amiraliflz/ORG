@@ -47,12 +47,24 @@ Property: `mrshoofer.com` (must be verified). Keep `mrshoofer.ir` verified for C
 ### Submit sitemap
 
 1. Open [Search Console → Sitemaps](https://search.google.com/search-console).
-2. Submit **only** the index on the **.com** property:
+2. On the **`.com`** property submit:
    - `https://mrshoofer.com/sitemap.xml`
-3. Do **not** also submit `sitemap-pages.xml` / `sitemap-routes.xml` / `sitemap-cities.xml` — they are already linked from the index.
-4. Wait until status is **Success**. “Couldn’t fetch” usually means CDN/cache or a transient 5xx — retest after deploy settles.
+3. On the **`.ir`** property (keep verified for Change of address) also submit:
+   - `https://mrshoofer.ir/sitemap.xml`
+   - Nginx proxies sitemap/robots on `.ir` without redirect; `<loc>` URLs inside still use `https://mrshoofer.com/...`.
+4. Do **not** also submit child sitemaps individually — they are linked from the index.
+5. Wait until status is **Success**. “Couldn’t fetch” usually means CDN/cache or a transient 5xx — retest after deploy settles.
 
-`robots.txt` already declares the same Sitemap URL.
+Child sitemaps (linked from index):
+
+| File | Contents |
+|------|----------|
+| `sitemap-pages.xml` | Home, /routes, /cities, FAQ, Contact, … |
+| `sitemap-routes.xml` | `/routes/{slug}` booking landings (412) |
+| `sitemap-guides.xml` | `/routes/{slug}/guide` content-only guides (412) |
+| `sitemap-cities.xml` | `/cities/{slug}` (76) |
+
+`robots.txt` declares both `.com` and `.ir` sitemap URLs.
 
 ### URL Inspection (priority URLs)
 
@@ -85,8 +97,53 @@ After deploy:
 1. **ArvanCloud / nginx** — `mrshoofer.com` must return **200** (not 504). Legacy hosts 301 to `.com`. See `deploy/nginx/mrshoofer-public.conf`.
 2. **Verify** — `./deploy/scripts/verify-domain-migration.sh` (all checks green).
 3. **GSC** — Submit `https://mrshoofer.com/sitemap.xml` on the `.com` property.
-4. **Change of address** — GSC → Settings → Change of address on **`.ir` property** → select `.com` (only after step 2 passes).
-5. Keep `.ir` redirects live for **12+ months**.
+4. **Primary migration path (2026-08):** rely on **301s + .com sitemap/canonicals**. Keep `.ir` redirects live for **12+ months** (ideally indefinitely).
+5. **Change of address** — optional accelerator only. On **`.ir` Domain property** → Settings → Change of address → `.com`. If the wizard says “Couldn't fetch http://mrshoofer.ir/” while URL Inspection / Googlebot still get 301s, **do not redesign redirects** — continue with phase 4 above.
+
+### Migration strategy (locked)
+
+Do **not** change ASP.NET routing, `.com` canonicals, `.com` sitemap, or one-hop Nginx `.ir` → `.com` redirects.
+
+| Phase | Action |
+|-------|--------|
+| Now | Keep equivalent-path 301s (e.g. `/routes/tehran-isfahan` → same path on `.com`) |
+| GSC `.com` | Sitemap submitted; request indexing for key URLs as needed |
+| Monitor | `.com` indexed pages / impressions; `.ir` indexed pages declining |
+| Optional | One last CoA try via Arvan **edge** redirect; if still fails, abandon CoA |
+| Never | Delete `.ir`, block `.ir` in robots, 302s, JS/meta redirects, sitemap with `.ir` locs, redirect all paths to `/` |
+
+**Evidence (2026-08-23):** CoA validator did not reach origin (no Googlebot in `migration_debug.log`); InspectionTool/Googlebot UAs did reach Nginx and received clean 301. CoA is not required for the move.
+
+### Change of address — why the wizard fails
+
+The `.com` sitemap can be **Success** while Change of address still fails. Google’s CoA crawler may be unable to fetch `http://mrshoofer.ir/` at the CDN edge even when Inspection Tool succeeds.
+
+**Verify anytime:** `./deploy/scripts/verify-domain-migration.sh` and (while diagnosing) `/var/log/nginx/migration_debug.log`.
+
+**Temporary debug logging:** `deploy/nginx/conf.d/00-migration-debug-format.conf` + `access_log … migration_debug` on `.ir` vhosts — remove after diagnosis.
+
+**Still failing CoA after redirects are green?** Usually Arvan edge vs CoA fetcher — not wrong Nginx 301s. Optional experiment: Arvan page-rule 301 for page paths only (keep `/robots.txt` + `/sitemap*.xml` as 200 on origin). If CoA still fails, stop spending time on the tool.
+
+**GSC property setup (same Google account, Owner on both):**
+
+| Step | Action |
+|------|--------|
+| 1 | Domain properties: `sc-domain:mrshoofer.ir` and `sc-domain:mrshoofer.com` |
+| 2 | Live-test `http://mrshoofer.ir/` / robots on `.ir` when debugging CoA |
+| 3 | Optional: Change of address on `.ir` → `.com` |
+| 4 | If CoA fails: proceed with 301-only migration |
+
+Per [Google’s docs](https://support.google.com/webmasters/answer/9370220): Change of address helps; **301s + recrawl** are what transfer the site.
+
+### GSC “Page indexing” reports (`.ir` Domain property)
+
+| Report | Example | Verdict | Action |
+|--------|---------|---------|--------|
+| **Redirect error** | `/routes/…/guide`, `/routes/tehran-mashhad` on `.ir` | Live: single 301 → matching `.com` **200** | Stale/crawl glitch. URL Inspection → Validate fix. Index the `.com` URL. |
+| **Blocked by robots.txt** | `https://pay.mrshoofer.ir/` | Payment host under Domain property | Root may be crawled to follow 301; `/pg/` + `/Payment/` stay Disallow; all pay responses `noindex`. |
+| **Page with redirect** | `http://www.mrshoofer.ir/` | Correct migration | Expected. Do not “fix”. |
+
+Do **not** open payment paths to indexing, remove `.ir` 301s, or block `.ir` in robots to “clear” these reports.
 
 ## Runtime behavior
 
@@ -94,7 +151,12 @@ After deploy:
 - Hand blurbs in `CityCatalog` overlay matching cities; others get safe stubs (`CityStubFactory`).
 - Hand route copy in `wwwroot/json/Seo/routes.overlays.json` (money routes) merges over generated `RouteContent` — see `docs/superpowers/specs/2026-08-06-route-copy-overlays-design.md`.
 - Normal `/TaxiTrips` search attaches the SEO footer when the OD is in the catalog (`AttachRouteSeoIfCatalogMatch`).
+- **Route guides** at `/routes/{slug}/guide` — same long-form copy as the trip-page footer, content-only for crawlers; listed in `sitemap-guides.xml`.
 - Tehran hubs keep richer hand copy; new cities degrade gracefully to stubs.
+
+## Free backlinks & outreach
+
+See [BACKLINKS.md](./BACKLINKS.md) for directories, GSC steps, and safe link targets.
 
 ## Hand route overlays
 

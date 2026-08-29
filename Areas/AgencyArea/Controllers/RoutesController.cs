@@ -7,7 +7,7 @@ namespace Application.Areas.AgencyArea;
 [Area("AgencyArea")]
 public class RoutesController : Controller
 {
-  private static readonly string ContentStamp = "2026-08-05";
+  private static readonly string ContentStamp = "2026-08-22";
 
   [AcceptVerbs("GET", "HEAD")]
   public IActionResult Index()
@@ -38,6 +38,26 @@ public class RoutesController : Controller
   }
 
   /// <summary>
+  /// Content-only route guide for crawlers — same copy as the SEO footer on trip pages.
+  /// </summary>
+  [AcceptVerbs("GET", "HEAD")]
+  public IActionResult Guide(string slug)
+  {
+    var route = RouteCatalog.FindBySlug(slug);
+    if (route is null) return NotFound();
+
+    var content = RouteContent.For(route);
+    var title = $"راهنمای {RouteCatalog.Title(route)}";
+    PopulateRouteSeoViewData(route, content, title, content.MetaDescription, $"/routes/{route.Slug}/guide", isGuidePage: true);
+    ViewData["Robots"] = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+    ViewBag.IsRouteGuide = true;
+    ViewBag.BookingUrl = SeoDefaults.BuildCanonical($"/routes/{route.Slug}");
+
+    Response.Headers.CacheControl = "public,max-age=3600";
+    return View();
+  }
+
+  /// <summary>
   /// Programmatic landing URL for Google: real search results UX (today) + SEO copy at bottom.
   /// Renders TaxiTrips/Index so the experience matches /TaxiTrips results.
   /// </summary>
@@ -50,36 +70,11 @@ public class RoutesController : Controller
     var content = RouteContent.For(route);
     var title = RouteCatalog.Title(route);
     var todayPd = DateTime.Now.ToPersianDate();
-    // Zero-padded for flatpickr-jdate (Y/m/d)
     var today = $"{todayPd.Year}/{todayPd.Month:D2}/{todayPd.Day:D2}";
 
-
-    ViewData["Title"] = title;
-    ViewData["MetaDescription"] = content.MetaDescription;
-    ViewData["OgTitle"] = SeoDefaults.BuildOgTitle(title);
-    ViewData["OgDescription"] = content.MetaDescription;
-    ViewData["OgImage"] = SeoDefaults.DefaultOgImageUrl;
-    ViewData["OgImageAlt"] = SeoDefaults.BuildRouteOgAlt(route.OriginFa, route.DestinationFa);
-    ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical($"/routes/{route.Slug}");
-    ViewData["Breadcrumbs"] = new List<(string Name, string Url)>
-    {
-      ("صفحه اصلی", SeoDefaults.PreferredOrigin + "/"),
-      ("مسیرها", SeoDefaults.BuildCanonical("/routes")),
-      (title, SeoDefaults.BuildCanonical($"/routes/{route.Slug}"))
-    };
-    ViewData["RouteServiceName"] = title;
-    ViewData["RouteFaqs"] = content.Faqs;
-    ViewData["HowToSteps"] = content.HowToSteps;
-    ViewData["OriginCity"] = route.OriginFa;
-    ViewData["DestinationCity"] = route.DestinationFa;
-    ViewData["DateModified"] = ContentStamp;
-    ViewData["ItemList"] = RouteCatalog.Related(route)
-      .Select(r => ($"سواری {r.OriginFa} به {r.DestinationFa}", SeoDefaults.BuildCanonical($"/routes/{r.Slug}")))
-      .ToList();
-    // Indexable landing (override any noindex from generic search pages)
+    PopulateRouteSeoViewData(route, content, title, content.MetaDescription, $"/routes/{route.Slug}", isGuidePage: false);
     ViewData["Robots"] = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 
-    // Same ViewBag contract as TaxiTripsController.Index so the results UI auto-searches.
     ViewBag.origin_city_text = route.OriginFa;
     ViewBag.dest_city_text = route.DestinationFa;
     ViewBag.searchdate = today;
@@ -90,15 +85,62 @@ public class RoutesController : Controller
       route.DestinationFa,
       DateTime.Now.Date);
 
-    ViewBag.RouteSeo = content;
-    ViewBag.RoutePage = route;
-    ViewBag.RelatedRoutes = RouteCatalog.Related(route);
-    ViewBag.ReverseRoute = RouteCatalog.ReverseOf(route);
     ViewBag.IsSeoRouteLanding = true;
 
     // Render TaxiTrips UI under this clean URL. Point view search at TaxiTrips
     // so Partials like TimelinePartial resolve correctly.
     RouteData.Values["controller"] = "TaxiTrips";
     return View("~/Areas/AgencyArea/Views/TaxiTrips/Index.cshtml");
+  }
+
+  private void PopulateRouteSeoViewData(
+    RouteCatalog.RoutePage route,
+    RouteContent.Bundle content,
+    string title,
+    string metaDescription,
+    string canonicalPath,
+    bool isGuidePage)
+  {
+    ViewData["Title"] = title;
+    ViewData["MetaDescription"] = metaDescription;
+    ViewData["OgTitle"] = SeoDefaults.BuildOgTitle(title);
+    ViewData["OgDescription"] = metaDescription;
+    ViewData["OgImage"] = SeoDefaults.DefaultOgImageUrl;
+    ViewData["OgImageAlt"] = SeoDefaults.BuildRouteOgAlt(route.OriginFa, route.DestinationFa);
+    ViewData["CanonicalUrl"] = SeoDefaults.BuildCanonical(canonicalPath);
+
+    var routeTitle = RouteCatalog.Title(route);
+    var crumbs = new List<(string Name, string Url)>
+    {
+      ("صفحه اصلی", SeoDefaults.PreferredOrigin + "/"),
+      ("مسیرها", SeoDefaults.BuildCanonical("/routes"))
+    };
+    if (isGuidePage)
+    {
+      crumbs.Add((routeTitle, SeoDefaults.BuildCanonical($"/routes/{route.Slug}")));
+      crumbs.Add((title, SeoDefaults.BuildCanonical(canonicalPath)));
+    }
+    else
+    {
+      crumbs.Add((title, SeoDefaults.BuildCanonical(canonicalPath)));
+    }
+    ViewData["Breadcrumbs"] = crumbs;
+
+    ViewData["RouteServiceName"] = routeTitle;
+    ViewData["RouteFaqs"] = content.Faqs;
+    ViewData["HowToSteps"] = content.HowToSteps;
+    ViewData["OriginCity"] = route.OriginFa;
+    ViewData["DestinationCity"] = route.DestinationFa;
+    ViewData["DateModified"] = ContentStamp;
+
+    var itemPath = isGuidePage ? "/guide" : "";
+    ViewData["ItemList"] = RouteCatalog.Related(route)
+      .Select(r => ($"سواری {r.OriginFa} به {r.DestinationFa}", SeoDefaults.BuildCanonical($"/routes/{r.Slug}{itemPath}")))
+      .ToList();
+
+    ViewBag.RouteSeo = content;
+    ViewBag.RoutePage = route;
+    ViewBag.RelatedRoutes = RouteCatalog.Related(route);
+    ViewBag.ReverseRoute = RouteCatalog.ReverseOf(route);
   }
 }

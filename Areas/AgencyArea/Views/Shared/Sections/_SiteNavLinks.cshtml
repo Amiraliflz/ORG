@@ -1,0 +1,62 @@
+@{
+  var path = Context.Request.Path.Value ?? "/";
+  var mainLinks = SeoDefaults.SiteNavLinks
+    .Where(l => l.Path is not "/Home/FAQ" and not "/Home/ContactUs");
+  var contactActive = path.Equals("/Home/ContactUs", StringComparison.OrdinalIgnoreCase)
+    || path.Equals("/Home/FAQ", StringComparison.OrdinalIgnoreCase);
+}
+
+@foreach (var link in mainLinks)
+{
+  var label = link.ShortLabel;
+  var isActive = path.Equals(link.Path, StringComparison.OrdinalIgnoreCase)
+    || (link.Path == "/routes" && path.StartsWith("/routes", StringComparison.OrdinalIgnoreCase))
+    || (link.Path == "/cities" && path.StartsWith("/cities", StringComparison.OrdinalIgnoreCase));
+  var icon = link.Path switch
+  {
+    "/routes" => "ti-route",
+    "/cities" => "ti-map-pin",
+    _ => "ti-link"
+  };
+  <li class="nav-item landing-nav-service-item">
+    <a class="fw-medium btn btn-sm btn-primary navbar-nav-btn@(isActive ? " active" : "")" href="@link.Path">
+      <span><i class="ti @icon"></i> @label</span>
+    </a>
+  </li>
+}
+
+<li class="nav-item dropdown landing-nav-service-item landing-nav-contact-dropdown">
+  <a class="fw-medium btn btn-sm btn-primary navbar-nav-btn dropdown-toggle@(contactActive ? " active" : "")"
+     href="javascript:void(0);"
+     role="button"
+     data-bs-toggle="dropdown"
+     aria-expanded="false">
+    <span><i class="ti ti-headset"></i> تماس با ما</span>
+  </a>
+  <ul class="dropdown-menu landing-nav-dropdown-menu">
+    <li>
+      <a class="dropdown-item navbar-nav-btn@(path.Equals("/Home/ContactUs", StringComparison.OrdinalIgnoreCase) ? " active" : "")"
+         asp-area="AgencyArea"
+         asp-controller="Home"
+         asp-action="ContactUs">
+        <span><i class="ti ti-mail"></i> تماس با ما</span>
+      </a>
+    </li>
+    <li>
+      <a class="dropdown-item navbar-nav-btn@(path.Equals("/Home/FAQ", StringComparison.OrdinalIgnoreCase) ? " active" : "")"
+         asp-area="AgencyArea"
+         asp-controller="Home"
+         asp-action="FAQ">
+        <span><i class="ti ti-help-circle"></i> سوالات متداول</span>
+      </a>
+    </li>
+    <li>
+      <a class="dropdown-item navbar-nav-btn@(path.Equals("/Home/ContactUs", StringComparison.OrdinalIgnoreCase) ? " active" : "")"
+         asp-area="AgencyArea"
+         asp-controller="Home"
+         asp-action="ContactUs">
+        <span><i class="ti ti-heart-handshake"></i> پشتیبانی 24/7</span>
+      </a>
+    </li>
+  </ul>
+</li>

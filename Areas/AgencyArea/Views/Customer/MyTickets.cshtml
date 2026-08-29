@@ -185,16 +185,39 @@
                     <div class="cancel-policy mb-3">
                         <div class="fw-semibold mb-1" style="color:#29263d"><i class="ti ti-info-circle me-1"></i>شرایط کنسلی</div>
                         <ul>
-                            <li>تا ۱ ساعت پس از خرید: بدون جریمه</li>
-                            <li>بیش از ۱۲ ساعت تا سفر: ۲۰٪ جریمه</li>
-                            <li>بین ۳ تا ۱۲ ساعت تا سفر: ۵۰٪ جریمه</li>
+                            <li>تا ۱ ساعت بعد از خرید: <strong>بدون جریمه</strong></li>
+                            <li>تا ۱۲ ساعت مانده به سفر: <strong>۲۰٪ جریمه</strong></li>
+                            <li>تا ۳ ساعت قبل از سفر: <strong>۵۰٪ جریمه</strong></li>
+                            <li>کمتر از ۳ ساعت مانده به سفر: <strong class="text-danger">امکان کنسلی وجود ندارد</strong></li>
                         </ul>
-                        <div class="mt-1">مبلغ بازگشتی پس از لغو به کیف پول شما واریز می‌شود.</div>
+                        <div class="mt-1">مبلغ بازگشتی (پس از کسر جریمه) به کیف پول شما واریز می‌شود. جریمه نهایی توسط سامانه ORS محاسبه می‌شود.</div>
+                        <a asp-area="AgencyArea" asp-controller="Home" asp-action="TravelPolicy"
+                           class="d-inline-block mt-1" style="font-size:.78rem" target="_blank" rel="noopener">
+                            مشاهده قوانین کامل سفر و کنسلی
+                        </a>
                     </div>
-                    <label for="cancelReason" class="form-label fw-semibold">دلیل لغو <span class="text-danger">*</span></label>
+
+                    <label for="cancelReasonPreset" class="form-label fw-semibold">علت لغو</label>
+                    <select id="cancelReasonPreset" class="form-select mb-2" onchange="applyCancelReasonPreset(this)">
+                        <option value="">انتخاب کنید...</option>
+                        <option value="انصراف از سفر">انصراف از سفر</option>
+                        <option value="تغییر برنامه زمانی">تغییر برنامه زمانی</option>
+                        <option value="اشتباه در رزرو (مسیر یا تاریخ)">اشتباه در رزرو (مسیر یا تاریخ)</option>
+                        <option value="پیدا کردن وسیله جایگزین">پیدا کردن وسیله جایگزین</option>
+                        <option value="other">سایر (توضیح دهید)</option>
+                    </select>
+
+                    <label for="cancelReason" class="form-label fw-semibold">توضیح دلیل لغو <span class="text-danger">*</span></label>
                     <textarea id="cancelReason" name="reason" class="form-control" rows="3" maxlength="500"
                               placeholder="لطفاً دلیل لغو بلیط را بنویسید..." required></textarea>
                     <div class="form-text">حداقل ۳ کاراکتر — حداکثر ۵۰۰ کاراکتر</div>
+
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" name="acceptedPolicy" id="cancelAcceptPolicy" value="true" required />
+                        <label class="form-check-label" for="cancelAcceptPolicy" style="font-size:.85rem">
+                            شرایط کنسلی را خواندم و می‌پذیرم <span class="text-danger">*</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-label-secondary rounded-pill" data-bs-dismiss="modal">انصراف</button>
@@ -337,6 +360,17 @@
 
     window.applyFilters = applyFilters;
 
+    window.applyCancelReasonPreset = function (sel) {
+        const ta = document.getElementById('cancelReason');
+        if (!ta || !sel) return;
+        if (!sel.value || sel.value === 'other') {
+            if (sel.value === 'other') ta.value = '';
+            ta.focus();
+            return;
+        }
+        ta.value = sel.value;
+    };
+
     window.openCancelModal = function (ticketId) {
         const t = ALL.find(x => x.id === ticketId);
         if (!t || !t.canCancel) return;
@@ -344,6 +378,10 @@
         document.getElementById('cancelRouteLabel').textContent = t.origin + ' ← ' + t.destination;
         document.getElementById('cancelCodeLabel').textContent = t.ticketCode;
         document.getElementById('cancelReason').value = '';
+        const preset = document.getElementById('cancelReasonPreset');
+        if (preset) preset.value = '';
+        const accept = document.getElementById('cancelAcceptPolicy');
+        if (accept) accept.checked = false;
         const modalEl = document.getElementById('cancelTicketModal');
         if (window.bootstrap && bootstrap.Modal) {
             bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -358,7 +396,8 @@
         form.addEventListener('submit', function (e) {
             const btn = document.getElementById('cancelSubmitBtn');
             const reason = (document.getElementById('cancelReason')?.value || '').trim();
-            if (reason.length < 3) {
+            const accepted = document.getElementById('cancelAcceptPolicy')?.checked;
+            if (reason.length < 3 || !accepted) {
                 e.preventDefault();
                 return;
             }
@@ -369,10 +408,19 @@
         });
     }
 
-    // Toasts
+    // Toasts — show once per message (TempData / bfcache can otherwise re-fire)
     ['tt-ok', 'tt-err'].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el) return;
+        var msg = (el.querySelector('span')?.textContent || '').trim();
+        var key = 'mytickets-toast:' + id + ':' + msg;
+        try {
+            if (sessionStorage.getItem(key)) {
+                el.remove();
+                return;
+            }
+            sessionStorage.setItem(key, '1');
+        } catch (e) { /* ignore */ }
         requestAnimationFrame(function () { el.classList.add('show'); });
         setTimeout(function () { el.classList.remove('show'); }, 6000);
     });

@@ -62,6 +62,10 @@
                         <th>نام کامل</th>
                         <th>کد ملی</th>
                         <th>موجودی</th>
+                        @if (LoyaltyService.FeatureEnabled)
+                        {
+                            <th>سطح وفاداری</th>
+                        }
                         <th>پروفایل</th>
                         <th>عملیات</th>
                     </tr>
@@ -70,7 +74,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
+                            <td colspan="@(LoyaltyService.FeatureEnabled ? 8 : 7)" class="text-center text-muted py-5">
                                 <i class="ti ti-users-off ti-2x d-block mb-2"></i>
                                 @(string.IsNullOrEmpty(ViewBag.Search as string) ? "هنوز مشتری ثبت‌نامی وجود ندارد" : $"نتیجه‌ای برای «{ViewBag.Search}» یافت نشد")
                             </td>
@@ -100,6 +104,16 @@
                                     @item.Balance.ToString("N0") ت
                                 </span>
                             </td>
+                            @if (LoyaltyService.FeatureEnabled)
+                            {
+                            <td>
+                                @if (item.Loyalty != null)
+                                {
+                                    <span class="badge bg-label-info rounded-pill">@item.Loyalty.Tier.PersianName()</span>
+                                    <small class="text-muted d-block">@item.Loyalty.TripCount سفر / @item.Loyalty.MonthLabel</small>
+                                }
+                            </td>
+                            }
                             <td>
                                 <span class="badge @(hasProfile ? "bg-label-success" : "bg-label-warning") rounded-pill">
                                     @(hasProfile ? "تکمیل" : "ناقص")

@@ -34,6 +34,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 24px 10px;
   position: sticky;
   top: 0;
@@ -41,11 +42,47 @@
   z-index: 2;
   border-bottom: 1px solid #e5e5e5;
 }
+.jdp-topbar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
 .jdp-topbar-title {
   font-family: font-bold, "tahoma", sans-serif;
   font-weight: normal;
   font-size: 15px;
   color: #000;
+  text-align: center;
+  white-space: nowrap;
+}
+.jdp-nav-btn {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  color: #2f2b3d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s, opacity .15s;
+}
+.jdp-nav-btn:hover:not(:disabled) {
+  background: #f3f3f3;
+  border-color: #d9d9d9;
+}
+.jdp-nav-btn:active:not(:disabled) {
+  background: #ececec;
+}
+.jdp-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 .jdp-close-btn {
   background: none;
@@ -232,4 +269,8 @@
 @media (max-width: 640px) {
   .jdp-container { width: min(95vw, 380px); }
   .jdp-month { max-width: 100%; }
+  .jdp-topbar { padding-inline: 16px; }
+  .jdp-topbar-nav { gap: 8px; }
+  .jdp-topbar-title { font-size: 14px; }
+  .jdp-nav-btn { width: 34px; height: 34px; }
 }

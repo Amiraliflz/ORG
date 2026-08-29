@@ -84,11 +84,11 @@
   object-fit: cover;
   /* Car sits lower-right in the art — crop sky, keep sedan in the band */
   object-position: 72% 78%;
-  transform: scale(1.28);
+  transform: scale(1.06);
   transform-origin: 72% 78%;
 }
 
-/* Soft wash — original overlay (headline gone, keep first look) */
+/* Soft wash — lighter overlay so hero art reads ~20% clearer */
 .landing-hero-stage::before {
   content: "";
   position: absolute;
@@ -98,9 +98,9 @@
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.42) 0%,
-      rgba(255, 255, 255, 0.12) 32%,
-      rgba(248, 247, 250, 0.45) 72%,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.02) 32%,
+      rgba(248, 247, 250, 0.25) 72%,
       var(--hero-ground) 100%
     );
 }
@@ -218,11 +218,262 @@
   font-weight: normal;
 }
 
+
+
+
+
+/* Ride-hailing sheet — Snapp / Tapsi / Uber / Maxim pattern */
+.landing-hero .hero-safezone--form:has(.ride-sheet) {
+  width: min(100%, 26.5rem);
+}
+
+.landing-hero .ride-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 0.85rem 0.95rem;
+  background: #fff;
+  border: 1px solid rgba(67, 89, 113, 0.1);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.landing-hero .ride-sheet__hit {
+  display: block;
+  padding: 0.35rem 0.45rem;
+  border-radius: 1rem;
+  background: #f4f5f7;
+  text-decoration: none;
+  color: inherit;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.landing-hero .ride-sheet__hit:hover,
+.landing-hero .ride-sheet__hit:focus-visible {
+  background: #eef1f5;
+  text-decoration: none;
+  color: inherit;
+}
+
+.landing-hero .ride-sheet__hit:focus-visible {
+  outline: 2px solid #276ef1;
+  outline-offset: 2px;
+}
+
+.landing-hero .ride-sheet__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.15rem;
+  padding: 0.35rem 0.35rem;
+}
+
+.landing-hero .ride-sheet__dot {
+  flex-shrink: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.95);
+}
+
+.landing-hero .ride-sheet__dot--origin {
+  background: #276ef1;
+}
+
+.landing-hero .ride-sheet__dot--dest {
+  background: #111827;
+}
+
+.landing-hero .ride-sheet__labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.landing-hero .ride-sheet__label {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #8b8698;
+  font-weight: 600;
+}
+
+.landing-hero .ride-sheet__value {
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #6f6b7d;
+}
+
+.landing-hero .ride-sheet__value--strong {
+  color: #1f1b2d;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.landing-hero .ride-sheet__search {
+  flex-shrink: 0;
+  font-size: 1.15rem;
+  color: #8b8698;
+}
+
+.landing-hero .ride-sheet__divider {
+  height: 1px;
+  margin: 0 0.35rem 0 2rem;
+  background: rgba(67, 89, 113, 0.12);
+}
+
+.landing-hero .ride-sheet__go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 3rem;
+  border-radius: 0.95rem;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.landing-hero .ride-sheet__go i {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.landing-hero .ride-sheet__trust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #8b8698;
+  text-align: center;
+}
+
+.landing-hero .ride-sheet__trust i {
+  color: #0f9f6e;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 767.98px) {
+  .landing-hero .hero-safezone--form:has(.ride-sheet) {
+    width: 100%;
+  }
+
+  .landing-hero .ride-sheet {
+    border-radius: 1.15rem 1.15rem 0 0;
+    border-inline: 0;
+    border-bottom: 0;
+    box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.1);
+  }
+
+  .landing-hero .ride-sheet__row {
+    min-height: 3.35rem;
+  }
+
+  .landing-hero .ride-sheet__value--strong {
+    font-size: 1.1rem;
+  }
+
+  .landing-hero .ride-sheet__go {
+    min-height: 3.15rem;
+  }
+}
+
 .landing-hero .hero-search-head {
-  margin-bottom: var(--hz-sp-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
   padding: 0;
   border: 0;
   background: transparent;
+}
+
+.landing-hero .hero-search-head-main {
+  min-width: 0;
+}
+
+.landing-hero .hero-search-fleet {
+  flex-shrink: 0;
+}
+
+/* First-class booking mode: search vs map */
+.book-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin: 0 0 1.1rem;
+  padding: 0.3rem;
+  border-radius: 1rem;
+  background: #f3f4f6;
+  border: 1px solid rgba(67, 89, 113, 0.08);
+}
+
+.book-mode-switch__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.8rem;
+  border: 0;
+  background: transparent;
+  color: #6f6b7d;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  text-align: center;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.book-mode-switch__item i {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.book-mode-switch__item.is-active {
+  background: #fff;
+  color: #29263d;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.06);
+  cursor: default;
+}
+
+a.book-mode-switch__item:hover,
+a.book-mode-switch__item:focus-visible {
+  color: #1a56c4;
+  background: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+}
+
+a.book-mode-switch__item:focus-visible {
+  outline: 2px solid #276ef1;
+  outline-offset: 2px;
+}
+
+@media (max-width: 575.98px) {
+  .book-mode-switch__item {
+    font-size: 0.84rem;
+    min-height: 2.5rem;
+    padding-inline: 0.5rem;
+  }
+}
+
+.search-submit-btn {
+  width: 100%;
+  border-radius: 1.2rem;
 }
 
 /* Laptop: wide shell; search form comfortably fits OD + swap + date + CTA */
@@ -284,7 +535,7 @@
   }
   .landing-hero-stage-art-img {
     object-position: 78% 74%;
-    transform: scale(1.42);
+    transform: scale(1.1);
     transform-origin: 78% 74%;
   }
   .landing-hero-stage-content,
@@ -425,6 +676,16 @@
   line-height: 1.45;
   letter-spacing: 0;
   color: var(--hd-ink);
+  margin: 0 0 var(--hd-sp-2);
+  text-wrap: balance;
+}
+.hero-definition-tagline {
+  font-family: font-medium, "tahoma", sans-serif;
+  font-weight: normal;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: var(--hd-ink);
   margin: 0 0 var(--hd-sp-3);
   text-wrap: balance;
 }
@@ -541,6 +802,10 @@
     font-size: 1.375rem;
     line-height: 1.4;
   }
+  .hero-definition-tagline {
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
   .hero-definition-cta {
     --hd-photo-w: 15rem;
   }
@@ -596,11 +861,6 @@
     transition: none;
     transform: none;
   }
-}
-
-.search-submit-btn {
-  width: 100%;
-  border-radius: 1.2rem;
 }
 
 /* Mobile: taller inputs (+~5%) + CTA button matches input size */
@@ -1192,6 +1452,23 @@
 
 .origin, .destination, .starttimeselector {
   font-size: 1rem !important;
+}
+
+.landing-hero #tripForm .form-control.origin,
+.landing-hero #tripForm .form-control.destination,
+.landing-hero #tripForm .form-control.starttimeselector {
+  color: #2a2a2a;
+  font-family: font-regular, "tahoma", sans-serif;
+  font-weight: normal;
+}
+
+.landing-hero #tripForm .form-control.origin::placeholder,
+.landing-hero #tripForm .form-control.destination::placeholder,
+.landing-hero #tripForm .form-control.starttimeselector::placeholder {
+  color: #5e5e5e;
+  opacity: 1;
+  font-family: font-regular, "tahoma", sans-serif;
+  font-weight: normal;
 }
 
 /* Do NOT set inset:unset — it breaks Bootstrap Popper and dumps the menu into layout

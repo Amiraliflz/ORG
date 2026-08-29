@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = "برنامه وفاداری";
+    var enabled = ViewBag.DiscountEnabled as bool? ?? false;
+    var monthStart = ViewBag.MonthStart as DateTime? ?? DateTime.Now;
+    var monthLabel = monthStart.ToPersianDate().MonthName + " " + monthStart.ToPersianDate().Year;
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0"><i class="ti ti-award me-2 text-primary"></i>برنامه وفاداری</h4>
+            <small class="text-muted">سطح مشتری بر اساس سفرهای پرداخت‌شده در ماه شمسی جاری (@monthLabel)</small>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible mb-4">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">تخفیف خودکار سطح</h5>
+                    <p class="text-muted small">
+                        با غیرفعال کردن، تخفیف سطح در رزرو اعمال نمی‌شود؛ اما سطح مشتری در پروفایل و پنل ادمین همچنان نمایش داده می‌شود.
+                    </p>
+                    <form asp-action="SetDiscountEnabled" method="post" class="d-flex align-items-center gap-3 mt-4">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="enabled" value="@(enabled ? "false" : "true")" />
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" @(enabled ? "checked" : "") disabled style="width:3rem;height:1.5rem" />
+                            <label class="form-check-label fw-semibold ms-2">
+                                @(enabled ? "فعال" : "غیرفعال")
+                            </label>
+                        </div>
+                        <button type="submit" class="btn @(enabled ? "btn-outline-danger" : "btn-primary") rounded-pill px-4">
+                            @(enabled ? "غیرفعال کردن تخفیف" : "فعال کردن تخفیف")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card rounded-4 h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">سطوح</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>سطح</th>
+                                    <th>حداقل سفر در ماه</th>
+                                    <th>تخفیف</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>برنزی</td><td>۰–۴</td><td>۰٪</td></tr>
+                                <tr><td>نقره‌ای</td><td>۵–۱۴</td><td>۳٪</td></tr>
+                                <tr><td>طلایی</td><td>۱۵–۲۹</td><td>۷٪</td></tr>
+                                <tr><td>الماسی</td><td>۳۰+</td><td>۱۲٪</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">
+                        تخفیف سطح با کد تخفیف <strong>جمع</strong> می‌شود (هر دو اعمال می‌گردند).
+                        شمارش هر ماه شمسی از اول ماه تا پایان همان ماه است.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

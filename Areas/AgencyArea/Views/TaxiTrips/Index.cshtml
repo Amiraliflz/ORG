@@ -57,8 +57,8 @@
 
 @section VendorStyles {
     <link rel="stylesheet" href="~/vendor/libs/flatpickr/flatpickr.css" />
-    <link href="~/css/TaxiTripsIndex.css?v=67" rel="stylesheet" />
-    <link href="~/css/trip-search.css?v=10" rel="stylesheet" />
+    <link href="~/css/TaxiTripsIndex.css?v=68" rel="stylesheet" />
+    <link href="~/css/trip-search.css?v=11" rel="stylesheet" />
     @if (ViewBag.RouteSeo is not null)
     {
         <link href="~/css/RoutePages.css?v=20" rel="stylesheet" />
@@ -96,8 +96,31 @@
         });
       })();
     </script>
-	<script src="~/js/searchpage.js?v=26"></script>
+	<script src="~/js/searchpage.js?v=27"></script>
     <script src="~/js/Trips.js?v=14"></script>
+    <script>
+      (function () {
+        var link = document.getElementById('mapBookResultsEntry');
+        if (!link) return;
+        function build() {
+          var o = (document.querySelector('#originstring, input[name="originstring"]') || {}).value
+            || link.getAttribute('data-origin') || '';
+          var d = (document.querySelector('#destinationstring, input[name="destinationstring"]') || {}).value
+            || link.getAttribute('data-dest') || '';
+          o = String(o || '').trim();
+          d = String(d || '').trim();
+          var url = '/Reserve/MapBook';
+          var q = [];
+          if (o) q.push('origin=' + encodeURIComponent(o));
+          if (d) q.push('dest=' + encodeURIComponent(d));
+          if (q.length) url += '?' + q.join('&');
+          link.href = url;
+        }
+        build();
+        document.addEventListener('change', build);
+        document.addEventListener('input', build);
+      })();
+    </script>
 }
 
 
@@ -333,6 +356,20 @@
 	}
 
 	<div class="searchbar card shadow">
+		<div class="book-mode-switch book-mode-switch--searchbar" role="tablist" aria-label="نحوه رزرو">
+			<span class="book-mode-switch__item is-active" role="tab" aria-selected="true">
+				<i class="ti ti-search" aria-hidden="true"></i>
+				جستجوی سریع
+			</span>
+			<a class="book-mode-switch__item" role="tab" aria-selected="false"
+			   href="/Reserve/MapBook"
+			   id="mapBookResultsEntry"
+			   data-origin="@(ViewBag.origin_city_text as string)"
+			   data-dest="@(ViewBag.dest_city_text as string)">
+				<i class="ti ti-map-2" aria-hidden="true"></i>
+				انتخاب روی نقشه
+			</a>
+		</div>
 		<form asp-controller="TaxiTrips" method="get" asp-action="Index" id="tripForm"
 			  class="searchbar-form"
 			  data-initial-origin="@(ViewBag.origin_city_text as string ?? "")"

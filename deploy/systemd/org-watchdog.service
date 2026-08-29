@@ -1,0 +1,9 @@
+[Unit]
+Description=MrShoofer ORG health watchdog (nginx + app recovery)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/org-watchdog.sh
+Nice=10

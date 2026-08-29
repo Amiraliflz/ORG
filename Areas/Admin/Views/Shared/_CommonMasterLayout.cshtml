@@ -35,11 +35,11 @@
 	<!-- Canonical SEO -->
 	<link rel="canonical" href='@productPage'>
 	<!-- Favicon (Chrome uses PNG 32; also /favicon.ico at site root) -->
-	<link rel="icon" href="~/favicon.ico" sizes="48x48" />
-	<link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon/favicon-32x32.png" />
-	<link rel="icon" type="image/png" sizes="16x16" href="~/img/favicon/favicon-16x16.png" />
-	<link rel="icon" type="image/png" sizes="192x192" href="~/img/favicon/favicon-192x192.png" />
-	<link rel="apple-touch-icon" sizes="180x180" href="~/img/favicon/apple-touch-icon.png" />
+	<link rel="icon" href="~/favicon.ico" sizes="48x48" asp-append-version="true" />
+	<link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon/favicon-32x32.png" asp-append-version="true" />
+	<link rel="icon" type="image/png" sizes="16x16" href="~/img/favicon/favicon-16x16.png" asp-append-version="true" />
+	<link rel="icon" type="image/png" sizes="192x192" href="~/img/favicon/favicon-192x192.png" asp-append-version="true" />
+	<link rel="apple-touch-icon" sizes="180x180" href="~/img/favicon/apple-touch-icon.png" asp-append-version="true" />
 
 	<!-- Core Styles -->
 	@await Html.PartialAsync("Sections/_Styles" + ViewData["frontVar"])

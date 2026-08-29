@@ -22,10 +22,11 @@ namespace Application.Areas.AgencyArea
         private readonly CustomerBalanceService _balanceSvc;
         private readonly MrShooferAPIClient _apiClient;
         private readonly ILogger<CustomerController> _logger;
+        private readonly LoyaltyService _loyaltySvc;
 
         public CustomerController(AppDbContext context, UserManager<IdentityUser> userManager,
             IConfiguration configuration, IPaymentService paymentService, CustomerBalanceService balanceSvc,
-            MrShooferAPIClient apiClient, ILogger<CustomerController> logger)
+            MrShooferAPIClient apiClient, ILogger<CustomerController> logger, LoyaltyService loyaltySvc)
         {
             _context = context;
             _userManager = userManager;
@@ -34,6 +35,7 @@ namespace Application.Areas.AgencyArea
             _balanceSvc = balanceSvc;
             _apiClient = apiClient;
             _logger = logger;
+            _loyaltySvc = loyaltySvc;
         }
 
         public async Task<IActionResult> MyTickets()
@@ -134,6 +136,8 @@ namespace Application.Areas.AgencyArea
             ViewBag.Balance = balance;
             ViewBag.TicketCount = ticketCount;
             ViewBag.Profile = profile;
+            if (LoyaltyService.FeatureEnabled)
+                ViewBag.Loyalty = await _loyaltySvc.GetInfoAsync(user.UserName);
             return View();
         }
 
@@ -164,10 +168,16 @@ namespace Application.Areas.AgencyArea
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelTicket(int ticketId, string? reason)
+        public async Task<IActionResult> CancelTicket(int ticketId, string? reason, bool acceptedPolicy = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
+
+            if (!acceptedPolicy)
+            {
+                TempData["Error"] = "برای لغو بلیط باید شرایط کنسلی را بپذیرید";
+                return RedirectToAction(nameof(MyTickets));
+            }
 
             var trimmedReason = (reason ?? string.Empty).Trim();
             if (trimmedReason.Length < 3)

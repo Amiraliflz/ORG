@@ -1,0 +1,28 @@
+{
+  "cities": [
+    {
+      "id": "tehran",
+      "name": "تهران",
+      "province": "تهران",
+      "lat": 35.6892,
+      "lng": 51.389,
+      "radiusKm": 28
+    },
+    {
+      "id": "isfahan",
+      "name": "اصفهان",
+      "province": "اصفهان",
+      "lat": 32.6546,
+      "lng": 51.668,
+      "radiusKm": 22
+    },
+    {
+      "id": "mashhad",
+      "name": "مشهد",
+      "province": "خراسان رضوی",
+      "lat": 36.2605,
+      "lng": 59.6168,
+      "radiusKm": 22
+    }
+  ]
+}

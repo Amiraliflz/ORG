@@ -176,9 +176,13 @@ namespace Application.Areas.Admin.Controllers
             {
                 var recipients = new List<string> { targetPhone.Trim() };
                 await _sms.SendBulk(msg, recipients);
-                code.MaxUses = (code.MaxUses ?? 0) + recipients.Count;
-                await _context.SaveChangesAsync();
-                TempData["Success"] = $"کد «{code.Code}» به {targetPhone} ارسال شد (یک بار قابل استفاده).";
+                if (!code.AllowMultipleUsePerUser)
+                {
+                    code.MaxUses = (code.MaxUses ?? 0) + recipients.Count;
+                    await _context.SaveChangesAsync();
+                }
+                var usageNote = code.AllowMultipleUsePerUser ? "استفاده نامحدود" : "یک بار قابل استفاده";
+                TempData["Success"] = $"کد «{code.Code}» به {targetPhone} ارسال شد ({usageNote}).";
             }
             else if (sendMode == "all")
             {
@@ -186,10 +190,14 @@ namespace Application.Areas.Admin.Controllers
                 if (phones.Count > 0)
                 {
                     await _sms.SendBulk(msg, phones);
-                    code.MaxUses = (code.MaxUses ?? 0) + phones.Count;
-                    await _context.SaveChangesAsync();
+                    if (!code.AllowMultipleUsePerUser)
+                    {
+                        code.MaxUses = (code.MaxUses ?? 0) + phones.Count;
+                        await _context.SaveChangesAsync();
+                    }
                 }
-                TempData["Success"] = $"کد «{code.Code}» برای {phones.Count} مشتری ارسال شد.";
+                var usageNote = code.AllowMultipleUsePerUser ? "استفاده نامحدود" : "هر مشتری یک بار";
+                TempData["Success"] = $"کد «{code.Code}» برای {phones.Count} مشتری ارسال شد ({usageNote}).";
             }
 
             return RedirectToAction(nameof(Index));

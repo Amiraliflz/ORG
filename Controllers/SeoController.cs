@@ -28,6 +28,9 @@ public class SeoController : Controller
           new XElement(ns + "lastmod", ContentStamp)),
         new XElement(ns + "sitemap",
           new XElement(ns + "loc", SeoDefaults.PreferredOrigin + "/sitemap-cities.xml"),
+          new XElement(ns + "lastmod", ContentStamp)),
+        new XElement(ns + "sitemap",
+          new XElement(ns + "loc", SeoDefaults.PreferredOrigin + "/sitemap-guides.xml"),
           new XElement(ns + "lastmod", ContentStamp))
       )
     );
@@ -67,6 +70,16 @@ public class SeoController : Controller
   {
     var urls = CityCatalog.All
       .Select(c => ($"/cities/{c.Slug}", "weekly", "0.75"))
+      .ToArray();
+    return Urlset(urls, includeImage: false);
+  }
+
+  [AcceptVerbs("GET", "HEAD")]
+  [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
+  public IActionResult SitemapGuides()
+  {
+    var urls = RouteCatalog.All
+      .Select(r => ($"/routes/{r.Slug}/guide", r.IsPrimary ? "monthly" : "monthly", r.IsPrimary ? "0.7" : "0.6"))
       .ToArray();
     return Urlset(urls, includeImage: false);
   }

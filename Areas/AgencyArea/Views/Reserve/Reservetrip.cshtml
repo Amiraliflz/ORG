@@ -1222,6 +1222,77 @@
                 اطلاعات خریدار را وارد کنید
             </h1>
 
+            @{
+                var mapO = ViewBag.MapOriginLabel as string;
+                var mapD = ViewBag.MapDestLabel as string;
+            }
+            <div class="mapbook-handoff" id="mapBookHandoff" hidden
+                 data-olabel="@mapO"
+                 data-dlabel="@mapD"
+                 data-olat="@ViewBag.MapOriginLat"
+                 data-olng="@ViewBag.MapOriginLng"
+                 data-dlat="@ViewBag.MapDestLat"
+                 data-dlng="@ViewBag.MapDestLng">
+                <div class="mapbook-handoff__title">
+                    <i class="ti ti-map-pin" aria-hidden="true"></i>
+                    نقاط انتخاب‌شده روی نقشه
+                </div>
+                <ul class="mapbook-handoff__list">
+                    <li id="mapBookHandoffOrigin"></li>
+                    <li id="mapBookHandoffDest"></li>
+                </ul>
+                <p class="mapbook-handoff__hint">پس از پرداخت، همکاران ما با همین آدرس‌ها برای هماهنگی سوار و پیاده شدن تماس می‌گیرند.</p>
+            </div>
+            <style>
+                .mapbook-handoff {
+                    margin: 0.85rem 0 1.1rem;
+                    padding: 0.9rem 1rem;
+                    border-radius: 1rem;
+                    border: 1px solid #dbe4ff;
+                    background: linear-gradient(180deg, #f5f8ff 0%, #eef3ff 100%);
+                }
+                .mapbook-handoff__title {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-weight: 800;
+                    color: #1a56c4;
+                    margin-bottom: 0.45rem;
+                    font-size: 0.95rem;
+                }
+                .mapbook-handoff__list {
+                    margin: 0;
+                    padding: 0 1.1rem 0 0;
+                    color: #29263d;
+                    font-size: 0.88rem;
+                    line-height: 1.7;
+                }
+                .mapbook-handoff__hint {
+                    margin: 0.55rem 0 0;
+                    font-size: 0.78rem;
+                    color: #6f6b7d;
+                    line-height: 1.6;
+                }
+            </style>
+            <script>
+              (function () {
+                var box = document.getElementById('mapBookHandoff');
+                if (!box) return;
+                var data = null;
+                try {
+                  data = JSON.parse(sessionStorage.getItem('mb:handoff') || 'null');
+                } catch (e) { data = null; }
+                var oLabel = (box.getAttribute('data-olabel') || (data && data.oLabel) || '').trim();
+                var dLabel = (box.getAttribute('data-dlabel') || (data && data.dLabel) || '').trim();
+                if (!oLabel && !dLabel) return;
+                var oEl = document.getElementById('mapBookHandoffOrigin');
+                var dEl = document.getElementById('mapBookHandoffDest');
+                if (oEl) oEl.textContent = 'مبدأ: ' + (oLabel || 'نقطه روی نقشه');
+                if (dEl) dEl.textContent = 'مقصد: ' + (dLabel || 'نقطه روی نقشه');
+                box.hidden = false;
+              })();
+            </script>
+
             <div class="info-container">
                 <div class="uppnav d-flex" style="align-items: baseline;">
                     <div class="d-flex justify-between" style="align-items: center;">

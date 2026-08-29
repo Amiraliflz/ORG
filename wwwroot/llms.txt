@@ -27,6 +27,7 @@
 - Routes hub: https://mrshoofer.com/routes
 - Cities hub: https://mrshoofer.com/cities
 - Example route: https://mrshoofer.com/routes/tehran-isfahan
+- Example route guide: https://mrshoofer.com/routes/tehran-isfahan/guide
 - Example city: https://mrshoofer.com/cities/tehran
 - FAQ: https://mrshoofer.com/Home/FAQ
 - Contact: https://mrshoofer.com/Home/ContactUs

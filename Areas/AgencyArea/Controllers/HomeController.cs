@@ -32,6 +32,7 @@ namespace Application.Areas.AgencyArea
     }
 
 
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public async Task<IActionResult> Index(
       [FromServices] IHomepageCatalogCache homepageCatalogCache,
       CancellationToken cancellationToken)

@@ -176,8 +176,12 @@ body.city-picker-open .landing-navbar {
     height: 3.15rem !important;
     padding-block: 0;
     font-size: 1rem;
-    font-weight: 600;
     box-shadow: none;
+  }
+
+  #tripForm .search-submit-btn,
+  #tripForm .searchbar-submit {
+    font-weight: 600;
   }
 
   #tripForm .input-container input.form-control {
@@ -187,6 +191,16 @@ body.city-picker-open .landing-navbar {
     direction: rtl;
     unicode-bidi: isolate;
     border-radius: 0.85rem !important;
+    color: #2a2a2a;
+    font-family: font-regular, "tahoma", sans-serif;
+    font-weight: normal;
+  }
+
+  #tripForm .input-container input.form-control::placeholder {
+    color: #5e5e5e;
+    opacity: 1;
+    font-family: font-regular, "tahoma", sans-serif;
+    font-weight: normal;
   }
 
   #tripForm input.starttimeselector,
@@ -380,6 +394,8 @@ body.city-picker-open .landing-navbar {
     background: var(--brand-bg-muted, #f3f3f3);
     border: 1px solid transparent;
     border-radius: 0.85rem;
+    font-family: font-regular, "tahoma", sans-serif;
+    font-weight: normal;
   }
 
   :is(#tripForm, body > .dropdown-menu[data-city-picker-host]) .city-picker .staredlocations {

@@ -67,6 +67,14 @@
                                 <span class="text-muted" style="font-size:.85rem">
                                     @code.UsedCount / @(code.MaxUses.HasValue ? code.MaxUses.ToString() : "∞")
                                 </span>
+                                @if (code.AllowMultipleUsePerUser)
+                                {
+                                    <div><span class="badge bg-label-success rounded-pill mt-1" style="font-size:.7rem">نامحدود / کاربر</span></div>
+                                }
+                                else
+                                {
+                                    <div><span class="badge bg-label-secondary rounded-pill mt-1" style="font-size:.7rem">یک‌بار / کاربر</span></div>
+                                }
                             </td>
                             <td>
                                 @if (code.IsActive)

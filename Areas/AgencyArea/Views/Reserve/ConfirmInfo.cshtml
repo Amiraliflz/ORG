@@ -1,4 +1,5 @@
 @using Application.Models
+@using Application.Services
 @{
         Layout = "_AgencySideLayout";
     ViewData["title"] = "تایید نهایی";
@@ -11,7 +12,12 @@
 
     bool isCustomer = ViewBag.IsCustomer ?? false;
     decimal customerBalance = ViewBag.CustomerBalance ?? 0m;
-    bool canPayWithBalance = isCustomer && customerBalance >= (decimal)(trip?.afterdiscticketprice ?? int.MaxValue);
+    var loyalty = ViewBag.Loyalty as LoyaltyInfo;
+    var loyaltyPercent = loyalty?.DiscountPercent ?? 0;
+    var priceAfterLoyalty = loyaltyPercent > 0
+        ? LoyaltyService.ApplyTierDiscount(trip.afterdiscticketprice, loyaltyPercent)
+        : trip.afterdiscticketprice;
+    bool canPayWithBalance = isCustomer && customerBalance >= (decimal)priceAfterLoyalty;
 
     Dictionary<int, string> monthName = new Dictionary<int, string>()
     {
@@ -569,6 +575,26 @@
 
             </div>
 
+            @if (loyalty != null && loyalty.TripCount >= 0)
+            {
+                <div class="card rounded-5 p-3 mb-3 d-none d-lg-block" style="border:1.5px solid #e8e4ff;background:#faf9ff">
+                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <div>
+                            <div class="fw-bold"><i class="ti ti-award me-1 text-primary"></i>سطح وفاداری: @loyalty.Tier.PersianName()</div>
+                            <small class="text-muted">@loyalty.TripCount سفر در @loyalty.MonthLabel</small>
+                        </div>
+                        @if (loyalty.DiscountPercent > 0)
+                        {
+                            <span class="badge bg-label-success rounded-pill px-3 py-2">@(loyalty.DiscountPercent)٪ تخفیف فعال</span>
+                        }
+                        else if (loyalty.TripsToNextTier > 0)
+                        {
+                            <span class="badge bg-label-secondary rounded-pill px-3 py-2">@loyalty.TripsToNextTier سفر تا سطح بعد</span>
+                        }
+                    </div>
+                </div>
+            }
+
             <!-- Discount code — PC only card -->
             <div class="card rounded-5 p-3 d-none d-lg-block confirm-discount">
                 <label class="form-label fw-semibold mb-2" style="font-size:.85rem">
@@ -992,7 +1018,39 @@
     }
 
     var _originalPrice = @trip.afterdiscticketprice;
+    var _loyaltyPercent = @loyaltyPercent;
+    var _effectiveBase = @priceAfterLoyalty;
     var _appliedDiscount = 0;
+
+    function formatPrice(n) { return Number(n).toLocaleString('en-US'); }
+
+    function priceWithDiscounts(promoPercent) {
+        var afterPromo = promoPercent > 0 ? Math.round(_originalPrice * (1 - promoPercent / 100)) : _originalPrice;
+        if (_loyaltyPercent > 0) afterPromo = Math.round(afterPromo * (1 - _loyaltyPercent / 100));
+        return afterPromo;
+    }
+
+    function updateDisplayedPrice(finalPrice, promoPercent) {
+        var formatted = formatPrice(finalPrice);
+        var modalPrice = document.getElementById('modal-final-price');
+        if (modalPrice) modalPrice.textContent = formatted;
+        var dp = document.getElementById('desktop-final-price');
+        if (dp) dp.textContent = formatted;
+        var mp = document.getElementById('mobile-final-price');
+        if (mp) mp.textContent = formatted;
+
+        var badge = document.getElementById('modal-discount-badge');
+        if (badge) {
+            var parts = [];
+            if (promoPercent > 0) parts.push(promoPercent + '٪ کد تخفیف');
+            if (_loyaltyPercent > 0) parts.push(_loyaltyPercent + '٪ وفاداری');
+            if (parts.length) { badge.textContent = parts.join(' + ') + ' اعمال شد'; badge.style.display = ''; }
+        }
+    }
+
+    if (_loyaltyPercent > 0) {
+        updateDisplayedPrice(_effectiveBase, 0);
+    }
 
     function applyDiscount(source) {
         var inputId = source === 'desktop' ? 'discount-input-desktop' : 'discount-input-mobile';
@@ -1019,19 +1077,8 @@
                     var el = document.getElementById(id); if (el) el.value = code;
                 });
 
-                // Update modal price display
-                var formatted = Number(data.discountedPrice).toLocaleString('en-US');
-                var modalPrice = document.getElementById('modal-final-price');
-                if (modalPrice) modalPrice.textContent = formatted;
-
-                var badge = document.getElementById('modal-discount-badge');
-                if (badge) { badge.textContent = data.discountPercent + '٪ تخفیف اعمال شد'; badge.style.display = ''; }
-
-                // Update inline price summaries in payment cards
-                var dp = document.getElementById('desktop-final-price');
-                if (dp) dp.textContent = formatted;
-                var mp = document.getElementById('mobile-final-price');
-                if (mp) mp.textContent = formatted;
+                var finalPrice = priceWithDiscounts(data.discountPercent);
+                updateDisplayedPrice(finalPrice, data.discountPercent);
 
                 // Show crossed-out original price now that a discount is active
                 var dop = document.getElementById('desktop-original-price');
@@ -1040,7 +1087,7 @@
                 if (mop) mop.style.display = '';
 
                 // Show success in both message areas
-                var msg = 'کد تخفیف ' + data.discountPercent + '٪ اعمال شد. قیمت نهایی: ' + formatted + ' تومان';
+                var msg = 'کد تخفیف ' + data.discountPercent + '٪ اعمال شد. قیمت نهایی: ' + formatPrice(finalPrice) + ' تومان';
                 ['discount-msg-desktop','discount-msg-mobile'].forEach(function(id){
                     showDiscountMsg(document.getElementById(id), msg, true);
                 });

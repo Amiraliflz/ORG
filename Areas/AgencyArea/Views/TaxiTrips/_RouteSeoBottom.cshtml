@@ -8,6 +8,16 @@
 }
 @if (content is null || route is null) { return; }
 
+@if (ViewBag.IsSeoRouteLanding == true)
+{
+    <p class="route-seo-guide-link mb-3">
+        <a href="/routes/@route.Slug/guide" class="fw-semibold">
+            <i class="ti ti-book-2 me-1" aria-hidden="true"></i>
+            مطالعه راهنمای کامل این مسیر
+        </a>
+    </p>
+}
+
 <section class="route-seo-bottom" id="route-seo" dir="rtl" style="scroll-margin-top: 5.5rem;">
 
     <div class="card route-seo-card shadow-none">

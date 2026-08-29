@@ -79,66 +79,30 @@ namespace Application.Areas.AgencyArea
         return RedirectPermanent("/");
       }
 
-      var allDirections = directionsRepository.GetDirections();
-      var normMap = allDirections.ToDictionary(k => NormalizeCity(k.Key), v => v.Value);
-
       var originKey = NormalizeCity(originstring);
       var destKey = NormalizeCity(destinationstring);
 
       int origin_id = 0, destination_id = 0;
-      
-      // First try static map
-      normMap.TryGetValue(originKey, out origin_id);
-      normMap.TryGetValue(destKey, out destination_id);
-      
-      // If either ID is missing, try the dynamic API map
-      if (origin_id == 0 || destination_id == 0)
+
+      // Resolve and validate the ordered pair from the server-maintained snapshot.
+      // A user search never refetches the full direction catalog from ORS.
+      await _homepageCatalogCache.EnsureDirectionsAsync(HttpContext.RequestAborted);
+      var direction = _homepageCatalogCache.GetAvailableDirections().FirstOrDefault(d =>
+        NormalizeCity(d.Cityone) == originKey &&
+        NormalizeCity(d.Citytwo) == destKey);
+
+      if (direction is not null)
       {
-        try
-        {
-          var dynamicMap = await _mrShooferAPIClient.GetCityNameIdMapAsync();
-          if (origin_id == 0) dynamicMap.TryGetValue(originKey, out origin_id);
-          if (destination_id == 0) dynamicMap.TryGetValue(destKey, out destination_id);
-        }
-        catch { /* ignore SSL/map issues */ }
+        origin_id = direction.CityoneId ?? 0;
+        destination_id = direction.CitytwoId ?? 0;
       }
 
-      // If still missing, try to get direction info directly from the available directions
       if (origin_id == 0 || destination_id == 0)
       {
-        try
-        {
-          var availableDirections = await _mrShooferAPIClient.GetAvaiableOTADirectionsAsync();
-          foreach (var dir in availableDirections)
-          {
-            var dirOriginKey = NormalizeCity(dir.Cityone);
-            var dirDestKey = NormalizeCity(dir.Citytwo);
-            
-            if (origin_id == 0 && dirOriginKey == originKey && dir.CityoneId.HasValue)
-              origin_id = dir.CityoneId.Value;
-            if (origin_id == 0 && dirDestKey == originKey && dir.CitytwoId.HasValue)
-              origin_id = dir.CitytwoId.Value;
-            if (destination_id == 0 && dirOriginKey == destKey && dir.CityoneId.HasValue)
-              destination_id = dir.CityoneId.Value;
-            if (destination_id == 0 && dirDestKey == destKey && dir.CitytwoId.HasValue)
-              destination_id = dir.CitytwoId.Value;
-              
-            if (origin_id != 0 && destination_id != 0) break;
-          }
-        }
-        catch { /* ignore */ }
-      }
-
-      // Generated SEO catalog carries ORS city ids for all bookable ODs
-      if (origin_id == 0)
-        origin_id = CityCatalog.FindCityId(originstring) ?? 0;
-      if (destination_id == 0)
-        destination_id = CityCatalog.FindCityId(destinationstring) ?? 0;
-
-      if (origin_id == 0 || destination_id == 0)
-      {
-        if (origin_id == 0) ModelState.AddModelError(nameof(originstring), $"شهر مبدا نامعتبر است: {originstring}");
-        if (destination_id == 0) ModelState.AddModelError(nameof(destinationstring), $"شهر مقصد نامعتبر است: {destinationstring}");
+        if (direction is null)
+          ModelState.AddModelError(nameof(destinationstring), $"مسیر {originstring} به {destinationstring} در حال حاضر فعال نیست");
+        else
+          ModelState.AddModelError(string.Empty, "شناسه شهرهای این مسیر کامل نیست");
         ViewBag.origin_city_text = originstring;
         ViewBag.dest_city_text = destinationstring;
         ViewBag.searchdate = searchdate;
@@ -213,10 +177,17 @@ namespace Application.Areas.AgencyArea
     [HttpGet]
     [AllowAnonymous]
     [Route("/TaxiTrips/AvailableDirections")]
-    public async Task<IActionResult> AvailableDirection()
+    [ResponseCache(Duration = 120, Location = ResponseCacheLocation.Any, VaryByHeader = "Accept-Encoding")]
+    public async Task<IActionResult> AvailableDirection(CancellationToken cancellationToken)
     {
       try
       {
+        await _homepageCatalogCache.EnsureDirectionsAsync(cancellationToken);
+        var cached = _homepageCatalogCache.GetAvailableDirections();
+        if (cached.Count > 0)
+          return Json(cached);
+
+        // Rare race: warm failed; fall through to live ORS once.
         var dirs = await _mrShooferAPIClient.GetAvaiableOTADirectionsAsync();
         return Json(dirs);
       }
@@ -299,76 +270,34 @@ namespace Application.Areas.AgencyArea
       if (string.IsNullOrWhiteSpace(originstring) || string.IsNullOrWhiteSpace(destinationstring))
         return BadRequest(new { error = "originstring and destinationstring are required." });
 
-      var allDirections = directionsRepository.GetDirections();
-      var normMap = allDirections.ToDictionary(k => NormalizeCity(k.Key), v => v.Value);
       var originKey = NormalizeCity(originstring);
       var destKey = NormalizeCity(destinationstring);
 
-      int origin_id = 0, destination_id = 0;
-      
-      // First try static map
-      normMap.TryGetValue(originKey, out origin_id);
-      normMap.TryGetValue(destKey, out destination_id);
-      
-      // If either ID is missing, try the dynamic API map
+      await _homepageCatalogCache.EnsureDirectionsAsync(HttpContext.RequestAborted);
+      var direction = _homepageCatalogCache.GetAvailableDirections().FirstOrDefault(d =>
+        NormalizeCity(d.Cityone) == originKey &&
+        NormalizeCity(d.Citytwo) == destKey);
+
+      if (direction is null)
+      {
+        var validDestinations = _homepageCatalogCache.GetAvailableDirections()
+          .Where(d => NormalizeCity(d.Cityone) == originKey)
+          .Select(d => d.Citytwo)
+          .Where(city => !string.IsNullOrWhiteSpace(city))
+          .Distinct()
+          .Take(5);
+        return BadRequest(new
+        {
+          error = $"مسیر {originstring} به {destinationstring} در حال حاضر فعال نیست",
+          suggestions = validDestinations
+        });
+      }
+
+      var origin_id = direction.CityoneId ?? 0;
+      var destination_id = direction.CitytwoId ?? 0;
       if (origin_id == 0 || destination_id == 0)
       {
-        try
-        {
-          var dynamicMap = await _mrShooferAPIClient.GetCityNameIdMapAsync();
-          if (origin_id == 0) dynamicMap.TryGetValue(originKey, out origin_id);
-          if (destination_id == 0) dynamicMap.TryGetValue(destKey, out destination_id);
-        }
-        catch (Exception ex)
-        {
-          // Log but continue - we might still have one ID from static map
-          System.Diagnostics.Debug.WriteLine($"Failed to get dynamic city map: {ex.Message}");
-        }
-      }
-
-      // If still missing, try to get direction info directly from the available directions
-      if (origin_id == 0 || destination_id == 0)
-      {
-        try
-        {
-          var availableDirections = await _mrShooferAPIClient.GetAvaiableOTADirectionsAsync();
-          foreach (var dir in availableDirections)
-          {
-            var dirOriginKey = NormalizeCity(dir.Cityone);
-            var dirDestKey = NormalizeCity(dir.Citytwo);
-            
-            if (origin_id == 0 && dirOriginKey == originKey && dir.CityoneId.HasValue)
-              origin_id = dir.CityoneId.Value;
-            if (origin_id == 0 && dirDestKey == originKey && dir.CitytwoId.HasValue)
-              origin_id = dir.CitytwoId.Value;
-            if (destination_id == 0 && dirOriginKey == destKey && dir.CityoneId.HasValue)
-              destination_id = dir.CityoneId.Value;
-            if (destination_id == 0 && dirDestKey == destKey && dir.CitytwoId.HasValue)
-              destination_id = dir.CitytwoId.Value;
-              
-            if (origin_id != 0 && destination_id != 0) break;
-          }
-        }
-        catch (Exception ex)
-        {
-          System.Diagnostics.Debug.WriteLine($"Failed to get available directions for ID lookup: {ex.Message}");
-        }
-      }
-
-      if (origin_id == 0)
-        origin_id = CityCatalog.FindCityId(originstring) ?? 0;
-      if (destination_id == 0)
-        destination_id = CityCatalog.FindCityId(destinationstring) ?? 0;
-
-      if (origin_id == 0)
-      {
-        var suggestions = allDirections.Keys.Where(k => NormalizeCity(k).Contains(originKey)).Take(5);
-        return BadRequest(new { error = $"شهر مبدا نامعتبر است: {originstring}", suggestions });
-      }
-      if (destination_id == 0)
-      {
-        var suggestions = allDirections.Keys.Where(k => NormalizeCity(k).Contains(destKey)).Take(5);
-        return BadRequest(new { error = $"شهر مقصد نامعتبر است: {destinationstring}", suggestions });
+        return StatusCode(503, new { error = "شناسه شهرهای این مسیر کامل نیست" });
       }
 
       PersianDate pd;

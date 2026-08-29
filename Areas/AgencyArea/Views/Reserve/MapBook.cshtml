@@ -1,0 +1,264 @@
+@{
+    Layout = "_FrontLayout";
+    ViewData["Title"] = "رزرو روی نقشه";
+    ViewData["HideFrontFooter"] = true;
+    ViewData["IncludeSiteNav"] = false;
+    ViewData["robots"] = "noindex, nofollow";
+}
+
+@section VendorStyles {
+    <link rel="preconnect" href="https://api.neshan.org" crossorigin />
+    <link rel="preconnect" href="https://static.neshan.org" crossorigin />
+    <link rel="dns-prefetch" href="https://api.neshan.org" />
+    <link rel="preload" href="~/libs/@@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.css" as="style" asp-append-version="true" />
+    <link rel="preload" href="~/libs/@@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.js" as="script" asp-append-version="true" />
+    <link rel="stylesheet" href="~/libs/@@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/jalali-datepicker.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/map-book.css" asp-append-version="true" />
+}
+
+@section VendorScripts {
+    <script src="~/libs/@@neshan-maps-platform/mapbox-gl/dist/NeshanMapboxGl.js" asp-append-version="true"></script>
+    <script src="~/js/map-book.js" asp-append-version="true"></script>
+    <script src="~/vendor/libs/jdate/jdate.min.js" defer asp-append-version="true"></script>
+    <script src="~/js/jalali-datepicker.js" defer asp-append-version="true"></script>
+}
+
+<div id="mapBookApp" class="mapbook"
+     data-cities-url="/data/iran/cities.json"
+     data-zones-url="/data/iran/tehran-restriction-zones.json"
+     data-city-borders-url="/data/iran/city-borders.json"
+     data-carto-key="@ViewData["CartoApiKey"]"
+     data-neshan-web-key="@ViewData["NeshanWebApiKey"]"
+     data-origin="@ViewData["MapBookOrigin"]"
+     data-dest="@ViewData["MapBookDest"]"
+     data-cache-ver="20260829f">
+    <script type="application/json" id="mbCitiesData">@Html.Raw(ViewData["MapBookCitiesJson"] ?? "{}")</script>
+    <script type="application/json" id="mbZonesData">@Html.Raw(ViewData["MapBookZonesJson"] ?? "{}")</script>
+    <script type="application/json" id="mbCityBordersData">@Html.Raw(ViewData["MapBookCityBordersJson"] ?? "{}")</script>
+    <div id="mapBookMap" class="mapbook__map" role="presentation" aria-hidden="true"></div>
+
+    <header class="mapbook__top">
+        <a class="mapbook__back" href="/" aria-label="بازگشت">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <nav class="mapbook__steps" aria-label="مراحل رزرو">
+            <button type="button" class="mapbook__step is-active" data-step="1"><span>۱</span>مبدأ</button>
+            <button type="button" class="mapbook__step" data-step="2" disabled><span>۲</span>مقصد</button>
+            <button type="button" class="mapbook__step" data-step="3" disabled><span>۳</span>خودرو</button>
+            <button type="button" class="mapbook__step" data-step="4" disabled><span>۴</span>زمان</button>
+        </nav>
+    </header>
+
+    <div class="mapbook__float mapbook__float--origin" id="mbOriginBadge" hidden>
+        <span class="mapbook__float-label">مبدأ</span>
+        <span class="mapbook__float-text" id="mbOriginText">—</span>
+        <button type="button" class="mapbook__float-edit" data-edit="origin" aria-label="ویرایش مبدأ">
+            <i class="ti ti-pencil"></i>
+        </button>
+    </div>
+    <div class="mapbook__float mapbook__float--dest" id="mbDestBadge" hidden>
+        <span class="mapbook__float-label">مقصد</span>
+        <span class="mapbook__float-text" id="mbDestText">—</span>
+        <button type="button" class="mapbook__float-edit" data-edit="dest" aria-label="ویرایش مقصد">
+            <i class="ti ti-pencil"></i>
+        </button>
+    </div>
+    <div class="mapbook__eta" id="mbEta" hidden></div>
+
+    <aside class="mapbook__sheet" id="mbSheet" aria-live="polite">
+        <button type="button" class="mapbook__sheet-grab" id="mbSheetHandle" aria-label="باز و بسته کردن پنل" aria-expanded="true">
+            <span class="mapbook__sheet-handle" aria-hidden="true"></span>
+            <span class="mapbook__sheet-grab-hint" id="mbSheetGrabHint">برای دیدن نقشه پایین بکشید</span>
+        </button>
+        <div class="mapbook__sheet-bar">
+            <button type="button" class="mapbook__sheet-back" id="mbSheetBack" hidden>
+                <i class="ti ti-arrow-right"></i>
+                <span id="mbSheetBackLabel">بازگشت</span>
+            </button>
+        </div>
+
+        <div class="mapbook__accordions" id="mbAccordions" aria-label="مراحل رزرو">
+            <section class="mapbook__acc is-open is-active" data-step="1">
+                <button type="button" class="mapbook__acc-head mapbook__side-step is-active" data-step="1" aria-expanded="true">
+                    <span class="mapbook__side-step-num" aria-hidden="true">۱</span>
+                    <span class="mapbook__side-step-text">
+                        <strong>مبدأ</strong>
+                        <em data-acc-hint>انتخاب شهر و نقطه سوار شدن</em>
+                    </span>
+                    <i class="mapbook__acc-chevron ti ti-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="mapbook__acc-body">
+                    <div class="mapbook__acc-body-inner">
+                        <section class="mapbook__panel is-active" data-panel="1">
+                            <h1 class="mapbook__title">مبدأ سفر کجاست؟</h1>
+                            <p class="mapbook__sub">استان یا شهر را انتخاب کنید، سپس نقطه دقیق را روی نقشه بگذارید.</p>
+                            <label class="mapbook__search">
+                                <i class="ti ti-search"></i>
+                                <input type="search" id="mbCitySearch" placeholder="جستجوی شهر یا استان…" autocomplete="off" />
+                            </label>
+                            <div class="mapbook__chip-row" id="mbProvinceChips"></div>
+                            <ul class="mapbook__city-list" id="mbCityList"></ul>
+                            <div class="mapbook__pin-hint" id="mbOriginPinHint" hidden>
+                                <label class="mapbook__search mapbook__place-search">
+                                    <i class="ti ti-map-pin"></i>
+                                    <input type="search" id="mbOriginPlaceSearch" placeholder="محله، خیابان، کوچه…" autocomplete="off" />
+                                </label>
+                                <ul class="mapbook__place-list" id="mbOriginPlaceList" hidden></ul>
+                                <p class="mapbook__pin-address" id="mbOriginAddress">نقشه را جابه‌جا کنید یا آدرس را جستجو کنید.</p>
+                                <button type="button" class="mapbook__btn mapbook__btn--primary" id="mbConfirmOrigin">تأیید مبدأ</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mapbook__acc is-locked" data-step="2">
+                <button type="button" class="mapbook__acc-head mapbook__side-step" data-step="2" disabled aria-expanded="false">
+                    <span class="mapbook__side-step-num" aria-hidden="true">۲</span>
+                    <span class="mapbook__side-step-text">
+                        <strong>مقصد</strong>
+                        <em data-acc-hint>انتخاب شهر و نقطه پیاده شدن</em>
+                    </span>
+                    <i class="mapbook__acc-chevron ti ti-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="mapbook__acc-body">
+                    <div class="mapbook__acc-body-inner">
+                        <section class="mapbook__panel" data-panel="2">
+                            <h1 class="mapbook__title">مقصد کجاست؟</h1>
+                            <p class="mapbook__sub">شهر مقصد را انتخاب کنید و نقطه دقیق را مشخص کنید.</p>
+                            <label class="mapbook__search">
+                                <i class="ti ti-search"></i>
+                                <input type="search" id="mbDestSearch" placeholder="جستجوی مقصد…" autocomplete="off" />
+                            </label>
+                            <ul class="mapbook__city-list" id="mbDestList"></ul>
+                            <div class="mapbook__pin-hint" id="mbDestPinHint" hidden>
+                                <label class="mapbook__search mapbook__place-search">
+                                    <i class="ti ti-map-pin"></i>
+                                    <input type="search" id="mbDestPlaceSearch" placeholder="محله، خیابان، کوچه…" autocomplete="off" />
+                                </label>
+                                <ul class="mapbook__place-list" id="mbDestPlaceList" hidden></ul>
+                                <p class="mapbook__pin-address" id="mbDestAddress">نقطه مقصد را تنظیم کنید یا آدرس را جستجو کنید.</p>
+                                <button type="button" class="mapbook__btn mapbook__btn--primary" id="mbConfirmDest">تأیید مقصد و نمایش مسیر</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mapbook__acc is-locked" data-step="3">
+                <button type="button" class="mapbook__acc-head mapbook__side-step" data-step="3" disabled aria-expanded="false">
+                    <span class="mapbook__side-step-num" aria-hidden="true">۳</span>
+                    <span class="mapbook__side-step-text">
+                        <strong>خودرو</strong>
+                        <em data-acc-hint>انتخاب کلاس خودرو</em>
+                    </span>
+                    <i class="mapbook__acc-chevron ti ti-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="mapbook__acc-body">
+                    <div class="mapbook__acc-body-inner">
+                        <section class="mapbook__panel" data-panel="3">
+                            <h1 class="mapbook__title">کلاس خودرو</h1>
+                            <p class="mapbook__sub">کلاس موردنظر را انتخاب کنید.</p>
+                            <div class="mapbook__cars" id="mbCarClasses" role="listbox" aria-label="کلاس خودرو">
+                                <button type="button" class="mapbook__car mapbook__car--soon" data-class="van" role="option" aria-selected="false" aria-disabled="true" disabled>
+                                    <span class="mapbook__car-media">
+                                        <img src="/img/car-classes/van.jpg" alt="" width="220" height="160" loading="lazy" />
+                                    </span>
+                                    <span class="mapbook__car-meta">
+                                        <strong>ون</strong>
+                                        <span>هایس، H350 و …</span>
+                                        <em class="mapbook__car-soon-badge">به‌زودی</em>
+                                    </span>
+                                </button>
+                                <button type="button" class="mapbook__car" data-class="eco" role="option" aria-selected="false">
+                                    <span class="mapbook__car-media">
+                                        <img src="/img/car-classes/eco.jpg" alt="" width="220" height="160" loading="lazy" />
+                                    </span>
+                                    <span class="mapbook__car-meta">
+                                        <strong>اکونومی</strong>
+                                        <span>سمند و سمند سورن</span>
+                                        <em class="mapbook__car-price" data-price-for="eco" hidden></em>
+                                    </span>
+                                </button>
+                                <button type="button" class="mapbook__car" data-class="vip" role="option" aria-selected="false">
+                                    <span class="mapbook__car-media">
+                                        <img src="/img/car-classes/vip.jpg" alt="" width="220" height="160" loading="lazy" />
+                                    </span>
+                                    <span class="mapbook__car-meta">
+                                        <strong>VIP</strong>
+                                        <span>اکسنت، جیلی و آریو</span>
+                                        <em class="mapbook__car-price" data-price-for="vip" hidden></em>
+                                    </span>
+                                </button>
+                                <button type="button" class="mapbook__car" data-class="tashrifat" role="option" aria-selected="false">
+                                    <span class="mapbook__car-media">
+                                        <img src="/img/car-classes/tashrifat.jpg" alt="" width="220" height="160" loading="lazy" />
+                                    </span>
+                                    <span class="mapbook__car-meta">
+                                        <strong>تشریفات</strong>
+                                        <span>کمری، سوناتا و سفران</span>
+                                        <em class="mapbook__car-price" data-price-for="tashrifat" hidden></em>
+                                    </span>
+                                </button>
+                            </div>
+                            <button type="button" class="mapbook__btn mapbook__btn--primary" id="mbConfirmCar" disabled>ادامه</button>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mapbook__acc is-locked" data-step="4">
+                <button type="button" class="mapbook__acc-head mapbook__side-step" data-step="4" disabled aria-expanded="false">
+                    <span class="mapbook__side-step-num" aria-hidden="true">۴</span>
+                    <span class="mapbook__side-step-text">
+                        <strong>زمان</strong>
+                        <em data-acc-hint>انتخاب تاریخ و ساعت حرکت</em>
+                    </span>
+                    <i class="mapbook__acc-chevron ti ti-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="mapbook__acc-body">
+                    <div class="mapbook__acc-body-inner">
+                        <section class="mapbook__panel" data-panel="4">
+                            <h1 class="mapbook__title">زمان حرکت</h1>
+                            <p class="mapbook__sub">یک ساعت حرکت را از برنامه‌های فعال انتخاب کنید.</p>
+
+                            <div class="mapbook__date-scroll" id="mbDateStrip" role="listbox" aria-label="تاریخ سفر"></div>
+
+                            <div class="mapbook__trip-scroll-wrap">
+                                <div class="mapbook__trip-scroll" id="mbTimeSlots" role="listbox" aria-label="برنامه‌های سفر">
+                                    <p class="mapbook__empty">در حال بارگذاری برنامه‌ها…</p>
+                                </div>
+                            </div>
+
+                            <div class="mapbook__selected-trip" id="mbSelectedTrip" hidden>
+                                <div>
+                                    <strong id="mbSelectedTime">—</strong>
+                                    <span id="mbSelectedMeta"></span>
+                                </div>
+                                <span id="mbSelectedPrice" class="mapbook__selected-price"></span>
+                            </div>
+
+                            <button type="button" class="mapbook__btn mapbook__btn--primary" id="mbContinueReserve" disabled>
+                                ادامه رزرو
+                            </button>
+                        </section>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </aside>
+
+    <div class="mapbook__center-pin" id="mbCenterPin" hidden>
+        <div class="mapbook__pin-callout" id="mbPinCallout" hidden>
+            <span class="mapbook__pin-callout-title" id="mbPinCalloutTitle">در حال یافتن آدرس…</span>
+            <span class="mapbook__pin-callout-sub" id="mbPinCalloutSub"></span>
+            <div class="mapbook__zone-chips" id="mbPinZones" hidden>
+                <span class="mapbook__zone-chip" id="mbZoneTraffic" hidden></span>
+                <span class="mapbook__zone-chip" id="mbZoneOddEven" hidden></span>
+            </div>
+        </div>
+        <span class="mapbook__center-pin-dot"></span>
+        <span class="mapbook__center-pin-stem"></span>
+    </div>
+</div>

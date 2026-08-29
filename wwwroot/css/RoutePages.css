@@ -1159,3 +1159,65 @@
   line-height: 1.8;
   letter-spacing: 0;
 }
+
+/* Content-only route guide (/routes/{slug}/guide) */
+.route-guide {
+  --route-stack-gap: 0.75rem;
+  padding-bottom: 3rem;
+}
+
+.route-guide .route-detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--route-stack-gap);
+}
+
+.route-guide-header {
+  margin-bottom: 0;
+}
+
+.route-guide-title {
+  font-family: font-bold, "tahoma", sans-serif;
+  font-weight: normal;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  color: var(--rh-ink, #000);
+  margin-bottom: 0.5rem;
+}
+
+.route-guide-lead {
+  color: var(--rh-muted, #5e5e5e);
+  font-size: 1rem;
+  line-height: 1.85;
+  max-width: 42rem;
+  margin-bottom: 1rem;
+}
+
+.route-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.route-seo-guide-link a {
+  color: var(--brand-ink, #000);
+  text-decoration: none;
+}
+
+.route-seo-guide-link a:hover {
+  text-decoration: underline;
+}
+
+.route-guide .route-seo-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--route-stack-gap);
+  margin-top: 0;
+}
+
+.route-guide .route-seo-expand {
+  margin-top: 0 !important;
+}
+
+.route-guide .route-seo-h1 {
+  font-size: 1.15rem;
+}

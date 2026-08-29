@@ -3,6 +3,7 @@
 
 	string? currentPage = ViewContext.HttpContext.Request.Path;
 	string? partnerBrand = Context.Request.Cookies["partner_brand"];
+	var isAuthenticated = User.Identity?.IsAuthenticated == true;
 }
 
 @{
@@ -27,9 +28,9 @@
 
 		.navbar.landing-navbar {
 			padding-inline: 0.75rem !important;
-			padding-block: 0.45rem !important;
+			padding-block: 0.22rem !important;
 			margin-inline: 0.75rem;
-			border-radius: 1rem;
+			border-radius: 1.35rem;
 		}
 
 		.landing-navbar .navbar-brand {
@@ -40,6 +41,27 @@
 			display: none !important;
 		}
 	}
+
+	.landing-nav-row {
+		--landing-nav-gap: 0.625rem;
+		gap: var(--landing-nav-gap) !important;
+	}
+
+	.landing-nav-row > .nav-item {
+		margin: 0;
+	}
+
+	@@media (min-width: 992px) {
+		.landing-nav-menu--guest {
+			flex-grow: 1;
+			justify-content: center;
+		}
+	}
+
+	/* Prevent contact/profile dropdown flash before front-palette.css loads */
+	.landing-navbar .landing-nav-dropdown-menu:not(.show) {
+		display: none !important;
+	}
 </style>
 
 <!-- Navbar: Start -->
@@ -47,14 +69,16 @@
 	<div class="container">
 		<div class="navbar navbar-expand-lg landing-navbar px-md-3 shadow p-0 px-1 p-md-2 " style="background:rgba(255, 255, 255, 1 );">
 			<!-- Menu logo wrapper: Start -->
-			<div class="navbar-brand app-brand demo d-flex py-0 py-lg-2 me-4">
+			<div class="navbar-brand app-brand demo d-flex align-items-center py-0 me-4">
 				<!-- Mobile menu toggle: Start-->
 				<button class="navbar-toggler border-0 px-0 me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<i class="ti ti-menu-2 ti-sm align-middle"></i>
 				</button>
 				<!-- Mobile menu toggle: End-->
 				<a asp-controller="Home" asp-action="Index" class="app-brand-link d-flex align-items-center gap-2">
-					<img src="~/logo_full_b.webp" width="151" height="34" alt="مستر شوفر" decoding="async" />
+					<span class="landing-brand-stack">
+						<img src="~/logo_full_b.webp" width="151" height="34" alt="مستر شوفر" decoding="async" />
+					</span>
 					@if (partner.Src != null)
 					{
 						<span style="width:1px;height:28px;background:#ddd;display:inline-block;margin:0 4px"></span>
@@ -64,67 +88,64 @@
 			</div>
 			<!-- Menu logo wrapper: End -->
 			<!-- Menu wrapper: Start -->
-			<div class="collapse navbar-collapse landing-nav-menu" id="navbarSupportedContent">
-				<button class="navbar-toggler border-0 text-heading position-absolute end-0 top-0 scaleX-n1-rtl" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-					<i class="ti ti-x ti-sm"></i>
-				</button>
-				<ul class="navbar-nav me-auto p-3 p-lg-0 align-items-center gap-1">
+			<div class="collapse navbar-collapse landing-nav-menu @(isAuthenticated ? "landing-nav-menu--auth" : "landing-nav-menu--guest") d-lg-flex align-items-lg-center flex-lg-grow-1" id="navbarSupportedContent">
+				<div class="landing-nav-drawer">
+					<div class="landing-nav-drawer__head d-lg-none">
+						<span class="landing-nav-drawer__title">
+							<i class="ti ti-menu-2" aria-hidden="true"></i>
+							<span>منو</span>
+						</span>
+						<button type="button"
+								class="landing-nav-drawer__close"
+								data-bs-toggle="collapse"
+								data-bs-target="#navbarSupportedContent"
+								aria-controls="navbarSupportedContent"
+								aria-label="بستن">
+							<i class="ti ti-x" aria-hidden="true"></i>
+						</button>
+					</div>
 
-					<li class="nav-item">
-						<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Home" asp-action="Index">
-							<span>
-								<i class="ti ti-ticket"></i>
-								سفر جدید
-							</span>
-						</a>
-					</li>
+					<div class="landing-nav-drawer__body">
+						@if (isAuthenticated)
+						{
+							<ul class="navbar-nav landing-nav-row me-auto p-3 p-lg-0 align-items-center flex-wrap">
+								<li class="nav-item">
+									<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Home" asp-action="Index">
+										<span>
+											<i class="ti ti-ticket"></i>
+											سفر جدید
+										</span>
+									</a>
+								</li>
 
-					<li class="nav-item">
-						@if (User.HasClaim("Role", "Customer"))
-						{
-							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile">
-								<span><i class="ti ti-user-circle"></i> پروفایل من</span>
-							</a>
-						}
-						else if (User.Identity?.IsAuthenticated == true)
-						{
-							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index">
-								<span><i class="ti ti-home"></i> پروفایل من</span>
-							</a>
+								<li class="nav-item">
+									@if (User.HasClaim("Role", "Customer"))
+									{
+										<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
+											<span><i class="ti ti-ticket"></i> سفرهای من</span>
+										</a>
+									}
+									else
+									{
+										<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
+											<span><i class="ti ti-certificate-2"></i> سفرهای من</span>
+										</a>
+									}
+								</li>
+
+								<partial name="Sections/_SiteNavLinks" />
+							</ul>
 						}
 						else
 						{
-							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Auth" asp-action="CustomerLogin" rel="nofollow">
-								<span><i class="ti ti-user-circle"></i> پروفایل من</span>
-							</a>
+							<ul class="navbar-nav landing-nav-row p-3 p-lg-0 align-items-center">
+								<partial name="Sections/_SiteNavLinks" />
+							</ul>
 						}
-					</li>
-
-					<li class="nav-item">
-						@if (User.HasClaim("Role", "Customer"))
-						{
-							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
-								<span><i class="ti ti-ticket"></i> سفرهای من</span>
-							</a>
-						}
-						else
-						{
-							<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
-								<span><i class="ti ti-certificate-2"></i> سفرهای من</span>
-							</a>
-						}
-					</li>
-					<li class="nav-item">
-						<a class="fw-medium btn btn-sm btn-primary navbar-nav-btn" asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs">
-							<span>
-								<i class="ti ti-heart-handshake"></i>
-								پشتیبانی 24/7
-							</span>
-						</a>
-					</li>
-				</ul>
+					</div>
+				</div>
 			</div>
-			<div class="landing-menu-overlay d-lg-none"></div>
+			<div class="landing-menu-overlay d-lg-none" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-hidden="true"></div>
 			<!-- Menu wrapper: End -->
 			<!-- Toolbar: Start -->
 			<ul class="navbar-nav flex-row align-items-center ms-auto">
@@ -161,67 +182,40 @@
 
 						{
 						<li class="nav-item navbar-dropdown dropdown-user dropdown">
-							<a class="nav-link dropdown-toggle hide-arrow show" data-bs-toggle="dropdown" href="javascript:void(0);" aria-expanded="true">
+							<a class="nav-link dropdown-toggle hide-arrow" data-bs-toggle="dropdown" href="javascript:void(0);" aria-expanded="false">
 								<span class="navbar-user-avatar">
 								<i class="ti ti-user" style="color:#fff;font-size:1.1rem;"></i>
 							</span>
 							</a>
-							<ul class="dropdown-menu dropdown-menu-end" data-bs-popper="static">
+							<ul class="dropdown-menu dropdown-menu-end landing-nav-dropdown-menu">
 
 								@if (User.HasClaim("Role", "Customer"))
 								{
 									<li>
-										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyProfile">
-											<i class="ti ti-user-check me-2 ti-sm"></i>
-											<span class="align-middle">پروفایل من</span>
+										<a class="dropdown-item navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
+											<span><i class="ti ti-ticket"></i> سفرهای من</span>
 										</a>
 									</li>
 									<li>
-										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyTickets">
-											<i class="ti ti-ticket me-2 ti-sm"></i>
-											<span class="align-middle">سفرهای من</span>
-										</a>
-									</li>
-									<li>
-										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyWallet">
-											<i class="ti ti-wallet me-2 ti-sm"></i>
-											<span class="align-middle">کیف پول</span>
+										<a class="dropdown-item navbar-nav-btn" asp-area="AgencyArea" asp-controller="Customer" asp-action="MyWallet">
+											<span><i class="ti ti-wallet"></i> کیف پول</span>
 										</a>
 									</li>
 								}
 								else
 								{
 									<li>
-										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Agency" asp-action="Index">
-											<i class="ti ti-user-check me-2 ti-sm"></i>
-											<span class="align-middle">پروفایل من</span>
-										</a>
-									</li>
-									<li>
-										<a class="dropdown-item" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
-											<i class="ti ti-ticket me-2 ti-sm"></i>
-											<span class="align-middle">سفرهای من</span>
+										<a class="dropdown-item navbar-nav-btn" asp-area="AgencyArea" asp-controller="TicketInfo" asp-action="Index">
+											<span><i class="ti ti-ticket"></i> سفرهای من</span>
 										</a>
 									</li>
 								}
 
-								<li><div class="dropdown-divider"></div></li>
-
-								<li>
-									<a class="dropdown-item" asp-area="AgencyArea" asp-controller="Home" asp-action="ContactUs">
-										<i class="ti ti-heart-handshake me-2 ti-sm"></i>
-										<span class="align-middle">پشتیبانی 24/7</span>
-									</a>
-								</li>
-
-								<li><div class="dropdown-divider"></div></li>
-
-								<li>
-									<form asp-area="" asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+								<li class="landing-nav-dropdown-footer">
+									<form asp-area="" asp-controller="Auth" asp-action="Logout" method="post" class="w-100 m-0">
 										@Html.AntiForgeryToken()
-										<button type="submit" class="dropdown-item">
-											<i class="ti ti-logout me-2 ti-sm"></i>
-											<span class="align-middle text-danger">خروج از حساب</span>
+										<button type="submit" class="navbar-nav-btn navbar-nav-btn--danger w-100">
+											<span><i class="ti ti-logout"></i> خروج از حساب</span>
 										</button>
 									</form>
 								</li>

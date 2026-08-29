@@ -93,5 +93,8 @@ class OpsSession(context: Context) {
 
         fun normalize(raw: String): String =
             raw.trim().trimEnd('/').let { if (it.startsWith("http")) it else "http://$it" }
+
+        /** Public bases that expose the always-on /ops-agent/ (nginx → :15057). */
+        fun agentBases(): List<String> = listOf(VPS, "https://www.mrshoofer.com").map { normalize(it) }
     }
 }

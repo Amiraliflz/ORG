@@ -58,3 +58,5 @@ Disallow: /
 
 # Sitemap index (child sitemaps linked inside)
 Sitemap: https://mrshoofer.com/sitemap.xml
+# Submit on GSC .ir property during domain migration (served on .ir without redirect)
+Sitemap: https://mrshoofer.ir/sitemap.xml

@@ -1,0 +1,23 @@
+[Unit]
+Description=MrShoofer Ops Agent (hard-down restart)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/org-ops-agent
+ExecStart=/usr/bin/python3 /opt/org-ops-agent/ops_agent.py
+Restart=always
+RestartSec=2
+Environment=OPS_AGENT_HOST=127.0.0.1
+Environment=OPS_AGENT_PORT=15057
+Environment=OPS_MOBILE_TOKEN_SECRET=mrshoofer-ops-mobile-2026-stable
+Environment=OPS_RESTART_SCRIPT=/usr/local/bin/org-ops-restart.sh
+# Keep agent up even if the web app is gone
+User=root
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=org-ops-agent
+
+[Install]
+WantedBy=multi-user.target

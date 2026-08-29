@@ -14,9 +14,18 @@
   ];
   var WEEKDAYS = ['ش','ی','د','س','چ','پ','ج'];
   var DAYS_IN_MONTH = [31,31,31,31,31,31,30,30,30,30,30,29];
-  var MONTHS_AHEAD = 2;
+  var MONTHS_VISIBLE = 2;
+  var MAX_MONTHS_AHEAD = 12;
 
   var JD = root.JDate || root.Date;
+
+  function addMonths(y, m, offset) {
+    var total = y * 12 + m + offset;
+    var ny = Math.floor(total / 12);
+    var nm = total % 12;
+    if (nm < 0) { nm += 12; ny -= 1; }
+    return { y: ny, m: nm };
+  }
 
   function toJalali(d) {
     var j = new JD(d instanceof JD ? +d : d);
@@ -77,6 +86,7 @@
       this.minDate = today;
     }
     this.today = today;
+    this.viewOffset = 0;
 
     this._buildDOM();
     this._bindEvents();
@@ -90,8 +100,26 @@
     var topbar = el('div', 'jdp-topbar');
     this.closeBtn = el('button', 'jdp-close-btn', '✕');
     this.closeBtn.type = 'button';
-    var title = el('span', 'jdp-topbar-title', 'انتخاب تاریخ سفر');
-    topbar.appendChild(title);
+    this.closeBtn.setAttribute('aria-label', 'بستن');
+
+    var nav = el('div', 'jdp-topbar-nav');
+    this.prevBtn = el('button', 'jdp-nav-btn jdp-nav-prev');
+    this.prevBtn.type = 'button';
+    this.prevBtn.setAttribute('aria-label', 'ماه‌های قبل');
+    this.prevBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m10 6-1.41 1.41L13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+
+    this.nextBtn = el('button', 'jdp-nav-btn jdp-nav-next');
+    this.nextBtn.type = 'button';
+    this.nextBtn.setAttribute('aria-label', 'ماه‌های بعد');
+    this.nextBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+
+    this.rangeLabel = el('span', 'jdp-topbar-title', 'انتخاب تاریخ سفر');
+
+    nav.appendChild(this.prevBtn);
+    nav.appendChild(this.rangeLabel);
+    nav.appendChild(this.nextBtn);
+
+    topbar.appendChild(nav);
     topbar.appendChild(this.closeBtn);
     this.container.appendChild(topbar);
 
@@ -112,17 +140,41 @@
     document.body.appendChild(this.container);
   };
 
+  JalaliDatepicker.prototype._monthRangeLabel = function () {
+    var first = addMonths(this.today.y, this.today.m, this.viewOffset);
+    var last = addMonths(first.y, first.m, MONTHS_VISIBLE - 1);
+    if (first.y === last.y && first.m === last.m) {
+      return MONTHS[first.m] + ' ' + first.y;
+    }
+    if (first.y === last.y) {
+      return MONTHS[first.m] + ' – ' + MONTHS[last.m] + ' ' + first.y;
+    }
+    return MONTHS[first.m] + ' ' + first.y + ' – ' + MONTHS[last.m] + ' ' + last.y;
+  };
+
+  JalaliDatepicker.prototype._updateNav = function () {
+    this.prevBtn.disabled = this.viewOffset <= 0;
+    this.nextBtn.disabled = this.viewOffset >= MAX_MONTHS_AHEAD - (MONTHS_VISIBLE - 1);
+    this.rangeLabel.textContent = this._monthRangeLabel();
+  };
+
   JalaliDatepicker.prototype._renderMonths = function () {
     this.body.innerHTML = '';
-    var startY = this.today.y;
-    var startM = this.today.m;
 
-    for (var i = 0; i < MONTHS_AHEAD; i++) {
-      var m = startM + i;
-      var y = startY + Math.floor(m / 12);
-      m = m % 12;
-      this._renderMonth(y, m);
+    for (var i = 0; i < MONTHS_VISIBLE; i++) {
+      var slot = addMonths(this.today.y, this.today.m, this.viewOffset + i);
+      this._renderMonth(slot.y, slot.m);
     }
+
+    this._updateNav();
+  };
+
+  JalaliDatepicker.prototype._shiftView = function (delta) {
+    var next = this.viewOffset + delta;
+    var maxOffset = MAX_MONTHS_AHEAD - (MONTHS_VISIBLE - 1);
+    if (next < 0 || next > maxOffset) return;
+    this.viewOffset = next;
+    this._renderMonths();
   };
 
   JalaliDatepicker.prototype._renderMonth = function (y, m) {
@@ -194,6 +246,8 @@
 
     this.overlay.addEventListener('click', function () { self.close(); });
     this.closeBtn.addEventListener('click', function () { self.close(); });
+    this.prevBtn.addEventListener('click', function () { self._shiftView(-1); });
+    this.nextBtn.addEventListener('click', function () { self._shiftView(1); });
 
     this.body.addEventListener('click', function (e) {
       var btn = e.target.closest('.jdp-day');
@@ -230,16 +284,12 @@
   };
 
   JalaliDatepicker.prototype.open = function () {
+    this.viewOffset = 0;
+    this._renderMonths();
     this.overlay.classList.add('jdp-open');
     this.container.classList.add('jdp-open');
     document.body.style.overflow = 'hidden';
-
-    // scroll to today's month
-    var todayEl = this.body.querySelector('.jdp-today');
-    if (todayEl) {
-      var month = todayEl.closest('.jdp-month');
-      if (month) month.scrollIntoView({ block: 'start' });
-    }
+    this.body.scrollTop = 0;
   };
 
   JalaliDatepicker.prototype.close = function () {

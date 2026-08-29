@@ -153,19 +153,22 @@ class MonitorActivity : Activity() {
 
     private fun confirmRestart() {
         AlertDialog.Builder(this)
-            .setTitle("راه‌اندازی مجدد وب‌اپ")
-            .setMessage("فقط سرویس اپلیکیشن مسترشوفر ری‌استارت می‌شود — نه کل ماشین. ادامه؟")
-            .setPositiveButton("بله، ری‌استارت اپ") { _, _ -> doRestart() }
+            .setTitle("راه‌اندازی / ری‌استارت وب‌اپ")
+            .setMessage(
+                "اگر وب‌اپ بالا باشد، soft-restart می‌شود. " +
+                    "اگر کاملاً قطع باشد، از Ops Agent روی سرور بالا می‌آید (مثل SSH). ادامه؟"
+            )
+            .setPositiveButton("بله، اجرا") { _, _ -> doRestart() }
             .setNegativeButton("انصراف", null)
             .show()
     }
 
     private fun doRestart() {
         restarting = true
-        setBusy(true, "در حال ری‌استارت وب‌اپ…")
-        showMessage("دستور ری‌استارت وب‌اپ ارسال شد…")
+        setBusy(true, "در حال راه‌اندازی…")
+        showMessage("در حال ارسال دستور (وب‌اپ یا Ops Agent)…")
         scope.launch {
-            val result = withContext(Dispatchers.IO) { api.restart() }
+            val result = withContext(Dispatchers.IO) { api.restartOrStart() }
             result.onSuccess { msg ->
                 showMessage(msg)
                 pollUntilHealthy()
@@ -251,6 +254,7 @@ class MonitorActivity : Activity() {
             result.onSuccess {
                 updateEndpointLabel()
                 render(it)
+                restartBtn.text = if (it.isHealthy) "راه‌اندازی مجدد وب‌اپ" else "راه‌اندازی وب‌اپ"
             }.onFailure {
                 if (it.message?.contains("نشست") == true && session.password.isBlank()) {
                     goLogin()
@@ -260,6 +264,13 @@ class MonitorActivity : Activity() {
                     statusPill.setTextColor(resources.getColor(R.color.ink, null))
                     statusPill.setBackgroundResource(R.drawable.bg_pill_down)
                     heroDot.setBackgroundResource(R.drawable.bg_dot_down)
+                    val agentOk = withContext(Dispatchers.IO) { api.agentReachable() }
+                    restartBtn.text = "راه‌اندازی وب‌اپ"
+                    if (agentOk) {
+                        showMessage("وب‌اپ قطع است — Ops Agent آماده است؛ دکمه راه‌اندازی را بزنید")
+                    } else {
+                        showMessage(it.message ?: "قطع ارتباط")
+                    }
                     Toast.makeText(this@MonitorActivity, it.message, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -288,7 +299,7 @@ class MonitorActivity : Activity() {
             row.findViewById<TextView>(R.id.componentName).text = c.label
             row.findViewById<TextView>(R.id.componentDetail).text = buildString {
                 append(if (c.isHealthy) "سالم" else "ناپایدار")
-                c.details?.let { append(" · "); append(it) }
+                c.details?.takeIf { it.isNotBlank() && it != "null" }?.let { append(" · "); append(it) }
                 c.responseMs?.let { append(" · "); append("${it}ms") }
             }
             row.findViewById<View>(R.id.componentDot)

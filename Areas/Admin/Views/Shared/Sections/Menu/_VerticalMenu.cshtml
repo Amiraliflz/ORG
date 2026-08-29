@@ -55,12 +55,15 @@
                 <div>کدهای تخفیف</div>
             </a>
         </li>
+        @if (LoyaltyService.FeatureEnabled)
+        {
         <li class='menu-item@(currentPage.StartsWith("/Admin/Loyalty") ? " active" : "")'>
             <a asp-controller="Loyalty" asp-area="Admin" asp-action="Index" class="menu-link">
                 <i class="ti ti-award menu-icon tf-icons"></i>
                 <div>وفاداری</div>
             </a>
         </li>
+        }
         <li class='menu-item@(currentPage.StartsWith("/Admin/Ops") ? " active open" : "")'>
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="ti ti-activity menu-icon tf-icons"></i>

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using Application.Models;
@@ -33,6 +34,10 @@ namespace Application.Areas.AgencyArea
     private readonly ILogger<ReserveController> _logger;
     private readonly TicketIssuer _ticketIssuer;
     private readonly CustomerBalanceService _balanceSvc;
+    private readonly LoyaltyService _loyaltySvc;
+    private readonly IWebHostEnvironment _env;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly Application.Services.Neshan.NeshanApiClient _neshan;
     private Agency agency;
 
 
@@ -45,7 +50,11 @@ namespace Application.Areas.AgencyArea
       IPaymentService paymentService,
       ILogger<ReserveController> logger,
       TicketIssuer ticketIssuer,
-      CustomerBalanceService balanceSvc)
+      CustomerBalanceService balanceSvc,
+      LoyaltyService loyaltySvc,
+      IWebHostEnvironment env,
+      IHttpClientFactory httpClientFactory,
+      Application.Services.Neshan.NeshanApiClient neshan)
     {
       this.configuration = configuration;
       customerSmsSender = smssender;
@@ -56,6 +65,10 @@ namespace Application.Areas.AgencyArea
       _logger = logger;
       _ticketIssuer = ticketIssuer;
       _balanceSvc = balanceSvc;
+      _loyaltySvc = loyaltySvc;
+      _env = env;
+      _httpClientFactory = httpClientFactory;
+      _neshan = neshan;
 
       // Ensure guest agency exists when controller is initialized
       EnsureGuestAgencyExistsAsync().Wait();
@@ -64,6 +77,325 @@ namespace Application.Areas.AgencyArea
     public IActionResult Index()
     {
       return View();
+    }
+
+    /// <summary>
+    /// Dev-only Snapp-style map booking UX. Not served outside Development.
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/MapBook")]
+    public IActionResult MapBook()
+    {
+      ViewData["Title"] = "رزرو روی نقشه";
+      ViewData["HideFrontFooter"] = true;
+      ViewData["IncludeSiteNav"] = false;
+      // Soft-launch: keep out of sitemap/index until funnel is proven
+      ViewData["robots"] = "noindex, nofollow";
+      ViewData["CartoApiKey"] = configuration["Carto:ApiKey"] ?? "";
+      ViewData["NeshanWebApiKey"] = configuration["Neshan:WebApiKey"] ?? "";
+      ViewData["MapBookCitiesJson"] = ReadWwwrootJson("data/iran/cities.json");
+      ViewData["MapBookZonesJson"] = ReadWwwrootJson("data/iran/tehran-restriction-zones.json");
+      ViewData["MapBookCityBordersJson"] = ReadWwwrootJson("data/iran/city-borders.json");
+      ViewData["MapBookOrigin"] = (Request.Query["origin"].FirstOrDefault()
+        ?? Request.Query["originstring"].FirstOrDefault() ?? "").Trim();
+      ViewData["MapBookDest"] = (Request.Query["dest"].FirstOrDefault()
+        ?? Request.Query["destination"].FirstOrDefault()
+        ?? Request.Query["destinationstring"].FirstOrDefault() ?? "").Trim();
+      return View();
+    }
+
+    private static readonly ConcurrentDictionary<string, string> WwwrootJsonCache = new(StringComparer.Ordinal);
+
+    private string ReadWwwrootJson(string relativePath)
+    {
+      return WwwrootJsonCache.GetOrAdd(relativePath, rel =>
+      {
+        var full = Path.Combine(_env.WebRootPath, rel.Replace('/', Path.DirectorySeparatorChar));
+        return System.IO.File.Exists(full)
+          ? System.IO.File.ReadAllText(full)
+          : "{}";
+      });
+    }
+
+    /// <summary>
+    /// MapBook routing: Neshan road geometry first, then local/public OSRM, then curve fallback.
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/OsrmRoute")]
+    public async Task<IActionResult> OsrmRoute(
+      double oLat, double oLng, double dLat, double dLng,
+      CancellationToken cancellationToken)
+    {
+      if (!IsValidLatLng(oLat, oLng) || !IsValidLatLng(dLat, dLng))
+        return BadRequest(new { error = "invalid coordinates" });
+
+      try
+      {
+        var neshan = await _neshan.GetDrivingRouteAsync(oLat, oLng, dLat, dLng, cancellationToken);
+        if (neshan != null && neshan.Coordinates.Count >= 2)
+        {
+          return Json(new
+          {
+            code = "Ok",
+            routes = new[]
+            {
+              new
+              {
+                distance = neshan.DistanceMeters,
+                duration = neshan.DurationSeconds,
+                geometry = new
+                {
+                  type = "LineString",
+                  coordinates = neshan.Coordinates
+                    .Select(c => new[] { c.Lng, c.Lat })
+                    .ToArray()
+                }
+              }
+            },
+            source = "neshan"
+          });
+        }
+      }
+      catch (Exception ex)
+      {
+        _logger.LogDebug(ex, "Neshan direction failed for MapBook route");
+      }
+
+      var localBase = configuration["Osrm:BaseUrl"]?.TrimEnd('/');
+      var candidates = new List<string>();
+      if (!string.IsNullOrWhiteSpace(localBase))
+        candidates.Add($"{localBase}/route/v1/driving/{oLng},{oLat};{dLng},{dLat}?overview=full&geometries=geojson");
+      candidates.Add($"https://router.project-osrm.org/route/v1/driving/{oLng},{oLat};{dLng},{dLat}?overview=full&geometries=geojson");
+
+      var client = _httpClientFactory.CreateClient();
+      client.Timeout = TimeSpan.FromSeconds(8);
+
+      foreach (var url in candidates)
+      {
+        try
+        {
+          using var res = await client.GetAsync(url, cancellationToken);
+          if (!res.IsSuccessStatusCode) continue;
+          var json = await res.Content.ReadAsStringAsync(cancellationToken);
+          // Tag source without breaking OSRM shape for the client
+          if (json.Length > 2 && json[0] == '{')
+            return Content(json.Insert(1, "\"source\":\"osrm\","), "application/json");
+          return Content(json, "application/json");
+        }
+        catch (Exception ex)
+        {
+          _logger.LogDebug(ex, "OSRM candidate failed: {Url}", url);
+        }
+      }
+
+      return Json(new
+      {
+        code = "Ok",
+        routes = new[]
+        {
+          new
+          {
+            distance = HaversineMeters(oLat, oLng, dLat, dLng),
+            duration = HaversineMeters(oLat, oLng, dLat, dLng) / 22.0,
+            geometry = new
+            {
+              type = "LineString",
+              coordinates = BuildFallbackLine(oLng, oLat, dLng, dLat)
+            }
+          }
+        },
+        source = "fallback"
+      });
+    }
+
+    /// <summary>
+    /// Place search for MapBook (محله / خیابان / کوچه). Neshan geocode + reverse labels, OSM Nominatim fallback.
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/PlaceSearch")]
+    public async Task<IActionResult> PlaceSearch(
+      string q,
+      string? city = null,
+      double? lat = null,
+      double? lng = null,
+      CancellationToken cancellationToken = default)
+    {
+      q = (q ?? string.Empty).Trim();
+      if (q.Length < 2)
+        return Json(Array.Empty<object>());
+
+      city = string.IsNullOrWhiteSpace(city) ? null : city.Trim();
+      var query = city == null ? q : $"{city} {q}";
+      var results = new List<object>();
+      var seen = new HashSet<string>();
+
+      void Add(string title, string? subtitle, double rLat, double rLng, string source)
+      {
+        var key = $"{Math.Round(rLat, 4)}:{Math.Round(rLng, 4)}";
+        if (!seen.Add(key)) return;
+        results.Add(new
+        {
+          title,
+          subtitle = subtitle ?? "",
+          lat = rLat,
+          lng = rLng,
+          source
+        });
+      }
+
+      try
+      {
+        var primary = await _neshan.GeocodeAsync(query, cancellationToken);
+        if (primary is { } p)
+        {
+          var rev = await _neshan.ReverseAsync(p.Lat, p.Lng, cancellationToken);
+          Add(
+            rev?.Title ?? q,
+            rev?.Subtitle ?? city,
+            p.Lat, p.Lng,
+            "neshan");
+        }
+
+        var candidates = await _neshan.GeocodeCandidatesAsync(query, limit: 4, cancellationToken);
+        foreach (var c in candidates.Take(3))
+        {
+          if (results.Count >= 8) break;
+          var rev = await _neshan.ReverseAsync(c.Lat, c.Lng, cancellationToken);
+          Add(
+            rev?.Title ?? q,
+            rev?.Subtitle ?? city,
+            c.Lat, c.Lng,
+            "neshan");
+        }
+      }
+      catch (Exception ex)
+      {
+        _logger.LogDebug(ex, "Neshan place search failed");
+      }
+
+      // OSM Nominatim for named districts / alleys (labels)
+      try
+      {
+        var client = _httpClientFactory.CreateClient();
+        client.Timeout = TimeSpan.FromSeconds(6);
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("MrShooferORG-MapBook/1.0");
+
+        var qs = new List<string>
+        {
+          $"q={Uri.EscapeDataString(query)}",
+          "format=json",
+          "addressdetails=1",
+          "limit=8",
+          "countrycodes=ir",
+          "accept-language=fa"
+        };
+        if (lat is double clat && lng is double clng && IsValidLatLng(clat, clng))
+        {
+          // ~0.25° box ≈ 25km
+          var d = 0.22;
+          qs.Add($"viewbox={clng - d},{clat + d},{clng + d},{clat - d}");
+          qs.Add("bounded=1");
+        }
+
+        var url = "https://nominatim.openstreetmap.org/search?" + string.Join("&", qs);
+        using var res = await client.GetAsync(url, cancellationToken);
+        if (res.IsSuccessStatusCode)
+        {
+          var json = await res.Content.ReadAsStringAsync(cancellationToken);
+          using var doc = System.Text.Json.JsonDocument.Parse(json);
+          foreach (var el in doc.RootElement.EnumerateArray())
+          {
+            if (results.Count >= 10) break;
+            if (!el.TryGetProperty("lat", out var latEl) || !el.TryGetProperty("lon", out var lonEl))
+              continue;
+            if (!double.TryParse(latEl.GetString(), System.Globalization.NumberStyles.Float,
+                  System.Globalization.CultureInfo.InvariantCulture, out var rLat))
+              continue;
+            if (!double.TryParse(lonEl.GetString(), System.Globalization.NumberStyles.Float,
+                  System.Globalization.CultureInfo.InvariantCulture, out var rLng))
+              continue;
+            if (!IsValidLatLng(rLat, rLng)) continue;
+
+            var name = el.TryGetProperty("name", out var n) ? n.GetString() : null;
+            var display = el.TryGetProperty("display_name", out var dn) ? dn.GetString() : null;
+            var type = el.TryGetProperty("type", out var t) ? t.GetString() : null;
+            var title = string.IsNullOrWhiteSpace(name) ? (display?.Split(',')[0] ?? q) : name!;
+            var subtitle = display ?? type ?? city;
+            Add(title, subtitle, rLat, rLng, "osm");
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        _logger.LogDebug(ex, "Nominatim place search failed");
+      }
+
+      return Json(results);
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/ReverseGeocode")]
+    public async Task<IActionResult> ReverseGeocode(
+      double lat, double lng, CancellationToken cancellationToken = default)
+    {
+      if (!IsValidLatLng(lat, lng))
+        return BadRequest(new { error = "invalid coordinates" });
+
+      var rev = await _neshan.ReverseAsync(lat, lng, cancellationToken);
+      if (rev == null)
+        return Json(new { title = "موقعیت روی نقشه", subtitle = "" });
+
+      return Json(new
+      {
+        title = rev.Title,
+        subtitle = rev.Subtitle,
+        neighbourhood = rev.Neighbourhood,
+        route = rev.Route,
+        city = rev.City,
+        inTrafficZone = rev.InTrafficZone,
+        inOddEvenZone = rev.InOddEvenZone
+      });
+    }
+
+    private static bool IsValidLatLng(double lat, double lng) =>
+      lat is >= 24 and <= 41 && lng is >= 43 and <= 64;
+
+    private static double HaversineMeters(double lat1, double lon1, double lat2, double lon2)
+    {
+      const double R = 6371000;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLon = (lon2 - lon1) * Math.PI / 180;
+      var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+        + Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180)
+        * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+      return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+    }
+
+    private static double[][] BuildFallbackLine(double oLng, double oLat, double dLng, double dLat)
+    {
+      var midLng = (oLng + dLng) / 2;
+      var midLat = (oLat + dLat) / 2;
+      var dx = dLng - oLng;
+      var dy = dLat - oLat;
+      var bend = 0.12;
+      var cLng = midLng - dy * bend;
+      var cLat = midLat + dx * bend;
+      var pts = new List<double[]>();
+      for (var i = 0; i <= 48; i++)
+      {
+        var t = i / 48.0;
+        var u = 1 - t;
+        pts.Add(new[]
+        {
+          u * u * oLng + 2 * u * t * cLng + t * t * dLng,
+          u * u * oLat + 2 * u * t * cLat + t * t * dLat
+        });
+      }
+      return pts.ToArray();
     }
 
 
@@ -130,6 +462,14 @@ namespace Application.Areas.AgencyArea
         trip.originCityName,
         trip.destinationCityName,
         trip.startingDateTime);
+
+      // MapBook pin handoff (query or will be filled from client session in the view)
+      ViewBag.MapOriginLabel = (Request.Query["olabel"].FirstOrDefault() ?? "").Trim();
+      ViewBag.MapDestLabel = (Request.Query["dlabel"].FirstOrDefault() ?? "").Trim();
+      ViewBag.MapOriginLat = Request.Query["olat"].FirstOrDefault();
+      ViewBag.MapOriginLng = Request.Query["olng"].FirstOrDefault();
+      ViewBag.MapDestLat = Request.Query["dlat"].FirstOrDefault();
+      ViewBag.MapDestLng = Request.Query["dlng"].FirstOrDefault();
 
       // Check if there's saved form data from TempData (after login redirect)
       if (TempData.ContainsKey("SavedReserveData"))
@@ -259,6 +599,18 @@ namespace Application.Areas.AgencyArea
         trip.originCityName,
         trip.destinationCityName,
         trip.startingDateTime);
+
+      var loyaltyPhone = viewmodel?.NumebrPhone?.Trim();
+      if (isCustomer)
+      {
+        var cu = await _userManager.GetUserAsync(User);
+        if (cu != null && !string.IsNullOrWhiteSpace(cu.UserName))
+          loyaltyPhone = cu.UserName;
+      }
+
+      if (LoyaltyService.FeatureEnabled)
+        ViewBag.Loyalty = await _loyaltySvc.GetInfoAsync(loyaltyPhone);
+
       return View("ConfirmInfo");
     }
 
@@ -405,6 +757,23 @@ namespace Application.Areas.AgencyArea
         }
       }
 
+      var loyaltyPhone = viewModel.Numberphone?.Trim();
+      if (User.HasClaim("Role", "Customer"))
+      {
+        var cu = await _userManager.GetUserAsync(User);
+        if (cu != null && !string.IsNullOrWhiteSpace(cu.UserName))
+          loyaltyPhone = cu.UserName;
+      }
+
+      if (LoyaltyService.FeatureEnabled)
+      {
+        var loyalty = await _loyaltySvc.GetInfoAsync(loyaltyPhone);
+        if (loyalty.DiscountPercent > 0)
+        {
+          newticket.TicketFinalPrice = LoyaltyService.ApplyTierDiscount(newticket.TicketFinalPrice, loyalty.DiscountPercent);
+        }
+      }
+
       context.Tickets.Add(newticket);
       await context.SaveChangesAsync();
 
@@ -501,8 +870,18 @@ namespace Application.Areas.AgencyArea
           return Json(new { valid = false, message = "این کد تخفیف قبلاً توسط شما استفاده شده است." });
       }
 
-      var discountedPrice = (long)Math.Round(req.OriginalPrice * (1 - code.DiscountPercent / 100m));
-      return Json(new { valid = true, discountPercent = code.DiscountPercent, discountedPrice, message = "کد تخفیف اعمال شد." });
+      var discountedPrice = LoyaltyService.ApplyStackedDiscounts(
+        (int)req.OriginalPrice,
+        code.DiscountPercent,
+        (await _loyaltySvc.GetInfoAsync(req.UserPhone)).DiscountPercent);
+
+      return Json(new
+      {
+        valid = true,
+        discountPercent = code.DiscountPercent,
+        discountedPrice,
+        message = "کد تخفیف اعمال شد."
+      });
     }
 
     public async Task<IActionResult> ReserveConfirmed(string ticketcode)

@@ -66,19 +66,111 @@ let isRtl = window.Helpers && typeof window.Helpers.isRtl === 'function' ? windo
   // Function to close the mobile menu (guard menu)
   function closeMenu() { if (menu) menu.classList.remove('show'); }
 
-  document.addEventListener('click', function (event) {
-    if (menu && !menu.contains(event.target)) {
-      closeMenu();
+  function hideDropdownToggle(toggle) {
+    if (!toggle || typeof bootstrap === 'undefined') return;
+    const instance = bootstrap.Dropdown.getInstance(toggle);
+    if (instance) {
+      instance.hide();
+      return;
     }
-  });
-  navItemLink.forEach(link => {
-    link.addEventListener('click', event => {
-      if (!link.classList.contains('dropdown-toggle')) {
-        closeMenu();
-      } else {
-        event.preventDefault();
+    if (toggle.classList.contains('show')) {
+      toggle.classList.remove('show');
+      toggle.setAttribute('aria-expanded', 'false');
+      const menu = toggle.closest('.dropdown')?.querySelector('.dropdown-menu');
+      menu?.classList.remove('show');
+    }
+  }
+
+  function closeNavbarDropdowns(exceptToggle) {
+    document.querySelectorAll('.landing-navbar [data-bs-toggle="dropdown"]').forEach(toggle => {
+      if (toggle !== exceptToggle) hideDropdownToggle(toggle);
+    });
+  }
+
+  function resetNavbarDropdowns() {
+    document.querySelectorAll('.landing-navbar .dropdown-menu.show').forEach(menu => {
+      menu.classList.remove('show');
+    });
+    document.querySelectorAll('.landing-navbar [data-bs-toggle="dropdown"]').forEach(toggle => {
+      toggle.classList.remove('show');
+      toggle.setAttribute('aria-expanded', 'false');
+      if (typeof bootstrap !== 'undefined') {
+        const instance = bootstrap.Dropdown.getInstance(toggle);
+        if (instance) instance.hide();
       }
     });
+  }
+
+  // Close stray open menus after hard refresh / bfcache restore
+  resetNavbarDropdowns();
+  document.addEventListener('DOMContentLoaded', resetNavbarDropdowns);
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) resetNavbarDropdowns();
+  });
+
+  function closeProfileDropdown() {
+    hideDropdownToggle(document.querySelector('.dropdown-user > .dropdown-toggle'));
+  }
+
+  function syncNavDrawerBodyLock() {
+    document.body.classList.toggle('nav-drawer-open', !!(menu && menu.classList.contains('show')));
+  }
+
+  document.addEventListener('show.bs.dropdown', function (event) {
+    const toggle = event.target;
+    if (!toggle.closest('.landing-navbar')) return;
+    closeNavbarDropdowns(toggle);
+  });
+
+  if (menu) {
+    menu.addEventListener('show.bs.collapse', () => {
+      closeNavbarDropdowns();
+      syncNavDrawerBodyLock();
+    });
+    menu.addEventListener('hidden.bs.collapse', syncNavDrawerBodyLock);
+  }
+
+  document.addEventListener('click', function (event) {
+    if (menu && menu.classList.contains('show')) {
+      const toggle = document.querySelector('[data-bs-target="#navbarSupportedContent"][data-bs-toggle="collapse"]');
+      if (!menu.contains(event.target) && !(toggle && toggle.contains(event.target))) {
+        closeMenu();
+        syncNavDrawerBodyLock();
+      }
+    }
+  });
+
+  navItemLink.forEach(link => {
+    link.addEventListener('click', event => {
+      // Only hijack dropdown toggles inside the mobile drawer — not the profile avatar
+      if (link.classList.contains('dropdown-toggle') && menu && menu.contains(link)) {
+        event.preventDefault();
+        return;
+      }
+      if (!link.classList.contains('dropdown-toggle')) {
+        closeMenu();
+        syncNavDrawerBodyLock();
+      }
+    });
+  });
+
+  document.querySelectorAll('.landing-nav-menu .navbar-nav-btn:not(.dropdown-toggle)').forEach(link => {
+    link.addEventListener('click', () => {
+      closeMenu();
+      syncNavDrawerBodyLock();
+    });
+  });
+
+  document.querySelectorAll('.landing-nav-menu .landing-nav-dropdown-menu .navbar-nav-btn').forEach(link => {
+    link.addEventListener('click', () => {
+      closeMenu();
+      closeNavbarDropdowns();
+      syncNavDrawerBodyLock();
+    });
+  });
+
+  document.querySelectorAll('.dropdown-user .landing-nav-dropdown-menu .navbar-nav-btn').forEach(link => {
+    link.addEventListener('click', () => closeNavbarDropdowns());
   });
 
   // If layout is RTL add .dropdown-menu-end class to .dropdown-menu

@@ -50,6 +50,17 @@ public static class SeoDefaults
   public const string SupportEmail = "support@mrshoofer.ir";
   public const string ContentLanguage = "fa-IR";
 
+  /// <summary>Primary sitelink targets — labels match footer; short labels for navbar/hero row.</summary>
+  public sealed record SiteNavLink(string Label, string Path, string ShortLabel);
+
+  public static readonly SiteNavLink[] SiteNavLinks =
+  [
+    new("مسیرهای بین‌شهری", "/routes", "مسیرها"),
+    new("شهرهای تحت پوشش", "/cities", "شهرها"),
+    new("سوالات متداول", "/Home/FAQ", "سوالات متداول"),
+    new("ارتباط با ما", "/Home/ContactUs", "تماس با ما")
+  ];
+
   /// <summary>Homepage FAQs — must match visible FAQ section on Index.</summary>
   public static readonly (string Question, string Answer)[] HomeFaqs =
   [
@@ -325,6 +336,7 @@ public static class SeoDefaults
     public IReadOnlyList<(string Name, string Url)>? ItemList { get; init; }
     public string? OgImageUrl { get; init; }
     public string? DateModifiedIso { get; init; }
+    public bool IncludeSiteNav { get; init; }
   }
 
   public static string BuildJsonLdGraph(
@@ -432,6 +444,24 @@ public static class SeoDefaults
           ["url"] = it.Url
         }).ToArray()
       });
+    }
+
+    if (options.IncludeSiteNav)
+    {
+      foreach (var link in SiteNavLinks)
+      {
+        var navUrl = BuildCanonical(link.Path);
+        var navId = link.Path.Trim('/').Replace("/", "-", StringComparison.Ordinal).ToLowerInvariant();
+        if (string.IsNullOrEmpty(navId)) navId = "home";
+        nodes.Add(new Dictionary<string, object?>
+        {
+          ["@type"] = "SiteNavigationElement",
+          ["@id"] = PreferredOrigin + "/#nav-" + navId,
+          ["name"] = link.Label,
+          ["url"] = navUrl,
+          ["isPartOf"] = new Dictionary<string, object?> { ["@id"] = PreferredOrigin + "/#website" }
+        });
+      }
     }
 
     var graph = new Dictionary<string, object?>
