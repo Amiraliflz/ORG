@@ -1,28 +1,688 @@
 {
   "cities": [
     {
-      "id": "tehran",
-      "name": "تهران",
+      "id": "abadan",
+      "name": "آبادان",
+      "province": "خوزستان",
+      "lat": 30.36361,
+      "lng": 48.259147,
+      "radiusKm": 14.0,
+      "cityId": 556
+    },
+    {
+      "id": "astara",
+      "name": "آستارا",
+      "province": "گیلان",
+      "lat": 38.419324,
+      "lng": 48.871528,
+      "radiusKm": 14.0,
+      "cityId": 1022
+    },
+    {
+      "id": "amol",
+      "name": "آمل",
+      "province": "مازندران",
+      "lat": 36.470942,
+      "lng": 52.357128,
+      "radiusKm": 14.0,
+      "cityId": 1099
+    },
+    {
+      "id": "arak",
+      "name": "اراک",
+      "province": "مرکزی",
+      "lat": 34.086272,
+      "lng": 49.689388,
+      "radiusKm": 14.0,
+      "cityId": 1158
+    },
+    {
+      "id": "ardabil",
+      "name": "اردبیل",
+      "province": "اردبیل",
+      "lat": 38.458398,
+      "lng": 47.9313,
+      "radiusKm": 18.0,
+      "cityId": 136
+    },
+    {
+      "id": "urmia",
+      "name": "ارومیه",
+      "province": "آذربایجان غربی",
+      "lat": 37.548341,
+      "lng": 45.066711,
+      "radiusKm": 18.0,
+      "cityId": 94
+    },
+    {
+      "id": "islamshahr",
+      "name": "اسلامشهر",
       "province": "تهران",
-      "lat": 35.6892,
-      "lng": 51.389,
-      "radiusKm": 28
+      "lat": 35.547851,
+      "lng": 51.231868,
+      "radiusKm": 14.0,
+      "cityId": 349
     },
     {
       "id": "isfahan",
       "name": "اصفهان",
       "province": "اصفهان",
-      "lat": 32.6546,
-      "lng": 51.668,
-      "radiusKm": 22
+      "lat": 32.670788,
+      "lng": 51.665,
+      "radiusKm": 22.0,
+      "cityId": 170
+    },
+    {
+      "id": "aligudarz",
+      "name": "الیگودرز",
+      "province": "لرستان",
+      "lat": 33.403512,
+      "lng": 49.692187,
+      "radiusKm": 14.0,
+      "cityId": 1076
+    },
+    {
+      "id": "ahvaz",
+      "name": "اهواز",
+      "province": "خوزستان",
+      "lat": 31.323064,
+      "lng": 48.67932,
+      "radiusKm": 22.0,
+      "cityId": 570
+    },
+    {
+      "id": "izeh",
+      "name": "ایذه",
+      "province": "خوزستان",
+      "lat": 31.831215,
+      "lng": 49.878987,
+      "radiusKm": 14.0,
+      "cityId": 571
+    },
+    {
+      "id": "ilam",
+      "name": "ایلام",
+      "province": "ایلام",
+      "lat": 33.637937,
+      "lng": 46.420274,
+      "radiusKm": 14.0,
+      "cityId": 289
+    },
+    {
+      "id": "babol",
+      "name": "بابل",
+      "province": "مازندران",
+      "lat": 36.545258,
+      "lng": 52.684657,
+      "radiusKm": 14.0,
+      "cityId": 1105
+    },
+    {
+      "id": "babolsar",
+      "name": "بابلسر",
+      "province": "مازندران",
+      "lat": 36.700878,
+      "lng": 52.648105,
+      "radiusKm": 14.0,
+      "cityId": 1111
+    },
+    {
+      "id": "anzali",
+      "name": "بندرانزلی",
+      "province": "گیلان",
+      "lat": 37.459233,
+      "lng": 49.523213,
+      "radiusKm": 14.0,
+      "cityId": 1028
+    },
+    {
+      "id": "bandartorkaman",
+      "name": "بندرترکمن",
+      "province": "گلستان",
+      "lat": 36.926178,
+      "lng": 54.074739,
+      "radiusKm": 14.0,
+      "cityId": 1000
+    },
+    {
+      "id": "bandarabbas",
+      "name": "بندرعباس",
+      "province": "هرمزگان",
+      "lat": 27.184202,
+      "lng": 56.289253,
+      "radiusKm": 18.0,
+      "cityId": 1195
+    },
+    {
+      "id": "bandarganaveh",
+      "name": "بندرگناوه",
+      "province": "بوشهر",
+      "lat": 29.579,
+      "lng": 50.517,
+      "radiusKm": 14,
+      "cityId": 347
+    },
+    {
+      "id": "baharestan",
+      "name": "بهارستان",
+      "province": "تهران",
+      "lat": 32.485882,
+      "lng": 51.778505,
+      "radiusKm": 14.0,
+      "cityId": 171
+    },
+    {
+      "id": "bushehr",
+      "name": "بوشهر",
+      "province": "بوشهر",
+      "lat": 28.893664,
+      "lng": 51.320488,
+      "radiusKm": 14.0,
+      "cityId": 311
+    },
+    {
+      "id": "takestan",
+      "name": "تاکستان",
+      "province": "قزوین",
+      "lat": 36.072601,
+      "lng": 49.693703,
+      "radiusKm": 14.0,
+      "cityId": 827
+    },
+    {
+      "id": "tabriz",
+      "name": "تبریز",
+      "province": "آذربایجان شرقی",
+      "lat": 38.073861,
+      "lng": 46.297879,
+      "radiusKm": 22.0,
+      "cityId": 45
+    },
+    {
+      "id": "tonekabon",
+      "name": "تنکابن",
+      "province": "مازندران",
+      "lat": 36.815432,
+      "lng": 50.8787,
+      "radiusKm": 14.0,
+      "cityId": 1117
+    },
+    {
+      "id": "tehran",
+      "name": "تهران",
+      "province": "تهران",
+      "lat": 35.689252,
+      "lng": 51.3896,
+      "radiusKm": 22.0,
+      "cityId": 360
+    },
+    {
+      "id": "jajarm",
+      "name": "جاجرم",
+      "province": "خراسان شمالی",
+      "lat": 36.95,
+      "lng": 56.379294,
+      "radiusKm": 14.0,
+      "cityId": 539
+    },
+    {
+      "id": "khorramabad",
+      "name": "خرم آباد",
+      "province": "لرستان",
+      "lat": 33.484211,
+      "lng": 48.353828,
+      "radiusKm": 14.0,
+      "cityId": 1083
+    },
+    {
+      "id": "khorramshahr",
+      "name": "خرمشهر",
+      "province": "خوزستان",
+      "lat": 30.433311,
+      "lng": 48.177986,
+      "radiusKm": 14.0,
+      "cityId": 588
+    },
+    {
+      "id": "khomeinishahr",
+      "name": "خمینی شهر",
+      "province": "اصفهان",
+      "lat": 32.69382,
+      "lng": 51.525489,
+      "radiusKm": 14.0,
+      "cityId": 198
+    },
+    {
+      "id": "khoy",
+      "name": "خوی",
+      "province": "آذربایجان غربی",
+      "lat": 38.54791,
+      "lng": 44.95124,
+      "radiusKm": 14.0,
+      "cityId": 112
+    },
+    {
+      "id": "damavand",
+      "name": "دماوند",
+      "province": "تهران",
+      "lat": 35.954365,
+      "lng": 52.110342,
+      "radiusKm": 14.0,
+      "cityId": 363
+    },
+    {
+      "id": "ramsar",
+      "name": "رامسر",
+      "province": "مازندران",
+      "lat": 36.922552,
+      "lng": 50.64319,
+      "radiusKm": 18.0,
+      "cityId": 1126
+    },
+    {
+      "id": "rasht",
+      "name": "رشت",
+      "province": "گیلان",
+      "lat": 37.269758,
+      "lng": 49.589485,
+      "radiusKm": 18.0,
+      "cityId": 1031
+    },
+    {
+      "id": "rafsanjan",
+      "name": "رفسنجان",
+      "province": "کرمان",
+      "lat": 30.402184,
+      "lng": 55.994178,
+      "radiusKm": 14.0,
+      "cityId": 894
+    },
+    {
+      "id": "rudsar",
+      "name": "رودسر",
+      "province": "گیلان",
+      "lat": 37.138159,
+      "lng": 50.292786,
+      "radiusKm": 14.0,
+      "cityId": 1047
+    },
+    {
+      "id": "zahedan",
+      "name": "زاهدان",
+      "province": "سیستان و بلوچستان",
+      "lat": 29.490687,
+      "lng": 60.863536,
+      "radiusKm": 18.0,
+      "cityId": 685
+    },
+    {
+      "id": "zanjan",
+      "name": "زنجان",
+      "province": "زنجان",
+      "lat": 36.515854,
+      "lng": 48.477762,
+      "radiusKm": 14.0,
+      "cityId": 647
+    },
+    {
+      "id": "sari",
+      "name": "ساری",
+      "province": "مازندران",
+      "lat": 36.553746,
+      "lng": 53.060276,
+      "radiusKm": 18.0,
+      "cityId": 1129
+    },
+    {
+      "id": "semnan",
+      "name": "سمنان",
+      "province": "سمنان",
+      "lat": 35.250064,
+      "lng": 54.693185,
+      "radiusKm": 14.0,
+      "cityId": 661
+    },
+    {
+      "id": "sanandaj",
+      "name": "سنندج",
+      "province": "کردستان",
+      "lat": 35.311584,
+      "lng": 46.996071,
+      "radiusKm": 18.0,
+      "cityId": 861
+    },
+    {
+      "id": "sepahanshahr",
+      "name": "سپاهان شهر",
+      "province": "اصفهان",
+      "lat": 32.550775,
+      "lng": 51.674109,
+      "radiusKm": 14.0,
+      "cityId": 3249
+    },
+    {
+      "id": "sirjan",
+      "name": "سیرجان",
+      "province": "کرمان",
+      "lat": 29.449083,
+      "lng": 55.672377,
+      "radiusKm": 14.0,
+      "cityId": 910
+    },
+    {
+      "id": "shahrerey",
+      "name": "شهر ری",
+      "province": "تهران",
+      "lat": 35.590351,
+      "lng": 51.436662,
+      "radiusKm": 14.0,
+      "cityId": 3250
+    },
+    {
+      "id": "shahrqods",
+      "name": "شهرقدس",
+      "province": "تهران",
+      "lat": 35.720427,
+      "lng": 51.110077,
+      "radiusKm": 14.0,
+      "cityId": 3251
+    },
+    {
+      "id": "shahrekord",
+      "name": "شهرکرد",
+      "province": "چهارمحال و بختیاری",
+      "lat": 32.325737,
+      "lng": 50.849737,
+      "radiusKm": 14.0,
+      "cityId": 407
+    },
+    {
+      "id": "shiraz",
+      "name": "شیراز",
+      "province": "فارس",
+      "lat": 29.606022,
+      "lng": 52.537804,
+      "radiusKm": 22.0,
+      "cityId": 758
+    },
+    {
+      "id": "abbasabad",
+      "name": "عباس اباد",
+      "province": "اصفهان",
+      "lat": 33.413364,
+      "lng": 50.100341,
+      "radiusKm": 14.0,
+      "cityId": 1138
+    },
+    {
+      "id": "assaluyeh",
+      "name": "عسلویه",
+      "province": "بوشهر",
+      "lat": 27.476003,
+      "lng": 52.607041,
+      "radiusKm": 14.0,
+      "cityId": 341
+    },
+    {
+      "id": "ika-airport",
+      "name": "فرودگاه امام خمینی",
+      "province": "تهران",
+      "lat": 35.407835,
+      "lng": 51.154478,
+      "radiusKm": 8.0,
+      "cityId": 3247
+    },
+    {
+      "id": "van-airport",
+      "name": "فرودگاه وان",
+      "province": "وان (ترکیه)",
+      "lat": 38.468,
+      "lng": 43.332,
+      "radiusKm": 8,
+      "cityId": 10101
+    },
+    {
+      "id": "fasham",
+      "name": "فشم",
+      "province": "تهران",
+      "lat": 35.93006,
+      "lng": 51.526365,
+      "radiusKm": 14.0,
+      "cityId": 375
+    },
+    {
+      "id": "fooladshahr",
+      "name": "فولادشهر",
+      "province": "اصفهان",
+      "lat": 32.483487,
+      "lng": 51.417328,
+      "radiusKm": 14.0,
+      "cityId": 248
+    },
+    {
+      "id": "qazvin",
+      "name": "قزوین",
+      "province": "قزوین",
+      "lat": 36.269172,
+      "lng": 50.005753,
+      "radiusKm": 18.0,
+      "cityId": 834
+    },
+    {
+      "id": "qom",
+      "name": "قم",
+      "province": "قم",
+      "lat": 34.642294,
+      "lng": 50.880118,
+      "radiusKm": 18.0,
+      "cityId": 841
+    },
+    {
+      "id": "lahijan",
+      "name": "لاهیجان",
+      "province": "گیلان",
+      "lat": 37.206073,
+      "lng": 50.002877,
+      "radiusKm": 18.0,
+      "cityId": 1066
+    },
+    {
+      "id": "maku",
+      "name": "ماکو",
+      "province": "آذربایجان غربی",
+      "lat": 39.290964,
+      "lng": 44.452138,
+      "radiusKm": 14.0,
+      "cityId": 128
+    },
+    {
+      "id": "mobarakeh",
+      "name": "مبارکه",
+      "province": "اصفهان",
+      "lat": 32.342413,
+      "lng": 51.504663,
+      "radiusKm": 14.0,
+      "cityId": 254
+    },
+    {
+      "id": "mahmoudabad",
+      "name": "محمودآباد",
+      "province": "آذربایجان غربی",
+      "lat": 36.717818,
+      "lng": 46.524386,
+      "radiusKm": 14.0,
+      "cityId": 124
     },
     {
       "id": "mashhad",
       "name": "مشهد",
       "province": "خراسان رضوی",
-      "lat": 36.2605,
-      "lng": 59.6168,
-      "radiusKm": 22
+      "lat": 36.297494,
+      "lng": 59.605923,
+      "radiusKm": 22.0,
+      "cityId": 522
+    },
+    {
+      "id": "malayer",
+      "name": "ملایر",
+      "province": "همدان",
+      "lat": 34.292262,
+      "lng": 48.821575,
+      "radiusKm": 14.0,
+      "cityId": 1248
+    },
+    {
+      "id": "mehran",
+      "name": "مهران",
+      "province": "ایلام",
+      "lat": 33.123671,
+      "lng": 46.166702,
+      "radiusKm": 14.0,
+      "cityId": 310
+    },
+    {
+      "id": "najafabad",
+      "name": "نجف آباد",
+      "province": "اصفهان",
+      "lat": 32.635074,
+      "lng": 51.36368,
+      "radiusKm": 14.0,
+      "cityId": 264
+    },
+    {
+      "id": "nur",
+      "name": "نور",
+      "province": "مازندران",
+      "lat": 36.57285,
+      "lng": 52.007366,
+      "radiusKm": 14.0,
+      "cityId": 1153
+    },
+    {
+      "id": "nowshahr",
+      "name": "نوشهر",
+      "province": "مازندران",
+      "lat": 36.650807,
+      "lng": 51.503413,
+      "radiusKm": 18.0,
+      "cityId": 1156
+    },
+    {
+      "id": "hamedan",
+      "name": "همدان",
+      "province": "همدان",
+      "lat": 34.97263,
+      "lng": 48.656382,
+      "radiusKm": 18.0,
+      "cityId": 1256
+    },
+    {
+      "id": "van",
+      "name": "وان",
+      "province": "وان (ترکیه)",
+      "lat": 38.494,
+      "lng": 43.38,
+      "radiusKm": 16,
+      "cityId": 10100
+    },
+    {
+      "id": "chabahar",
+      "name": "چابهار",
+      "province": "سیستان و بلوچستان",
+      "lat": 25.293549,
+      "lng": 60.646912,
+      "radiusKm": 14.0,
+      "cityId": 678
+    },
+    {
+      "id": "chaboksar",
+      "name": "چابکسر",
+      "province": "گیلان",
+      "lat": 36.974339,
+      "lng": 50.57079,
+      "radiusKm": 14.0,
+      "cityId": 1045
+    },
+    {
+      "id": "chalus",
+      "name": "چالوس",
+      "province": "مازندران",
+      "lat": 36.650633,
+      "lng": 51.422372,
+      "radiusKm": 18.0,
+      "cityId": 1123
+    },
+    {
+      "id": "kashan",
+      "name": "کاشان",
+      "province": "اصفهان",
+      "lat": 33.987653,
+      "lng": 51.442886,
+      "radiusKm": 18.0,
+      "cityId": 234
+    },
+    {
+      "id": "karaj",
+      "name": "کرج",
+      "province": "البرز",
+      "lat": 35.822489,
+      "lng": 50.990468,
+      "radiusKm": 22.0,
+      "cityId": 279
+    },
+    {
+      "id": "kerman",
+      "name": "کرمان",
+      "province": "کرمان",
+      "lat": 30.285219,
+      "lng": 57.064839,
+      "radiusKm": 18.0,
+      "cityId": 933
+    },
+    {
+      "id": "kermanshah",
+      "name": "کرمانشاه",
+      "province": "کرمانشاه",
+      "lat": 34.323941,
+      "lng": 47.073589,
+      "radiusKm": 18.0,
+      "cityId": 967
+    },
+    {
+      "id": "kelardasht",
+      "name": "کلاردشت",
+      "province": "مازندران",
+      "lat": 36.505552,
+      "lng": 51.158767,
+      "radiusKm": 14.0,
+      "cityId": 1143
+    },
+    {
+      "id": "gorgan",
+      "name": "گرگان",
+      "province": "گلستان",
+      "lat": 36.837732,
+      "lng": 54.439407,
+      "radiusKm": 18.0,
+      "cityId": 1015
+    },
+    {
+      "id": "yasuj",
+      "name": "یاسوج",
+      "province": "کهگیلویه و بویراحمد",
+      "lat": 30.668178,
+      "lng": 51.581916,
+      "radiusKm": 14.0,
+      "cityId": 981
+    },
+    {
+      "id": "yazd",
+      "name": "یزد",
+      "province": "یزد",
+      "lat": 32.040616,
+      "lng": 54.665719,
+      "radiusKm": 18.0,
+      "cityId": 1277
     }
   ]
 }

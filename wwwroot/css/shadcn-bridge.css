@@ -1,0 +1,230 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   shadcn → Bootstrap / Vuexy bridge (AgencyArea customer UI)
+   Maps semantic tokens to existing --brand-* aliases and form controls.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root,
+[data-bs-theme="light"] {
+  /* Legacy brand aliases (used across front-palette + page CSS) */
+  --brand-ink: #000000;
+  --brand-ink-rgb: 0, 0, 0;
+  --brand-ink-inverse: #ffffff;
+  --brand-muted: var(--muted-foreground);
+  --brand-surface: var(--card);
+  --brand-bg: var(--background);
+  --brand-bg-muted: var(--muted);
+  --brand-border: var(--border);
+  --brand-focus: var(--ring);
+  --box-shadow-lift: var(--shadow-lg);
+
+  /* Bootstrap 5 variable bridge */
+  --bs-primary: #000000;
+  --bs-primary-rgb: 0, 0, 0;
+  --bs-primary-text-emphasis: var(--primary);
+  --bs-primary-bg-subtle: var(--muted);
+  --bs-primary-border-subtle: var(--border);
+  --bs-secondary: var(--secondary);
+  --bs-secondary-color: var(--muted-foreground);
+  --bs-body-bg: var(--background);
+  --bs-body-color: var(--foreground);
+  --bs-heading-color: var(--foreground);
+  --bs-border-color: var(--border);
+  --bs-border-radius: var(--radius-md);
+  --bs-border-radius-sm: var(--radius-sm);
+  --bs-border-radius-lg: var(--radius-lg);
+  --bs-border-radius-xl: var(--radius-xl);
+  --bs-link-color: var(--foreground);
+  --bs-link-hover-color: var(--muted-foreground);
+  --bs-focus-ring-color: color-mix(in oklch, var(--ring) 40%, transparent);
+  --bs-danger: var(--destructive);
+}
+
+/* Inter for Latin UI; Persian body stays IRANSansX via rtl.css */
+.font-ui,
+.landing-navbar .navbar-nav-btn,
+.btn,
+.form-control,
+.form-select,
+.badge,
+.chip {
+  font-family: var(--font-sans);
+}
+
+html.light-style body,
+.light-style body {
+  background: var(--background) !important;
+  color: var(--foreground);
+}
+
+/* ── shadcn-style controls (Vega · large radius) ── */
+.form-control,
+.form-select,
+.input-group {
+  border-radius: var(--radius-md) !important;
+  border-color: var(--input) !important;
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 35%, transparent) !important;
+}
+
+.btn {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
+}
+
+.btn-primary {
+  color: #ffffff !important;
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  color: #ffffff !important;
+  background-color: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active {
+  color: #ffffff !important;
+  background-color: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 35%, transparent) !important;
+}
+
+.btn-outline-primary {
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+  background: transparent !important;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  color: var(--primary-foreground) !important;
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.btn-secondary,
+.btn-label-secondary {
+  color: var(--secondary-foreground) !important;
+  background: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+}
+
+.card,
+.dropdown-menu,
+.modal-content,
+.accordion-item,
+.list-group-item,
+.flatpickr-calendar {
+  border-color: var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+
+.card {
+  box-shadow: var(--shadow-md);
+}
+
+.text-muted {
+  color: var(--muted-foreground) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.badge.bg-primary {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  color: var(--accent-foreground) !important;
+  background-color: var(--accent) !important;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.nav-pills .nav-link.active,
+.pagination .page-item.active .page-link {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.page-link {
+  color: var(--foreground);
+  border-radius: var(--radius-sm) !important;
+}
+
+.page-link:hover {
+  color: var(--foreground);
+  background-color: var(--muted);
+}
+
+.progress-bar {
+  background-color: var(--primary) !important;
+}
+
+.accordion-button:not(.collapsed) {
+  color: var(--foreground) !important;
+  background-color: var(--muted) !important;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 35%, transparent) !important;
+  border-color: var(--ring) !important;
+}
+
+/* Input groups — RTL logical corners */
+[dir="rtl"] .input-group > .form-control:not(:last-child),
+[dir="rtl"] .input-group > .form-select:not(:last-child) {
+  border-start-start-radius: var(--radius-md) !important;
+  border-end-start-radius: var(--radius-md) !important;
+  border-start-end-radius: 0 !important;
+  border-end-end-radius: 0 !important;
+}
+
+[dir="rtl"] .input-group > .form-control:not(:first-child),
+[dir="rtl"] .input-group > .form-select:not(:first-child) {
+  border-start-end-radius: var(--radius-md) !important;
+  border-end-end-radius: var(--radius-md) !important;
+  border-start-start-radius: 0 !important;
+  border-end-start-radius: 0 !important;
+}

@@ -60,6 +60,69 @@ public sealed class NeshanApiClient
     }, ct);
   }
 
+  /// <summary>
+  /// Geocoding Plus — resolves plaque numbers to real building coordinates inside a viewport.
+  /// Requires Neshan Geocoding Plus on the service API key.
+  /// </summary>
+  public async Task<(double Lat, double Lng)?> GeocodePlusPlaqueAsync(
+    string city,
+    string street,
+    int plaqueNumber,
+    double minLat,
+    double minLng,
+    double maxLat,
+    double maxLng,
+    CancellationToken ct = default)
+  {
+    if (!IsConfigured || string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(street))
+      return null;
+    if (plaqueNumber < 1 || plaqueNumber > 999) return null;
+    if (!IsValidIran(minLat, minLng) || !IsValidIran(maxLat, maxLng)) return null;
+
+    var address = $"{city.Trim()} {street.Trim()} پلاک {plaqueNumber}";
+    var payload = JsonSerializer.Serialize(new
+    {
+      address,
+      city = city.Trim(),
+      extent = new
+      {
+        southWest = new { latitude = minLat, longitude = minLng },
+        northEast = new { latitude = maxLat, longitude = maxLng }
+      }
+    });
+
+    var url = $"geocoding/v1/plus?json={Uri.EscapeDataString(payload)}";
+    return await SendWithRetryAsync(async token =>
+    {
+      using var req = new HttpRequestMessage(HttpMethod.Get, url);
+      req.Headers.TryAddWithoutValidation("Api-Key", _options.ApiKey);
+
+      using var resp = await _http.SendAsync(req, token);
+      var body = await resp.Content.ReadAsStringAsync(token);
+      if (!resp.IsSuccessStatusCode)
+      {
+        if (IsTransientStatus(resp.StatusCode))
+          throw new NeshanTransientException((int)resp.StatusCode, Truncate(body));
+        _logger.LogDebug("Neshan geocoding plus failed ({Status}): {Body}",
+          (int)resp.StatusCode, Truncate(body));
+        return ((double, double)?)null;
+      }
+
+      using var doc = JsonDocument.Parse(body);
+      if (!doc.RootElement.TryGetProperty("items", out var items) ||
+          items.ValueKind != JsonValueKind.Array ||
+          items.GetArrayLength() < 1)
+        return null;
+
+      var first = items[0];
+      if (!first.TryGetProperty("location", out var loc) ||
+          !TryReadLatLng(loc, out var lat, out var lng))
+        return null;
+
+      return (lat, lng);
+    }, ct);
+  }
+
   /// <summary>v5 geocoding — up to several candidate points for one address string.</summary>
   public async Task<IReadOnlyList<(double Lat, double Lng)>> GeocodeCandidatesAsync(
     string address, int limit = 5, CancellationToken ct = default)

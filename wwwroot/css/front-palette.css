@@ -1,40 +1,9 @@
 /* ─────────────────────────────────────────────
-   Front / AgencyArea palette — Shoofer-style ink
-   Reference: https://shoofer.taxi/  (black CTAs, white surfaces)
-   Loaded only from AgencyArea styles, not Admin.
+   Front / AgencyArea palette — shadcn Vega preset (bIkfnzU)
+   Tokens: tokens.css | Bridge: shadcn-bridge.css
    ───────────────────────────────────────────── */
 
-:root,
-[data-bs-theme="light"] {
-  --brand-ink: #000000;
-  --brand-ink-rgb: 0, 0, 0;
-  --brand-ink-inverse: #ffffff;
-  --brand-muted: #5e5e5e;
-  --brand-surface: #ffffff;
-  --brand-bg: #ffffff;
-  --brand-bg-muted: #f3f3f3;
-  --brand-border: rgba(0, 0, 0, 0.12);
-  --brand-focus: #276ef1;
-  --box-shadow-lift:
-    0 2px 4px rgba(0, 0, 0, 0.06),
-    0 10px 24px rgba(0, 0, 0, 0.1),
-    0 22px 48px rgba(0, 0, 0, 0.08);
-
-  --bs-primary: #000000;
-  --bs-primary-rgb: 0, 0, 0;
-  --bs-primary-text-emphasis: #000000;
-  --bs-primary-bg-subtle: #f3f3f3;
-  --bs-primary-border-subtle: #d9d9d9;
-  --bs-link-color: #000000;
-  --bs-link-color-rgb: 0, 0, 0;
-  --bs-link-hover-color: #333333;
-  --bs-link-hover-color-rgb: 51, 51, 51;
-  --bs-body-bg: #ffffff;
-  --bs-body-color: #000000;
-  --bs-heading-color: #000000;
-  --bs-border-color: #e5e5e5;
-  --bs-focus-ring-color: rgba(39, 110, 241, 0.4);
-}
+/* Brand aliases live in shadcn-bridge.css — component overrides below */
 
 /* Same navbar shell on home and trips so the bar does not jump between pages */
 @media (min-width: 992px) {

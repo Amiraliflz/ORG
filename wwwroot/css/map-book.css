@@ -2,15 +2,20 @@
    Brand: Shoofer ink + light silver map + cool blue→teal route */
 
 .mapbook {
-  --mb-ink: #000000;
-  --mb-muted: #5e5e5e;
-  --mb-surface: #ffffff;
-  --mb-bg: #f3f3f3;
-  --mb-border: rgba(0, 0, 0, 0.1);
-  --mb-origin: #2563eb;
-  --mb-dest: #0f766e;
+  --mb-ink: var(--foreground);
+  --mb-muted: var(--muted-foreground);
+  --mb-surface: var(--card);
+  --mb-bg: var(--muted);
+  --mb-border: var(--border);
+  --mb-primary: #000000;
+  --mb-primary-hover: #1a1a1a;
+  --mb-primary-fg: #ffffff;
+  --mb-safe-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+  --mb-origin: #6289E5;
+  --mb-dest: #4AADA4;
+  --mb-field-radius: var(--radius-sm);
   --mb-check: #34c759;
-  --mb-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.12);
+  --mb-shadow: var(--shadow-lg);
   --mb-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --mb-side-panel: 0px;
   position: relative;
@@ -29,7 +34,8 @@
 .mapbook__car-meta strong,
 .mapbook__chip,
 .mapbook__time,
-.mapbook__pin-callout-title {
+.mapbook__pin-callout-title,
+.mapbook__pin-callout-summary {
   font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
 }
 
@@ -66,13 +72,30 @@ body:has(.mapbook) {
   display: none !important;
 }
 
-.mapbook__dot-marker {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+.mapbook__pin-marker {
+  width: 2rem;
+  height: 2.35rem;
   pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
+}
+
+.mapbook__pin-marker-head {
+  display: block;
+  width: 1.65rem;
+  height: 1.65rem;
+  margin: 0 auto;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--pin-color, var(--mb-ink));
+  border: 3px solid #fff;
+}
+
+.mapbook__pin-marker--origin {
+  --pin-color: var(--mb-origin);
+}
+
+.mapbook__pin-marker--dest {
+  --pin-color: var(--mb-dest);
 }
 
 .mapbook-route-canvas {
@@ -472,8 +495,17 @@ body:has(.mapbook) {
   }
 
   .mapbook__acc.is-open .mapbook__panel {
-    padding: 0;
+    padding: 0 0 0.35rem;
     flex: 1 1 auto;
+    gap: 0.65rem;
+  }
+
+  .mapbook__pin-hint {
+    padding-bottom: 0.15rem;
+  }
+
+  .mapbook__sheet.is-map-focus {
+    max-height: min(18rem, calc(14.5rem + env(safe-area-inset-bottom, 0px)));
   }
 
   .mapbook__step span {
@@ -664,15 +696,21 @@ body:has(.mapbook) {
 
 .mapbook__eta {
   position: absolute;
-  z-index: 15;
-  padding: 0.28rem 0.55rem;
-  border-radius: 0.45rem;
-  background: rgba(255, 255, 255, 0.95);
+  z-index: 16;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--mb-field-radius);
+  background: rgba(255, 255, 255, 0.96);
   box-shadow: var(--mb-shadow);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--mb-muted);
-  transform: translate(-110%, -50%);
+  color: var(--mb-ink);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.mapbook.is-route-preview .mapbook__float {
+  display: none !important;
 }
 
 .mapbook__eta[hidden] {
@@ -681,9 +719,10 @@ body:has(.mapbook) {
 
 /* Center pick pin + Snapp-style address callout */
 .mapbook__center-pin {
+  --mb-pick-anchor-y: 42%;
   position: absolute;
   left: 50%;
-  top: 42%;
+  top: var(--mb-pick-anchor-y);
   z-index: 12;
   transform: translate(-50%, -100%);
   pointer-events: none;
@@ -722,10 +761,9 @@ body:has(.mapbook) {
 }
 
 .mapbook__pin-callout-title {
-  font-size: 0.95rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: var(--mb-ink);
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .mapbook.is-picking-origin .mapbook__pin-callout-title {
@@ -736,14 +774,33 @@ body:has(.mapbook) {
   color: var(--mb-dest);
 }
 
+.mapbook__pin-callout-summary {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--mb-ink);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mapbook__pin-callout-summary[hidden] {
+  display: none !important;
+}
+
 .mapbook__pin-callout-sub {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--mb-muted);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.mapbook__pin-callout-sub[hidden] {
+  display: none !important;
 }
 
 .mapbook__zone-chips {
@@ -975,6 +1032,111 @@ body:has(.mapbook) {
   background: transparent;
 }
 
+/* Building plaque labels (پلاک) — HTML overlay synced to map coords */
+.mapbook__plaque-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mapbook__plaque-layer[hidden] {
+  display: none !important;
+}
+
+.mapbook__plaque-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+  line-height: 1;
+  font-family: font-bold, "IRANSansX", Tahoma, sans-serif;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff;
+}
+
+/* Public venue entrance picker (Snapp-style) */
+.mapbook__venue-list {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  border: 1px solid var(--mb-border);
+  border-radius: 0.85rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.mapbook__venue-list[hidden] {
+  display: none !important;
+}
+
+.mapbook__venue-list-header {
+  padding: 0.55rem 0.85rem 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--mb-muted);
+  border-bottom: 1px solid var(--mb-border);
+}
+
+.mapbook__venue-entrance {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 0;
+  border-bottom: 1px solid var(--mb-border);
+  background: transparent;
+  padding: 0.75rem 0.85rem;
+  text-align: right;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--mb-ink);
+}
+
+.mapbook__venue-entrance:last-child {
+  border-bottom: 0;
+}
+
+.mapbook__venue-entrance:hover,
+.mapbook__venue-entrance:focus-visible {
+  background: var(--mb-bg);
+  outline: none;
+}
+
+.mapbook__venue-check {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 2px solid #c8c8c8;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.mapbook__venue-entrance.is-selected .mapbook__venue-check {
+  border-color: var(--mb-origin);
+  background: var(--mb-origin);
+}
+
+.mapbook__venue-entrance.is-selected .mapbook__venue-check::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.35rem;
+  height: 0.6rem;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -58%) rotate(45deg);
+}
+
 /* Bottom sheet (mobile / tablet) — keep map usable */
 .mapbook__sheet {
   position: absolute;
@@ -987,7 +1149,7 @@ body:has(.mapbook) {
   background: var(--mb-surface);
   border-radius: 1.35rem 1.35rem 0 0;
   box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
-  padding: 0 1rem 0;
+  padding: 0 1rem var(--mb-safe-bottom);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1023,10 +1185,10 @@ body:has(.mapbook) {
   max-height: 1.2rem;
 }
 
-/* Pin on map: half drawer down to search bar */
+/* Pin on map: compact drawer — address + confirm stay visible */
 .mapbook__sheet.is-map-focus {
   height: auto;
-  max-height: 11.25rem;
+  max-height: min(18rem, calc(14.5rem + env(safe-area-inset-bottom, 0px)));
 }
 
 .mapbook__sheet.is-map-focus .mapbook__title,
@@ -1034,47 +1196,41 @@ body:has(.mapbook) {
 .mapbook__sheet.is-map-focus .mapbook__chip-row,
 .mapbook__sheet.is-map-focus .mapbook__city-list,
 .mapbook__sheet.is-map-focus .mapbook__place-list,
-.mapbook__sheet.is-map-focus .mapbook__pin-address,
-.mapbook__sheet.is-map-focus .mapbook__btn--primary {
+.mapbook__sheet.is-map-focus .mapbook__place-search {
   display: none !important;
 }
 
-/* After map settle: peek just enough for تأیید */
-.mapbook__sheet.is-confirm-peek {
-  height: auto;
-  max-height: 15.25rem;
-}
-
-.mapbook__sheet.is-confirm-peek .mapbook__title,
-.mapbook__sheet.is-confirm-peek .mapbook__sub,
-.mapbook__sheet.is-confirm-peek .mapbook__chip-row,
-.mapbook__sheet.is-confirm-peek .mapbook__city-list,
-.mapbook__sheet.is-confirm-peek .mapbook__place-list,
-.mapbook__sheet.is-confirm-peek .mapbook__place-search,
-.mapbook__sheet.is-confirm-peek .mapbook__pin-address {
-  display: none !important;
-}
-
-.mapbook__sheet.is-confirm-peek .mapbook__pin-hint {
+.mapbook__sheet.is-map-focus .mapbook__pin-hint {
   border-top: 0;
-  padding-top: 0.15rem;
-  gap: 0;
+  padding-top: 0.2rem;
 }
 
-.mapbook__sheet.is-confirm-peek .mapbook__btn--primary {
-  display: inline-flex !important;
-  margin-top: 0.45rem;
-  margin-bottom: max(0.85rem, env(safe-area-inset-bottom));
-  margin-inline: 0.35rem;
-  width: calc(100% - 0.7rem);
-  padding: 1rem 1.1rem;
-  min-height: 3.1rem;
+.mapbook__sheet.is-map-focus .mapbook__venue-list:not([hidden]) {
+  display: block !important;
 }
 
-.mapbook__sheet.is-map-focus .mapbook__sheet-grab-hint,
-.mapbook__sheet.is-confirm-peek .mapbook__sheet-grab-hint {
+.mapbook__sheet.is-map-focus .mapbook__pin-address {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.mapbook__sheet.is-map-focus .mapbook__sheet-grab-hint {
   opacity: 1;
   max-height: 1.2rem;
+}
+
+/* Car class step — taller drawer so cards are fully visible */
+.mapbook__sheet.is-car-step {
+  max-height: min(58dvh, 32rem);
+  background: #ececec;
+}
+
+.mapbook__sheet.is-car-step.is-roomy {
+  max-height: min(62dvh, 34rem);
 }
 
 .mapbook__sheet-grab {
@@ -1180,7 +1336,7 @@ body:has(.mapbook) {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding-bottom: max(1.1rem, calc(0.65rem + env(safe-area-inset-bottom)));
+  padding-bottom: max(0.85rem, calc(0.35rem + env(safe-area-inset-bottom, 0px)));
   animation: mb-panel-in 280ms var(--mb-ease) both;
 }
 
@@ -1193,6 +1349,7 @@ body:has(.mapbook) {
   bottom: 0;
   z-index: 2;
   margin-top: auto;
+  margin-bottom: 0;
   box-shadow: 0 -10px 18px rgba(255, 255, 255, 0.92);
 }
 
@@ -1216,7 +1373,7 @@ body:has(.mapbook) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.65rem 0.85rem;
-  border-radius: 0.9rem;
+  border-radius: var(--mb-field-radius);
   background: var(--mb-bg);
   border: 1px solid transparent;
 }
@@ -1322,10 +1479,14 @@ body:has(.mapbook) {
 }
 
 .mapbook__pin-hint .mapbook__btn--primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   margin-top: 0.65rem;
-  margin-bottom: max(0.85rem, env(safe-area-inset-bottom));
-  width: calc(100% - 0.7rem);
-  margin-inline: 0.35rem;
+  margin-bottom: 0;
+  width: 100%;
+  margin-inline: 0;
   padding: 1rem 1.1rem;
   min-height: 3.1rem;
 }
@@ -1411,7 +1572,7 @@ body:has(.mapbook) {
 
 .mapbook__btn {
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--mb-field-radius);
   padding: 0.85rem 1.1rem;
   font-size: 0.95rem;
   font-weight: 700;
@@ -1429,13 +1590,27 @@ body:has(.mapbook) {
 }
 
 .mapbook__btn--primary {
-  background: var(--mb-ink);
-  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--mb-primary);
+  color: var(--mb-primary-fg);
   width: 100%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-.mapbook__btn--primary:hover:not(:disabled) {
-  background: #1a1a1a;
+.mapbook__btn--primary:hover:not(:disabled):not(.is-map-busy) {
+  background: var(--mb-primary-hover);
+}
+
+.mapbook__btn--primary.is-map-busy,
+.mapbook__btn--primary:disabled.is-map-busy {
+  background: #ececec;
+  color: #b0b0b0;
+  opacity: 1;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Car class grid — image card + text underneath */
@@ -1449,37 +1624,43 @@ body:has(.mapbook) {
 .mapbook__car {
   position: relative;
   border: 0;
-  background: transparent;
-  padding: 0;
+  background: #fff;
+  border-radius: 1.05rem;
+  padding: 0.55rem 0.5rem 0.65rem;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.55rem;
+  gap: 0.45rem;
   text-align: center;
   cursor: pointer;
   font-family: inherit;
   color: var(--mb-ink);
-  transition: transform 180ms var(--mb-ease);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: transform 180ms var(--mb-ease), box-shadow 180ms var(--mb-ease);
 }
 
 .mapbook__car-media {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border-radius: 1.05rem;
+  border-radius: 0.65rem;
   overflow: hidden;
-  border: 1.5px solid var(--mb-border);
-  background: var(--mb-bg);
-  transition: border-color 180ms var(--mb-ease), box-shadow 180ms var(--mb-ease);
+  border: 0;
+  background: transparent;
 }
 
 .mapbook__car img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   display: block;
-  background: var(--mb-bg);
+  background: transparent;
 }
 
 .mapbook__car-meta {
@@ -1528,17 +1709,23 @@ body:has(.mapbook) {
   display: none !important;
 }
 
-.mapbook__car:hover:not(:disabled) {
+.mapbook__car:hover:not(:disabled):not([aria-selected="true"]) {
   transform: translateY(-2px);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.mapbook__car:hover:not(:disabled) .mapbook__car-media {
-  border-color: rgba(0, 0, 0, 0.22);
+.mapbook__car:focus,
+.mapbook__car:focus-visible,
+.mapbook__car:active {
+  outline: none;
+  background: #fff;
 }
 
-.mapbook__car[aria-selected="true"] .mapbook__car-media {
-  border-color: var(--mb-ink);
-  box-shadow: 0 0 0 2px var(--mb-ink);
+.mapbook__car[aria-selected="true"] {
+  background: #fff;
+  transform: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .mapbook__car[aria-selected="true"] .mapbook__car-meta strong {
@@ -1861,11 +2048,15 @@ body:has(.mapbook) {
   }
 
   .mapbook__sheet.is-map-focus {
-    max-height: 11.5rem;
+    max-height: min(18rem, calc(14.5rem + env(safe-area-inset-bottom, 0px)));
   }
 
-  .mapbook__sheet.is-confirm-peek {
-    max-height: 14rem;
+  .mapbook__sheet.is-car-step {
+    max-height: min(60dvh, 33rem);
+  }
+
+  .mapbook__sheet.is-car-step.is-roomy {
+    max-height: min(64dvh, 36rem);
   }
 }
 
@@ -1893,7 +2084,7 @@ body:has(.mapbook) {
 
   .mapbook__sheet.is-roomy,
   .mapbook__sheet.is-map-focus,
-  .mapbook__sheet.is-confirm-peek,
+  .mapbook__sheet.is-car-step,
   .mapbook__sheet.is-collapsed {
     height: 100%;
     max-height: none;

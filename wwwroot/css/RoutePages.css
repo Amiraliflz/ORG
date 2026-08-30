@@ -7,12 +7,12 @@
 }
 
 .route-hub {
-  --rh-ink: #000000;
-  --rh-muted: #5e5e5e;
-  --rh-accent: var(--brand-ink, #000);
-  --rh-line: rgba(67, 89, 113, 0.12);
-  --rh-surface: #ffffff;
-  --rh-surface-soft: rgba(255, 255, 255, 0.78);
+  --rh-ink: var(--foreground);
+  --rh-muted: var(--muted-foreground);
+  --rh-accent: var(--primary);
+  --rh-line: var(--border);
+  --rh-surface: var(--card);
+  --rh-surface-soft: color-mix(in oklch, var(--card) 78%, transparent);
   position: relative;
   isolation: isolate;
   min-height: 70vh;

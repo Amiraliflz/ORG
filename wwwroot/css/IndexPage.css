@@ -40,11 +40,11 @@
 .landing-hero,
 .light-style .landing-hero,
 .landing-hero1 {
-  --hero-ink: #000000;
-  --hero-muted: #5e5e5e;
-  --hero-accent: #000000;
-  --hero-sky: #f3f3f3;
-  --hero-ground: #ffffff;
+  --hero-ink: var(--foreground);
+  --hero-muted: var(--muted-foreground);
+  --hero-accent: var(--primary);
+  --hero-sky: var(--muted);
+  --hero-ground: var(--background);
   padding-top: 0 !important;
   padding-bottom: 1.5rem !important;
   isolation: isolate;

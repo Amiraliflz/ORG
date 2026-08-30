@@ -80,6 +80,12 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<DirectionsRepository, DirectionsRepository>();
 builder.Services.AddScoped<DirectionsTravelTimeCalculator>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<Application.Services.MapBook.MapBookGeoCache>();
+builder.Services.AddScoped<Application.Services.MapBook.RoadSnapService>();
+builder.Services.AddScoped<Application.Services.MapBook.BuildingPlaqueService>();
+builder.Services.AddSingleton<Application.Services.MapBook.PublicVenueService>();
+
 builder.Services.Configure<Application.Services.Neshan.NeshanOptions>(
   builder.Configuration.GetSection(Application.Services.Neshan.NeshanOptions.SectionName));
 builder.Services.AddHttpClient<Application.Services.Neshan.NeshanApiClient>((sp, client) =>

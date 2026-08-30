@@ -1,45 +1,44 @@
 /* ─────────────────────────────────────────────
    Global pill-style buttons & curved inputs
-   Colors: primary #696cff  success #28c76f
+   Uses shadcn tokens (tokens.css) on customer pages
    ───────────────────────────────────────────── */
 
 /* ── Inputs & Selects ── */
 .form-control,
 .form-select {
-    border-radius: 1.25rem !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    border-radius: var(--radius-md, 0.875rem) !important;
+    padding-inline: 1rem;
     transition: border-color .18s, box-shadow .18s;
 }
 
 .form-control:focus,
 .form-select:focus {
-    box-shadow: 0 0 0 3px rgba(105, 108, 255, .15) !important;
-    border-color: #696cff !important;
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.708 0 0)) 35%, transparent) !important;
+    border-color: var(--ring, oklch(0.708 0 0)) !important;
 }
 
-/* Input groups: outer corners only */
+/* Input groups: outer corners only (LTR fallback; RTL in shadcn-bridge.css) */
 .input-group > .form-control:not(:last-child),
 .input-group > .form-select:not(:last-child) {
-    border-radius: 0 1.25rem 1.25rem 0 !important;
+    border-radius: 0 var(--radius-md, 0.875rem) var(--radius-md, 0.875rem) 0 !important;
 }
 .input-group > .form-control:not(:first-child),
 .input-group > .form-select:not(:first-child) {
-    border-radius: 1.25rem 0 0 1.25rem !important;
+    border-radius: var(--radius-md, 0.875rem) 0 0 var(--radius-md, 0.875rem) !important;
 }
 .input-group > .input-group-text:first-child {
-    border-radius: 0 1.25rem 1.25rem 0 !important;
+    border-radius: 0 var(--radius-md, 0.875rem) var(--radius-md, 0.875rem) 0 !important;
 }
 .input-group > .input-group-text:last-child {
-    border-radius: 1.25rem 0 0 1.25rem !important;
+    border-radius: var(--radius-md, 0.875rem) 0 0 var(--radius-md, 0.875rem) !important;
 }
 .input-group {
-    border-radius: 1.25rem;
+    border-radius: var(--radius-md, 0.875rem);
 }
 
 /* ── Buttons – base pill shape ── */
 .btn {
-    border-radius: 1.25rem !important;
+    border-radius: var(--radius-md, 0.875rem) !important;
     font-weight: 500;
     letter-spacing: .01em;
     transition: box-shadow .18s, transform .12s, background .18s;
@@ -53,16 +52,16 @@
     transform: translateY(0);
 }
 
-/* Primary – purple glow */
+/* Primary — token shadow (front-palette / shadcn-bridge refine on customer pages) */
 .btn-primary {
-    box-shadow: 0 2px 12px rgba(105, 108, 255, .30);
+    box-shadow: var(--shadow-sm, 0 2px 12px rgba(0, 0, 0, .12));
 }
 .btn-primary:hover:not(:disabled) {
-    box-shadow: 0 4px 20px rgba(105, 108, 255, .45);
+    box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, .18));
 }
 .btn-primary:focus,
 .btn-primary:active {
-    box-shadow: 0 0 0 3px rgba(105, 108, 255, .25) !important;
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.708 0 0)) 35%, transparent) !important;
 }
 
 /* Success – green glow */
@@ -75,7 +74,7 @@
 
 /* Outline variants – glow on hover */
 .btn-outline-primary:hover:not(:disabled) {
-    box-shadow: 0 2px 14px rgba(105, 108, 255, .30);
+    box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, .14));
 }
 .btn-outline-success:hover:not(:disabled) {
     box-shadow: 0 2px 14px rgba(40, 199, 111, .30);
@@ -103,7 +102,7 @@
 .btn-lg {
     padding: .65rem 1.75rem !important;
     font-size: 1rem !important;
-    border-radius: 1.5rem !important;
+    border-radius: var(--radius-lg, 1.125rem) !important;
 }
 
 /* ── Mobile tweaks ── */

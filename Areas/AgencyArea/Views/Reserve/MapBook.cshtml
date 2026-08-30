@@ -32,15 +32,16 @@
      data-neshan-web-key="@ViewData["NeshanWebApiKey"]"
      data-origin="@ViewData["MapBookOrigin"]"
      data-dest="@ViewData["MapBookDest"]"
-     data-cache-ver="20260829f">
+     data-cache-ver="20260830ad">
     <script type="application/json" id="mbCitiesData">@Html.Raw(ViewData["MapBookCitiesJson"] ?? "{}")</script>
     <script type="application/json" id="mbZonesData">@Html.Raw(ViewData["MapBookZonesJson"] ?? "{}")</script>
     <script type="application/json" id="mbCityBordersData">@Html.Raw(ViewData["MapBookCityBordersJson"] ?? "{}")</script>
+    <script type="application/json" id="mbPublicVenuesData">@Html.Raw(ViewData["MapBookPublicVenuesJson"] ?? "{\"venues\":[]}")</script>
     <div id="mapBookMap" class="mapbook__map" role="presentation" aria-hidden="true"></div>
 
     <header class="mapbook__top">
-        <a class="mapbook__back" href="/" aria-label="بازگشت">
-            <i class="ti ti-arrow-right"></i>
+        <a class="mapbook__back" href="/" aria-label="بازگشت به خانه">
+            <i class="ti ti-home"></i>
         </a>
         <nav class="mapbook__steps" aria-label="مراحل رزرو">
             <button type="button" class="mapbook__step is-active" data-step="1"><span>۱</span>مبدأ</button>
@@ -105,6 +106,7 @@
                                     <input type="search" id="mbOriginPlaceSearch" placeholder="محله، خیابان، کوچه…" autocomplete="off" />
                                 </label>
                                 <ul class="mapbook__place-list" id="mbOriginPlaceList" hidden></ul>
+                                <ul class="mapbook__venue-list" id="mbOriginVenueList" hidden></ul>
                                 <p class="mapbook__pin-address" id="mbOriginAddress">نقشه را جابه‌جا کنید یا آدرس را جستجو کنید.</p>
                                 <button type="button" class="mapbook__btn mapbook__btn--primary" id="mbConfirmOrigin">تأیید مبدأ</button>
                             </div>
@@ -138,6 +140,7 @@
                                     <input type="search" id="mbDestPlaceSearch" placeholder="محله، خیابان، کوچه…" autocomplete="off" />
                                 </label>
                                 <ul class="mapbook__place-list" id="mbDestPlaceList" hidden></ul>
+                                <ul class="mapbook__venue-list" id="mbDestVenueList" hidden></ul>
                                 <p class="mapbook__pin-address" id="mbDestAddress">نقطه مقصد را تنظیم کنید یا آدرس را جستجو کنید.</p>
                                 <button type="button" class="mapbook__btn mapbook__btn--primary" id="mbConfirmDest">تأیید مقصد و نمایش مسیر</button>
                             </div>
@@ -161,16 +164,6 @@
                             <h1 class="mapbook__title">کلاس خودرو</h1>
                             <p class="mapbook__sub">کلاس موردنظر را انتخاب کنید.</p>
                             <div class="mapbook__cars" id="mbCarClasses" role="listbox" aria-label="کلاس خودرو">
-                                <button type="button" class="mapbook__car mapbook__car--soon" data-class="van" role="option" aria-selected="false" aria-disabled="true" disabled>
-                                    <span class="mapbook__car-media">
-                                        <img src="/img/car-classes/van.jpg" alt="" width="220" height="160" loading="lazy" />
-                                    </span>
-                                    <span class="mapbook__car-meta">
-                                        <strong>ون</strong>
-                                        <span>هایس، H350 و …</span>
-                                        <em class="mapbook__car-soon-badge">به‌زودی</em>
-                                    </span>
-                                </button>
                                 <button type="button" class="mapbook__car" data-class="eco" role="option" aria-selected="false">
                                     <span class="mapbook__car-media">
                                         <img src="/img/car-classes/eco.jpg" alt="" width="220" height="160" loading="lazy" />
@@ -199,6 +192,16 @@
                                         <strong>تشریفات</strong>
                                         <span>کمری، سوناتا و سفران</span>
                                         <em class="mapbook__car-price" data-price-for="tashrifat" hidden></em>
+                                    </span>
+                                </button>
+                                <button type="button" class="mapbook__car mapbook__car--soon" data-class="van" role="option" aria-selected="false" aria-disabled="true" disabled>
+                                    <span class="mapbook__car-media">
+                                        <img src="/img/car-classes/van.jpg" alt="" width="220" height="160" loading="lazy" />
+                                    </span>
+                                    <span class="mapbook__car-meta">
+                                        <strong>ون</strong>
+                                        <span>هایس، H350 و …</span>
+                                        <em class="mapbook__car-soon-badge">به‌زودی</em>
                                     </span>
                                 </button>
                             </div>
@@ -250,15 +253,8 @@
     </aside>
 
     <div class="mapbook__center-pin" id="mbCenterPin" hidden>
-        <div class="mapbook__pin-callout" id="mbPinCallout" hidden>
-            <span class="mapbook__pin-callout-title" id="mbPinCalloutTitle">در حال یافتن آدرس…</span>
-            <span class="mapbook__pin-callout-sub" id="mbPinCalloutSub"></span>
-            <div class="mapbook__zone-chips" id="mbPinZones" hidden>
-                <span class="mapbook__zone-chip" id="mbZoneTraffic" hidden></span>
-                <span class="mapbook__zone-chip" id="mbZoneOddEven" hidden></span>
-            </div>
-        </div>
         <span class="mapbook__center-pin-dot"></span>
         <span class="mapbook__center-pin-stem"></span>
     </div>
+    <div class="mapbook__plaque-layer" id="mbPlaqueLayer" hidden aria-hidden="true"></div>
 </div>

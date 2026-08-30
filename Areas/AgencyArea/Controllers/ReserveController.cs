@@ -38,6 +38,10 @@ namespace Application.Areas.AgencyArea
     private readonly IWebHostEnvironment _env;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly Application.Services.Neshan.NeshanApiClient _neshan;
+    private readonly Application.Services.MapBook.RoadSnapService _roadSnap;
+    private readonly Application.Services.MapBook.BuildingPlaqueService _buildingPlaques;
+    private readonly Application.Services.MapBook.PublicVenueService _publicVenues;
+    private readonly Application.Services.MapBook.MapBookGeoCache _geoCache;
     private Agency agency;
 
 
@@ -54,7 +58,11 @@ namespace Application.Areas.AgencyArea
       LoyaltyService loyaltySvc,
       IWebHostEnvironment env,
       IHttpClientFactory httpClientFactory,
-      Application.Services.Neshan.NeshanApiClient neshan)
+      Application.Services.Neshan.NeshanApiClient neshan,
+      Application.Services.MapBook.RoadSnapService roadSnap,
+      Application.Services.MapBook.BuildingPlaqueService buildingPlaques,
+      Application.Services.MapBook.PublicVenueService publicVenues,
+      Application.Services.MapBook.MapBookGeoCache geoCache)
     {
       this.configuration = configuration;
       customerSmsSender = smssender;
@@ -69,6 +77,10 @@ namespace Application.Areas.AgencyArea
       _env = env;
       _httpClientFactory = httpClientFactory;
       _neshan = neshan;
+      _roadSnap = roadSnap;
+      _buildingPlaques = buildingPlaques;
+      _publicVenues = publicVenues;
+      _geoCache = geoCache;
 
       // Ensure guest agency exists when controller is initialized
       EnsureGuestAgencyExistsAsync().Wait();
@@ -96,7 +108,8 @@ namespace Application.Areas.AgencyArea
       ViewData["NeshanWebApiKey"] = configuration["Neshan:WebApiKey"] ?? "";
       ViewData["MapBookCitiesJson"] = ReadWwwrootJson("data/iran/cities.json");
       ViewData["MapBookZonesJson"] = ReadWwwrootJson("data/iran/tehran-restriction-zones.json");
-      ViewData["MapBookCityBordersJson"] = ReadWwwrootJson("data/iran/city-borders.json");
+      ViewData["MapBookCityBordersJson"] = "{\"type\":\"FeatureCollection\",\"features\":[]}";
+      ViewData["MapBookPublicVenuesJson"] = ReadWwwrootJson("data/iran/public-venues.json");
       ViewData["MapBookOrigin"] = (Request.Query["origin"].FirstOrDefault()
         ?? Request.Query["originstring"].FirstOrDefault() ?? "").Trim();
       ViewData["MapBookDest"] = (Request.Query["dest"].FirstOrDefault()
@@ -131,15 +144,37 @@ namespace Application.Areas.AgencyArea
       if (!IsValidLatLng(oLat, oLng) || !IsValidLatLng(dLat, dLng))
         return BadRequest(new { error = "invalid coordinates" });
 
+      var cacheKey = Application.Services.MapBook.MapBookGeoCache.RouteKey(oLat, oLng, dLat, dLng);
+      var cached = await _geoCache.GetOrCreateAsync(
+        cacheKey,
+        TimeSpan.FromMinutes(30),
+        () => BuildRoutePayloadAsync(oLat, oLng, dLat, dLng, cancellationToken));
+
+      if (cached == null)
+        return Json(new { code = "Error", routes = Array.Empty<object>() });
+
+      return Json(new
+      {
+        code = cached.Code,
+        source = cached.Source,
+        routes = cached.Routes
+      });
+    }
+
+    private async Task<Application.Services.MapBook.CachedRoutePayload?> BuildRoutePayloadAsync(
+      double oLat, double oLng, double dLat, double dLng,
+      CancellationToken cancellationToken)
+    {
       try
       {
         var neshan = await _neshan.GetDrivingRouteAsync(oLat, oLng, dLat, dLng, cancellationToken);
         if (neshan != null && neshan.Coordinates.Count >= 2)
         {
-          return Json(new
+          return new Application.Services.MapBook.CachedRoutePayload
           {
-            code = "Ok",
-            routes = new[]
+            Code = "Ok",
+            Source = "neshan",
+            Routes = new object[]
             {
               new
               {
@@ -153,9 +188,8 @@ namespace Application.Areas.AgencyArea
                     .ToArray()
                 }
               }
-            },
-            source = "neshan"
-          });
+            }
+          };
         }
       }
       catch (Exception ex)
@@ -179,10 +213,31 @@ namespace Application.Areas.AgencyArea
           using var res = await client.GetAsync(url, cancellationToken);
           if (!res.IsSuccessStatusCode) continue;
           var json = await res.Content.ReadAsStringAsync(cancellationToken);
-          // Tag source without breaking OSRM shape for the client
-          if (json.Length > 2 && json[0] == '{')
-            return Content(json.Insert(1, "\"source\":\"osrm\","), "application/json");
-          return Content(json, "application/json");
+          using var doc = System.Text.Json.JsonDocument.Parse(json);
+          if (!doc.RootElement.TryGetProperty("routes", out var routes) ||
+              routes.GetArrayLength() < 1)
+            continue;
+
+          var route0 = routes[0];
+          if (!route0.TryGetProperty("geometry", out var geomEl) ||
+              !geomEl.TryGetProperty("coordinates", out var coordsEl) ||
+              coordsEl.GetArrayLength() < 2)
+            continue;
+
+          return new Application.Services.MapBook.CachedRoutePayload
+          {
+            Code = "Ok",
+            Source = "osrm",
+            Routes = new object[]
+            {
+              new
+              {
+                distance = route0.TryGetProperty("distance", out var distEl) ? distEl.GetDouble() : 0,
+                duration = route0.TryGetProperty("duration", out var durEl) ? durEl.GetDouble() : 0,
+                geometry = System.Text.Json.JsonSerializer.Deserialize<object>(geomEl.GetRawText())
+              }
+            }
+          };
         }
         catch (Exception ex)
         {
@@ -190,23 +245,31 @@ namespace Application.Areas.AgencyArea
         }
       }
 
+      return null;
+    }
+
+    /// <summary>
+    /// Snap a map pin to the nearest driving road (OSRM nearest).
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/NearestRoad")]
+    public async Task<IActionResult> NearestRoad(double lat, double lng, CancellationToken cancellationToken)
+    {
+      if (!Application.Services.MapBook.RoadSnapMath.IsValidIran(lat, lng))
+        return BadRequest(new { error = "invalid coordinates" });
+
+      var snap = await _roadSnap.SnapAsync(lat, lng, cancellationToken);
+      if (snap == null)
+        return Json(new { ok = false });
+
       return Json(new
       {
-        code = "Ok",
-        routes = new[]
-        {
-          new
-          {
-            distance = HaversineMeters(oLat, oLng, dLat, dLng),
-            duration = HaversineMeters(oLat, oLng, dLat, dLng) / 22.0,
-            geometry = new
-            {
-              type = "LineString",
-              coordinates = BuildFallbackLine(oLng, oLat, dLng, dLat)
-            }
-          }
-        },
-        source = "fallback"
+        ok = true,
+        lat = snap.Lat,
+        lng = snap.Lng,
+        distance = snap.DistanceMeters,
+        source = snap.Source
       });
     }
 
@@ -232,7 +295,7 @@ namespace Application.Areas.AgencyArea
       var results = new List<object>();
       var seen = new HashSet<string>();
 
-      void Add(string title, string? subtitle, double rLat, double rLng, string source)
+      void Add(string title, string? subtitle, double rLat, double rLng, string source, string? venueId = null)
       {
         var key = $"{Math.Round(rLat, 4)}:{Math.Round(rLng, 4)}";
         if (!seen.Add(key)) return;
@@ -242,8 +305,16 @@ namespace Application.Areas.AgencyArea
           subtitle = subtitle ?? "",
           lat = rLat,
           lng = rLng,
-          source
+          source,
+          venueId
         });
+      }
+
+      // Curated airports / hospitals / malls first (Snapp-style POI)
+      foreach (var hit in _publicVenues.Search(q, city, 4))
+      {
+        var v = hit.Venue;
+        Add(v.ShortName, v.Name + "، " + v.City, v.Center.Lat, v.Center.Lng, "venue", v.Id);
       }
 
       try
@@ -263,12 +334,7 @@ namespace Application.Areas.AgencyArea
         foreach (var c in candidates.Take(3))
         {
           if (results.Count >= 8) break;
-          var rev = await _neshan.ReverseAsync(c.Lat, c.Lng, cancellationToken);
-          Add(
-            rev?.Title ?? q,
-            rev?.Subtitle ?? city,
-            c.Lat, c.Lng,
-            "neshan");
+          Add(q, city, c.Lat, c.Lng, "neshan");
         }
       }
       catch (Exception ex)
@@ -345,7 +411,12 @@ namespace Application.Areas.AgencyArea
       if (!IsValidLatLng(lat, lng))
         return BadRequest(new { error = "invalid coordinates" });
 
-      var rev = await _neshan.ReverseAsync(lat, lng, cancellationToken);
+      var cacheKey = Application.Services.MapBook.MapBookGeoCache.ReverseKey(lat, lng);
+      var rev = await _geoCache.GetOrCreateAsync(
+        cacheKey,
+        TimeSpan.FromMinutes(20),
+        () => _neshan.ReverseAsync(lat, lng, cancellationToken));
+
       if (rev == null)
         return Json(new { title = "موقعیت روی نقشه", subtitle = "" });
 
@@ -360,6 +431,114 @@ namespace Application.Areas.AgencyArea
         inOddEvenZone = rev.InOddEvenZone
       });
     }
+
+    /// <summary>
+    /// Real building plaque labels (پلاک) inside the visible map viewport — Neshan Geocoding Plus.
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/BuildingPlaques")]
+    public async Task<IActionResult> BuildingPlaques(
+      double minLat, double minLng, double maxLat, double maxLng,
+      double centerLat, double centerLng,
+      int? max = null,
+      CancellationToken cancellationToken = default)
+    {
+      if (!IsValidLatLng(centerLat, centerLng) ||
+          !IsValidLatLng(minLat, minLng) ||
+          !IsValidLatLng(maxLat, maxLng))
+        return BadRequest(new { error = "invalid coordinates" });
+
+      if (minLat > maxLat) (minLat, maxLat) = (maxLat, minLat);
+      if (minLng > maxLng) (minLng, maxLng) = (maxLng, minLng);
+
+      var latSpan = maxLat - minLat;
+      var lngSpan = maxLng - minLng;
+      if (latSpan > 0.08 || lngSpan > 0.08)
+        return Json(new { plaques = Array.Empty<object>(), street = "", city = "" });
+
+      try
+      {
+        var result = await _buildingPlaques.GetPlaquesAsync(
+          centerLat, centerLng,
+          minLat, minLng, maxLat, maxLng,
+          max ?? 16,
+          cancellationToken);
+
+        if (result == null || result.Plaques.Count == 0)
+          return Json(new { plaques = Array.Empty<object>(), street = "", city = "" });
+
+        return Json(new
+        {
+          city = result.City,
+          street = result.Street,
+          plaques = result.Plaques.Select(p => new
+          {
+            number = p.Number,
+            lat = p.Lat,
+            lng = p.Lng,
+            label = "پلاک " + ToPersianDigits(p.Number)
+          })
+        });
+      }
+      catch (Exception ex)
+      {
+        _logger.LogDebug(ex, "BuildingPlaques failed");
+        return Json(new { plaques = Array.Empty<object>(), street = "", city = "" });
+      }
+    }
+
+    /// <summary>
+    /// Detect public venue (airport, hospital, mall) at map center — blue border + entrance list.
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("/Reserve/PublicVenue")]
+    public IActionResult PublicVenue(double lat, double lng)
+    {
+      if (!IsValidLatLng(lat, lng))
+        return BadRequest(new { error = "invalid coordinates" });
+
+      var venue = _publicVenues.FindAt(lat, lng);
+      if (venue == null)
+        return Json(new { venue = (object?)null });
+
+      return Json(new
+      {
+        venue = new
+        {
+          id = venue.Id,
+          name = venue.Name,
+          shortName = venue.ShortName,
+          type = venue.Type,
+          city = venue.City,
+          polygon = venue.Polygon,
+          entrances = venue.Entrances.Select(e => new
+          {
+            id = e.Id,
+            label = e.Label,
+            lat = e.Lat,
+            lng = e.Lng
+          })
+        }
+      });
+    }
+
+    private static string ToPersianDigits(int value) =>
+      string.Concat(value.ToString().Select(ch => ch switch
+      {
+        '0' => '۰',
+        '1' => '۱',
+        '2' => '۲',
+        '3' => '۳',
+        '4' => '۴',
+        '5' => '۵',
+        '6' => '۶',
+        '7' => '۷',
+        '8' => '۸',
+        '9' => '۹',
+        _ => ch
+      }));
 
     private static bool IsValidLatLng(double lat, double lng) =>
       lat is >= 24 and <= 41 && lng is >= 43 and <= 64;
